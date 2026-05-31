@@ -1,0 +1,53 @@
+# Electricity
+
+#### EECS 4413 Project (Group G)
+
+---
+
+## List of Acronyms:
+
+- **GoF:** Gang of Four (list of design patterns)
+- **DP:** Design pattern
+- **TBD:** To be Determined/Decided
+- **FE / BE:** Frontend / Backend
+- **MW:** Middleware
+- **DAO:** Data Access Object
+- **CoR:** Chain of Responsibility (GoF design pattern)
+- **HO (Function):** High-order (Function)
+
+---
+
+## Status Updates:
+
+- A sufficient starter BE folder structure is generated.
+- List of Services are finalized.
+
+**Note:** DAO and database logic is still TBD.
+**Note:** Loan Calculator will be implemented in Frondend
+**Note:** List of endpoint samples are semi-finalized
+
+---
+
+## List of Design Patterns used:
+
+- **Builder / Singleton**: Email service ( and NodeMailer's Transpoter instance)
+- **Decorator**: `TryCatch.js` used for wrapping controllers with try/catch block (acting as global error handling)
+- **Chain of Responsibility (CoR)**: Express pipeline (through Middlewares) using `next()` functions
+
+---
+
+## Noteable Technique:
+
+- Usage of HO Functions
+- Barrel Exports (example: index.js within `/DAO` or `/services`)
+- Functional/Object-Oriented
+- Abstractions
+- DRY principle
+
+---
+
+## Architecture:
+
+- **MVC / Layered architecture** [_In conjuction with the Frontend_], Model and Controller are clearly implemented
+- **Centralized configuration:** `/configs` (more notably `/configs/env.js`) is a single place for service/backend setups
+- `/DAO`: Data Access Object
