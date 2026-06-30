@@ -1,0 +1,14 @@
+{
+    "watch": [
+        "index.js",
+        "configs",
+        "controllers",
+        "middlewares",
+        "routes",
+        "services",
+        "utils"
+    ],
+    "ext": "js,json",
+    "legacyWatch": true,
+    "ignore": ["node_modules", "tests"]
+}

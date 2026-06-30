@@ -3,11 +3,21 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon index.js",
-        "seed": "",
-        "migrate": "",
-        "rollback": "",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "start": "nodemon --legacy-watch index.js",
+        "db:schema:apply": "node models/apply-schema.js",
+        "db:seed:apply": "node models/apply-seed.js",
+        "test:email": "node tests/email-service/email-service.test.js",
+        "test:media": "node tests/media-service/media-service.test.js",
+        "test:analytics:event": "node tests/analytics-service/generate-event.test.js",
+        "test:analytics:report": "node tests/analytics-service/generate-report.test.js",
+        "test:catalog:browse": "node tests/catalog-service/browse-vehicles.test.js",
+        "test:catalog:search": "node tests/catalog-service/search-vehicles.test.js",
+        "test:catalog:details": "node tests/catalog-service/catalog-details.test.js",
+        "test:catalog:compare": "node tests/catalog-service/catalog-compare.test.js",
+        "test:catalog": "node tests/catalog-service/browse-vehicles.test.js && node tests/catalog-service/search-vehicles.test.js && node tests/catalog-service/catalog-details.test.js && node tests/catalog-service/catalog-compare.test.js",
+        "docker:up": "docker compose -f ../docker/docker-compose.yml --env-file .env up -d --build",
+        "docker:down": "docker compose -f ../docker/docker-compose.yml --env-file .env down",
+        "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f"
     },
     "keywords": [],
     "author": "EECS 4413 Group G",
@@ -17,17 +27,20 @@
     "dependencies": {
         "axios": "^1.16.1",
         "bcrypt": "^6.0.0",
+        "bullmq": "^5.78.1",
         "cors": "^2.8.6",
         "dotenv": "^17.4.2",
         "express": "^5.2.1",
         "express-rate-limit": "^8.5.2",
-        "express-validator": "^7.3.2",
         "helmet": "^8.2.0",
+        "ioredis": "^5.11.1",
         "jsonwebtoken": "^9.0.3",
         "morgan": "^1.10.1",
         "mysql2": "^3.22.4",
-        "nodemailer": "^8.0.10",
+        "nodemailer": "^9.0.1",
         "nodemon": "^3.1.14",
-        "uuid": "^14.0.0"
+        "stripe": "^22.2.1",
+        "uuid": "^14.0.0",
+        "zod": "^4.4.3"
     }
 }

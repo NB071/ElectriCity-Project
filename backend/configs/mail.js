@@ -6,6 +6,10 @@
 import nodemailer from "nodemailer";
 import env from "./env.js";
 
+export const mailConfig = {
+    from: env.email.from,
+};
+
 async function configureTransporter() {
     try {
         const transporter = nodemailer.createTransport({
@@ -22,7 +26,10 @@ async function configureTransporter() {
 
         return transporter;
     } catch (error) {
-        console.error("Error configuring Nodemailer transporter:", error);
+        console.error(
+            "[Mail] Error configuring Nodemailer transporter:",
+            error,
+        );
         throw error;
     }
 }

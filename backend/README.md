@@ -51,3 +51,15 @@
 - **MVC / Layered architecture** [_In conjuction with the Frontend_], Model and Controller are clearly implemented
 - **Centralized configuration:** `/configs` (more notably `/configs/env.js`) is a single place for service/backend setups
 - `/DAO`: Data Access Object
+
+---
+
+## Resources
+
+- https://www.thisdot.co/blog/bullmq-with-expressjs
+
+- https://medium.com/@robinviktorsson/a-guide-to-the-strategy-design-pattern-in-typescript-and-node-js-with-practical-examples-c3d6984a2050
+
+- https://jsdoc.app/
+
+- https://adamcoster.com/blog/javascript-custom-errors

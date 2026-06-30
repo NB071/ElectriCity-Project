@@ -10,3 +10,6 @@ export { default as orderService } from "./order/order.service.js";
 export { default as analyticsService } from "./analytics/analytics.service.js";
 export { default as reviewService } from "./review/review.service.js";
 export { default as chatbotService } from "./chatbot/chatbot.service.js";
+export { default as mediaService } from "./media/media.service.js";
+export { default as queueService } from "./queue/queue.service.js";
+export { default as wishlistService } from "./wishlist/wishlist.service.js";

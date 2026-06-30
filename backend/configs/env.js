@@ -1,11 +1,15 @@
 // Inspired by: https://github.com/GonzaloHirsch/jwt-nodejs-security/blob/main/src/config/index.ts
 
 /* 
-This file loads environment variables from .env file and 
-exports them as an object to facilitate/standardize access.
+    This file loads environment variables from .env file and makes them accessible throughout the application.
+    Exports them as an object to facilitate/standardize access.
+    Everything that comes from '.env' & changes between environments (dev, prod, etc.) should be here.
+
+    NOTE: default values are captured through constants.js; considered as app-level fallback values.
 */
 
 import dotenv from "dotenv";
+import APP_CONSTANTS from "./constants.js";
 dotenv.config();
 
 export default {
@@ -24,10 +28,19 @@ export default {
     },
     email: {
         host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT) || 587,
+        port:
+            parseInt(process.env.EMAIL_PORT) ||
+            APP_CONSTANTS.EMAIL.DEFAULT_PORT,
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
         from: process.env.EMAIL_FROM,
         secure: process.env.SMTP_SECURE,
+    },
+    redis: {
+        REDIS_HOST: process.env.REDIS_HOST,
+        REDIS_PORT:
+            parseInt(process.env.REDIS_PORT) ||
+            APP_CONSTANTS.REDIS.DEFAULT_PORT,
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD,
     },
 };

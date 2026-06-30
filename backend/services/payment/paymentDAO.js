@@ -1,0 +1,113 @@
+import BaseDAO from "../../utils/BaseDAO.js";
+
+/**
+ * This class is used to interact with the payment database.
+ */
+class PaymentDAO extends BaseDAO {
+    // #########################
+    // Read operations
+    // #########################
+    /**
+     * This method finds a payment attempt by its attempt ID.
+     * @param {number} attempt_id
+     * @returns {Promise<object>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the payment attempt is not found
+     */
+    async findAttemptById(attempt_id) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * This method finds all payment attempts for an order.
+     * @param {number} order_id
+     * @returns {Promise<object[]>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the order has no payment attempts
+     */
+    async findAttemptsByOrderId(order_id) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * This method counts payment attempts for a user.
+     * @param {number} user_id
+     * @returns {Promise<number>}
+     * @throws {DatabaseError} On database failures
+     */
+    async countAttemptsByUserId(user_id) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * This method finds paginated payment attempts for a user.
+     * @param {number} user_id
+     * @param {number} limit
+     * @param {number} offset
+     * @returns {Promise<object[]>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the user has no payment attempts
+     */
+    async findAttemptsByUserId(user_id, limit, offset) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * This method finds an order by its order ID.
+     * @param {number} order_id
+     * @returns {Promise<object|null>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the order is not found
+     */
+    async findOrderById(order_id) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    // #########################
+    // Write operations
+    // #########################
+    /**
+     * This method inserts a payment attempt record.
+     * @pre user_id is validated and exists (IAM service)
+     * @param {object} attempt
+     * @param {number} attempt.order_id
+     * @param {number} attempt.user_id
+     * @param {number} attempt.amount
+     * @param {string} attempt.payment_method
+     * @param {string} attempt.status
+     * @returns {Promise<number>} The inserted attempt_id
+     * @throws {DatabaseError} On database failures
+     * @throws {ConflictError} If the payment attempt already exists
+     */
+    async insertPaymentAttempt({
+        order_id,
+        user_id,
+        amount,
+        payment_method,
+        status,
+    }) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * This method updates the payment_status on an order.
+     * @param {number} order_id
+     * @param {string} payment_status
+     * @returns {Promise<void>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the order is not found
+     */
+    async updateOrderPaymentStatus(order_id, payment_status) {
+        // TODO: Implement
+        throw new Error("Not implemented");
+    }
+}
+
+const paymentDAO = new PaymentDAO();
+export default paymentDAO;
