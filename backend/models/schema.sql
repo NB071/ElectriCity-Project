@@ -372,20 +372,29 @@ CREATE TABLE catalog_promos (
 -- #########################################################
 
 CREATE TABLE carts (
-  cart_id     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id     BIGINT UNSIGNED NOT NULL,
-  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
-                            ON UPDATE CURRENT_TIMESTAMP,
+  cart_id        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id        BIGINT UNSIGNED DEFAULT NULL,
+  session_token  CHAR(36)        DEFAULT NULL,
+  expires_at     TIMESTAMP       DEFAULT NULL, -- note: this is for guest carts ONLY
+  created_at     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                ON UPDATE CURRENT_TIMESTAMP,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_id),
 
   KEY idx_carts_user_id (user_id),
+  UNIQUE KEY uq_carts_session_token (session_token),
 
   CONSTRAINT fk_carts_user
     FOREIGN KEY (user_id) REFERENCES users (user_id)
-    ON UPDATE CASCADE ON DELETE CASCADE
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT chk_carts_owner
+    CHECK (
+      (user_id IS NOT NULL AND session_token IS NULL)
+      OR
+      (user_id IS NULL AND session_token IS NOT NULL)
+    )
 );
 
 
@@ -422,7 +431,8 @@ CREATE TABLE cart_items (
 -- #########################################################
 CREATE TABLE orders (
   order_id        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id         BIGINT UNSIGNED NOT NULL,
+  user_id         BIGINT UNSIGNED DEFAULT NULL,
+  guest_email     VARCHAR(255)    DEFAULT NULL,
   order_status    ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')     NOT NULL DEFAULT 'pending',
   payment_status  ENUM('paid', 'failed')     NOT NULL DEFAULT 'failed',
   subtotal        DECIMAL(12,2)   NOT NULL,
@@ -436,6 +446,7 @@ CREATE TABLE orders (
   PRIMARY KEY (order_id),
 
   KEY idx_orders_user_id (user_id),
+  KEY idx_orders_guest_email (guest_email),
 
   CONSTRAINT fk_orders_user
     FOREIGN KEY (user_id) REFERENCES users (user_id)
@@ -449,7 +460,13 @@ CREATE TABLE orders (
   CONSTRAINT chk_orders_tax
     CHECK (tax >= 0),
   CONSTRAINT chk_orders_total
-    CHECK (total >= 0)
+    CHECK (total >= 0),
+  CONSTRAINT chk_orders_owner
+    CHECK (
+      (user_id IS NOT NULL AND guest_email IS NULL)
+      OR
+      (user_id IS NULL AND guest_email IS NOT NULL)
+    )
 );
 
 
@@ -516,7 +533,7 @@ CREATE TABLE order_items (
 CREATE TABLE payment_attempts (
   attempt_id      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   order_id        BIGINT UNSIGNED NOT NULL,
-  user_id         BIGINT UNSIGNED NOT NULL,
+  user_id         BIGINT UNSIGNED DEFAULT NULL,
   amount          DECIMAL(12,2)   NOT NULL,
   payment_method  ENUM('credit_card', 'debit_card', 'apple_pay')     NOT NULL,
   status          ENUM('success', 'failed')     NOT NULL DEFAULT 'failed',
