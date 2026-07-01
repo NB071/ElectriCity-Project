@@ -5,7 +5,8 @@
  */
 function authzMiddleware(...allowedRoles) {
     return (req, res, next) => {
-        // TODO: Verify req.user.role is one of allowedRoles
+        // Use iamService.access_management.authorizeUser(req.user, ...allowedRoles)
+        // Requires authnMiddleware to have set req.user first
         void allowedRoles;
         next();
     };
