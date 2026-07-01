@@ -1,8 +1,5 @@
 import { Router } from "express";
-import {
-    customerReviewsController,
-    customerWishlistController,
-} from "../../../controllers/api/dashboard/index.js";
+import { customerWishlistController } from "../../../controllers/api/dashboard/index.js";
 import {
     authnMiddleware,
     authzMiddleware,
@@ -11,13 +8,6 @@ import {
 import { EVENT_DEFINITIONS } from "../../../services/analytics/constants.js";
 
 const router = Router();
-
-router.get(
-    "/reviews",
-    authnMiddleware,
-    authzMiddleware("customer"),
-    customerReviewsController.getCustomerReviews,
-);
 
 router.get(
     "/wishlist",
