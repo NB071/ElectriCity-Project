@@ -3,6 +3,7 @@
 
 import { getProducer } from "../queue/queue.service.js";
 import { QUEUES } from "../queue/queue.service.js";
+import { TEMPLATES } from "./constants.js";
 
 // This function is used to send emails
 async function sendEmail({ to, template, vars }) {
@@ -15,3 +16,4 @@ async function sendEmail({ to, template, vars }) {
 }
 
 export default sendEmail;
+export { sendEmail, TEMPLATES };

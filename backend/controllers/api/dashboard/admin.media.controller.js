@@ -11,7 +11,7 @@ import {
 /**
  * This controller records a new media asset and optionally links it to a catalog item.
  * @route POST /api/dashboard/admin/media
- * @requiredRole admin
+ * @required_role admin
  * @services_used Media
  */
 export const createMedia = tryCatch(async (req, res, _) => {
@@ -31,7 +31,7 @@ export const createMedia = tryCatch(async (req, res, _) => {
 /**
  * This controller links an existing media record to a catalog item.
  * @route POST /api/dashboard/admin/catalog/:cid/media
- * @requiredRole admin
+ * @required_role admin
  * @services_used Media
  */
 export const linkCatalogMedia = tryCatch(async (req, res, _) => {
@@ -52,7 +52,7 @@ export const linkCatalogMedia = tryCatch(async (req, res, _) => {
 /**
  * This controller sets the primary catalog image for a catalog item.
  * @route PATCH /api/dashboard/admin/catalog/:cid/media/:mediaId/primary
- * @requiredRole admin
+ * @required_role admin
  * @services_used Media
  */
 export const setPrimaryMedia = tryCatch(async (req, res, _) => {

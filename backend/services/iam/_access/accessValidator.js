@@ -3,7 +3,7 @@
 
 import { VALIDATIONS } from "./constants.js";
 import { z } from "zod";
-import { ValidationError } from "../../utils/errors.js";
+import { ValidationError } from "../../../utils/errors.js";
 
 // Schema definition(s)
 // TODO: Implement schema definitions (zod)

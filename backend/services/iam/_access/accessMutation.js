@@ -8,7 +8,7 @@ import {
     validateRefreshTokenInput,
     validateLogoutContext,
 } from "./accessValidator.js";
-import { ValidationError, UnauthorizedError } from "../../utils/errors.js";
+import { ValidationError, UnauthorizedError } from "../../../utils/errors.js";
 
 /**
  * This function registers a new customer account.

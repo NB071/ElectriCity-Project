@@ -5,7 +5,7 @@ import reviewService from "../../../services/review/review.service.js";
 /**
  * This controller returns paginated reviews across all users (admin view).
  * @route GET /api/dashboard/admin/reviews
- * @requiredRole admin
+ * @required_role admin
  * @services_used Review
  */
 export const getAllReviews = tryCatch(async (req, res, _) => {
@@ -16,7 +16,7 @@ export const getAllReviews = tryCatch(async (req, res, _) => {
 /**
  * This controller returns paginated reviews for a catalog item (admin view).
  * @route GET /api/dashboard/admin/reviews/catalog/:cid
- * @requiredRole admin
+ * @required_role admin
  * @services_used Review
  */
 export const getAllCatalogReviews = tryCatch(async (req, res, _) => {
@@ -30,7 +30,7 @@ export const getAllCatalogReviews = tryCatch(async (req, res, _) => {
 /**
  * This controller returns full detail for one review by rid (review_id).
  * @route GET /api/dashboard/admin/reviews/:rid
- * @requiredRole admin
+ * @required_role admin
  * @services_used Review
  */
 export const getReviewDetail = tryCatch(async (req, res, _) => {
@@ -41,7 +41,7 @@ export const getReviewDetail = tryCatch(async (req, res, _) => {
 /**
  * This controller hard-deletes a review by rid (review_id).
  * @route DELETE /api/dashboard/admin/reviews/:rid
- * @requiredRole admin
+ * @required_role admin
  * @services_used Review
  */
 export const deleteReview = tryCatch(async (req, res, _) => {

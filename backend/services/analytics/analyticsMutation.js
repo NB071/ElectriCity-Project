@@ -37,7 +37,6 @@ async function capture(event) {
 
 /**
  * This function sets the active status of an event type.
- * @required_role admin
  * @param {number} eventTypeId The event type ID
  * @param {boolean} isActive The active status of the event type
  * @returns {Promise<void>}

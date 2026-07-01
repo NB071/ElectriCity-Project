@@ -6,7 +6,7 @@ import wishlistService from "../../../services/wishlist/wishlist.service.js";
  * This controller returns paginated wishlist items for the current user.
  * userId comes from req.user.user_id, not the request body.
  * @route GET /api/dashboard/customer/wishlist
- * @requiredRole customer
+ * @required_role customer
  * @services_used Wishlist
  */
 export const getWishlist = tryCatch(async (req, res, _) => {
@@ -21,7 +21,7 @@ export const getWishlist = tryCatch(async (req, res, _) => {
  * This controller adds a catalog item to the current user's wishlist.
  * userId comes from req.user.user_id, not the request body.
  * @route POST /api/dashboard/customer/wishlist
- * @requiredRole customer
+ * @required_role customer
  * @services_used Wishlist
  */
 export const addWishlistItem = tryCatch(async (req, res, _) => {
@@ -37,7 +37,7 @@ export const addWishlistItem = tryCatch(async (req, res, _) => {
  * This controller removes a catalog item from the current user's wishlist.
  * userId comes from req.user.user_id, not the request body.
  * @route DELETE /api/dashboard/customer/wishlist/:cid
- * @requiredRole customer
+ * @required_role customer
  * @services_used Wishlist
  */
 export const removeWishlistItem = tryCatch(async (req, res, _) => {

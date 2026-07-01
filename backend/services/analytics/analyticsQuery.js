@@ -69,7 +69,6 @@ function mapEventDetail(row) {
 
 /**
  * This function returns the total event counts grouped by type over a window.
- * @required_role admin
  * @param {object} params The report parameters
  * @param {string} params.start The start date of the window
  * @param {string} params.end The end date of the window
@@ -93,7 +92,6 @@ async function eventTypeBreakdown(params = {}) {
 
 /**
  * This function returns the top-N catalog items for a given event type.
- * @required_role admin
  * @param {number} eventTypeId The event type ID
  * @param {object} params The report parameters
  * @param {string} params.start The start date of the window
@@ -123,7 +121,6 @@ async function topCatalogItems(eventTypeId, params = {}) {
 
 /**
  * This function returns the daily time-series for a given event type.
- * @required_role admin
  * @param {number} eventTypeId
  * @param {object} params The report parameters
  * @param {string} params.start The start date of the window
@@ -144,7 +141,6 @@ async function trend(eventTypeId, params = {}) {
 
 /**
  * Fetches one event log with event type name/code and optional catalog details.
- * @required_role admin
  * @param {number|string} eventId
  * @returns {Promise<object>}
  * @throws {ValidationError} If the event id is invalid
