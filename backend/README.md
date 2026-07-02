@@ -14,6 +14,8 @@
 - **DAO:** Data Access Object
 - **CoR:** Chain of Responsibility (GoF design pattern)
 - **HO (Function):** High-order (Function)
+- **DTO:** Data Transfer Object
+- **CQRS:** Command Query Responsibility Segregation
 
 ---
 
