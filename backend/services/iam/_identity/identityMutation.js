@@ -3,7 +3,7 @@
 
 import bcrypt from "bcrypt";
 import accountDAO from "./accountDAO.js";
-import emailAdapter from "../emailAdaptor.js";
+import emailAdapter from "../EmailAdaptor.js";
 import {
     validateUpdateProfile,
     validateDeleteProfile,
