@@ -388,13 +388,7 @@ CREATE TABLE carts (
 
   CONSTRAINT fk_carts_user
     FOREIGN KEY (user_id) REFERENCES users (user_id)
-    ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT chk_carts_owner
-    CHECK (
-      (user_id IS NOT NULL AND session_token IS NULL)
-      OR
-      (user_id IS NULL AND session_token IS NOT NULL)
-    )
+    ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
@@ -460,13 +454,7 @@ CREATE TABLE orders (
   CONSTRAINT chk_orders_tax
     CHECK (tax >= 0),
   CONSTRAINT chk_orders_total
-    CHECK (total >= 0),
-  CONSTRAINT chk_orders_owner
-    CHECK (
-      (user_id IS NOT NULL AND guest_email IS NULL)
-      OR
-      (user_id IS NULL AND guest_email IS NOT NULL)
-    )
+    CHECK (total >= 0)
 );
 
 
