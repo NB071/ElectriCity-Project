@@ -35,7 +35,7 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the order has no payment attempts
      */
     async findAttemptsByOrderId(order_id) {
-        //Returns list with all attemps for this order id, ordered chronologically, with the most recent being first
+        //Returns list with all attempts for this order id, ordered chronologically, with the most recent being first
         const [rows] = await this._query(
             'SELECT * FROM payment_attempts WHERE order_id = ? ORDER BY created_at DESC',
             [order_id],
@@ -44,7 +44,7 @@ class PaymentDAO extends BaseDAO {
         if (rows.length === 0) {
             throw new NotFoundError(`No payment attempts found for order with ID ${order_id}.`);
         }
-        return rows.length;
+        return rows;
     }
 
     /**
@@ -54,8 +54,16 @@ class PaymentDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async countAttemptsByUserId(user_id) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        //Returns list with all attempts made by the given user ID
+        const [rows] = await this._query(
+            'SELECT * FROM payment_attempts WHERE user_id = ? ORDER BY created_at DESC',
+            [user_id],
+        );
+        //If no attempts are returned, throw a NotFoundError
+        if (rows.length === 0) {
+            throw new NotFoundError(`No payment attempts found for user with ID ${user_id}.`);
+        }
+        return rows.length;
     }
 
     /**
@@ -68,8 +76,15 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the user has no payment attempts
      */
     async findAttemptsByUserId(user_id, limit, offset) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            'SELECT * FROM payment_attempts WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+            [user_id, limit, offset],
+        );
+        //If no attempts are returned, throw a NotFoundError
+        if (rows.length === 0) {
+            throw new NotFoundError(`No payment attempts found for user with ID ${user_id}.`);
+        }
+        return rows;
     }
 
     /**

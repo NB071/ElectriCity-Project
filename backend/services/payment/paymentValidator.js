@@ -29,6 +29,19 @@ function throwValidationError(zodError) {
     throw new ValidationError(message, zodError.issues);
 }
 
+const applePayDetailsSchema = z.object({
+    token: z.string({ required_error: "Apple Pay token is required." }),
+});
+
+const cardDetailsSchema = z.object({
+    card_number: z.string({ required_error: "Card number is required." }),
+    expiry_month: z.string({ required_error: "Expiry month is required." }),
+    expiry_year: z.string({ required_error: "Expiry year is required." }),
+    cvv: z.string({required_error: "CVV is required." }),
+    cardholder_name: z.string({required_error: "Cardholder name is required."
+    }),
+});
+
 // Schema definition(s)
 // TODO: Implement schema definitions
 const processPaymentSchema = z.object({
@@ -92,7 +105,23 @@ const paymentAttemptSchema = z.object({
  */
 function validateProcessPaymentInput(paymentData) {
     const parsed = processPaymentSchema.safeParse(paymentData);
-    if (!parsed.success) {
+    switch (parsed.data.payment_method) {
+        case VALIDATIONS.PAYMENT_METHODS.APPLE_PAY:
+            const applePayParsed = applePayDetailsSchema.safeParse(
+                parsed.data.payment_details,
+            );
+        case VALIDATIONS.PAYMENT_METHODS.DEBIT_CARD:
+            const debitCardParsed = cardDetailsSchema.safeParse(
+                parsed.data.payment_details,
+            );
+        case VALIDATIONS.PAYMENT_METHODS.CREDIT_CARD:
+            const creditCardParsed = cardDetailsSchema.safeParse(
+                parsed.data.payment_details,
+            );
+    }
+    if (!parsed.success || (parsed.data.payment_method === VALIDATIONS.PAYMENT_METHODS.APPLE_PAY && !applePayParsed.success) 
+        || (parsed.data.payment_method === VALIDATIONS.PAYMENT_METHODS.DEBIT_CARD && !debitCardParsed.success) 
+        || (parsed.data.payment_method === VALIDATIONS.PAYMENT_METHODS.CREDIT_CARD && !creditCardParsed.success)) {
         throwValidationError(parsed.error);
     }
     return parsed.data;

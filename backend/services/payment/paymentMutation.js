@@ -20,7 +20,7 @@ import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
  * @throws {Error} If validation fails or payment processing fails
  */
 async function processPayment({user_id, order_id, amount, payment_method, payment_details}) {
-
+ 
     const gatewayResult = await getStrategy(payment_method).process({
         user_id,
         order_id,
