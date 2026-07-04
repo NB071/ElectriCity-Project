@@ -15,7 +15,7 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the payment attempt is not found
      */
     async findAttemptById(attempt_id) {
-        // returns the list of attempts with the ID (Will only return one)
+        // returns the list of attempts with the ID (Will only return one because its a primary key)
         const [rows] = await this._query(
             'SELECT * FROM payment_attempts WHERE attempt_id = ?',
             [attempt_id],
@@ -95,8 +95,14 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the order is not found
      */
     async findOrderById(order_id) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            'SELECT * FROM orders WHERE order_id = ?',
+            [order_id],
+        );
+        if (rows.length === 0) {
+            throw new NotFoundError(`Order with ID ${order_id} not found.`);
+        }
+        return rows[0];
     }
 
     // #########################
@@ -122,8 +128,15 @@ class PaymentDAO extends BaseDAO {
         payment_method,
         status,
     }) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        await this._query(
+            'INSERT INTO payment_attempts (order_id, user_id, amount, payment_method, status) VALUES (?, ?, ?, ?, ?)',
+            [
+                order_id, 
+                user_id, 
+                amount, 
+                payment_method,
+                status],
+        );
     }
 
     /**
@@ -135,10 +148,13 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the order is not found
      */
     async updateOrderPaymentStatus(order_id, payment_status) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        await this._query(
+            'UPDATE orders SET payment_status = ? WHERE order_id = ?',
+            [payment_status, order_id],
+        );
     }
 }
+
 
 const paymentDAO = new PaymentDAO();
 export default paymentDAO;

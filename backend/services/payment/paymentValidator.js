@@ -3,6 +3,7 @@
 
 import { VALIDATIONS } from "./constants.js";
 import { ValidationError } from "../../utils/errors.js";
+import { z } from "zod";
 
 const ALL_PAYMENT_METHODS = Object.values(VALIDATIONS.PAYMENT_METHODS);
 const ALL_ATTEMPT_STATUSES = Object.values(VALIDATIONS.ATTEMPT_STATUS);
@@ -135,7 +136,7 @@ function validateProcessPaymentInput(paymentData) {
  * @throws {Error} If the payment attempt data is invalid
  */
 function validatePaymentAttemptInput(attemptData) {
-    const parsed = validatePaymentAttemptSchema.safeParse(attemptData);
+    const parsed = paymentAttemptSchema.safeParse(attemptData);
     if (!parsed.success) {
         throwValidationError(parsed.error);
     }   

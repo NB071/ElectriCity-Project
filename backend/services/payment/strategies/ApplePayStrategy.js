@@ -4,6 +4,7 @@
 import PaymentStrategy from "./PaymentStrategy.js";
 import { VALIDATIONS } from "../constants.js";
 
+let requestsCount = 0;
 
 /**
  * Processes Apple Pay payments via the configured gateway.
@@ -20,10 +21,27 @@ class ApplePayStrategy extends PaymentStrategy {
      */
     async process(input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
-        const token = payment_details.apple_pay_token;
+        const token = payment_details.apple_pay_token ?? payment_details.token;
 
         if (!token) {
             throw new Error("Apple Pay token is not valid");
+        }
+
+        requestsCount += 1;
+
+        if (requestsCount % 3 === 0) {
+            return {
+                status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
+                gateway_reference: null,
+                gateway_payload: {
+                    reason: "simulated_gateway_denial",
+                    apple_pay_token: token,
+                    amount,
+                    order_id,
+                    user_id,
+                    attempt: requestsCount,
+                },
+            };
         }
 
         return {

@@ -3,6 +3,8 @@
 
 import getStrategy from "./strategies/index.js";
 import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
+import { validateProcessPaymentInput } from "./paymentValidator.js";
+import paymentDAO from "./paymentDAO.js";
 
 /**
  * This function processes a payment for an order.
@@ -20,27 +22,15 @@ import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
  * @throws {Error} If validation fails or payment processing fails
  */
 async function processPayment({user_id, order_id, amount, payment_method, payment_details}) {
- 
-    const gatewayResult = await getStrategy(payment_method).process({
-        user_id,
-        order_id,
-        amount,
-        payment_details,
-    });
+    try{
+        const validate = validateProcessPaymentInput({user_id, order_id, amount, payment_method, payment_details})
+        //Confused about the implementation of the processPayment function, not sure what function to call.
 
-    await recordPaymentAttempt({
-        order_id,
-        user_id,
-        amount,
-        payment_method,
-        status: gatewayResult.status,
-    });
-
-    if (gatewayResult.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS) {
-        await updateOrderPaymentStatus(order_id, VALIDATIONS.ORDER_PAYMENT_STATUS.PAID);
-    }
-
-    return //gatewayResultDTO.toPaymentResultDTO({;
+    } 
+    catch(err){
+        console.error("[Service: Payment] processPayment failed:", err.message);
+        throw err;
+    }   
 }
 
 /**
@@ -55,20 +45,22 @@ async function processPayment({user_id, order_id, amount, payment_method, paymen
  * @returns {Promise<{ attempt_id: number }>}
  * @throws {Error} If validation fails or the insert fails
  */
-async function recordPaymentAttempt({
-    order_id,
-    user_id,
-    amount,
-    payment_method,
-    status,
-}) {
-    return paymentDAO.insertPaymentAttempt({
-        order_id,
-        user_id,
-        amount,
-        payment_method,
-        status,
-    });
+async function recordPaymentAttempt({order_id,user_id,amount,payment_method,status,}) {
+    try{
+        const validate = validatePaymentAttemptInput({user_id, order_id, amount, payment_method, status})
+        const row = await paymentDAO.insertPaymentAttempt({
+            order_id: validate.order_id,
+            user_id: validate.user_id,
+            amount: validate.amount,
+            payment_method: validate.payment_method,
+            status: validate.status,
+        });
+        return row;
+    }
+    catch(err){
+        console.error("[Service: Payment] recordPaymentAttempt failed:", err.message);
+        throw err;
+    }
     
 }
 
