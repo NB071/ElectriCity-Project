@@ -15,8 +15,16 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the payment attempt is not found
      */
     async findAttemptById(attempt_id) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        // returns the list of attempts with the ID (Will only return one)
+        const [rows] = await this._query(
+            'SELECT * FROM payment_attempts WHERE attempt_id = ?',
+            [attempt_id],
+        );
+        //If no attempt is returned, throw a NotFoundError
+        if (rows.length === 0) {
+            throw new NotFoundError(`Payment attempt with ID ${attempt_id} not found.`);
+        }
+        return rows[0];
     }
 
     /**
@@ -27,8 +35,16 @@ class PaymentDAO extends BaseDAO {
      * @throws {NotFoundError} If the order has no payment attempts
      */
     async findAttemptsByOrderId(order_id) {
-        // TODO: Implement
-        throw new Error("Not implemented");
+        //Returns list with all attemps for this order id, ordered chronologically, with the most recent being first
+        const [rows] = await this._query(
+            'SELECT * FROM payment_attempts WHERE order_id = ? ORDER BY created_at DESC',
+            [order_id],
+        );
+        //If no attempts are returned, throw a NotFoundError
+        if (rows.length === 0) {
+            throw new NotFoundError(`No payment attempts found for order with ID ${order_id}.`);
+        }
+        return rows.length;
     }
 
     /**

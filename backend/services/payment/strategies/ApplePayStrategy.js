@@ -4,7 +4,6 @@
 import PaymentStrategy from "./PaymentStrategy.js";
 import { VALIDATIONS } from "../constants.js";
 
-let requestsCount = 0;
 
 /**
  * Processes Apple Pay payments via the configured gateway.
@@ -17,7 +16,7 @@ class ApplePayStrategy extends PaymentStrategy {
      * @param {number} input.order_id
      * @param {number} input.amount
      * @param {object} input.payment_details Expected: { apple_pay_token }
-     * @returns {Promise<{ status: string, gateway_reference: string|null }>}
+     * @returns {Promise<{ status: string, gateway_reference: string|null, gateway_payload: object|null }>}
      */
     async process(input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
@@ -25,25 +24,6 @@ class ApplePayStrategy extends PaymentStrategy {
 
         if (!token) {
             throw new Error("Apple Pay token is not valid");
-        }
-
-        requestsCount += 1;
-        const checkRequest = requestsCount % 3 === 0;
-
-        if (checkRequest) {
-            return {
-                status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
-                gateway_reference: null,
-                gateway_payload: {
-                    apple_pay_token: token,
-                    amount,
-                    order_id,
-                    user_id,
-                    attempt: requestsCount,
-                },
-                failure_reason:
-                    "Gateway simulation: Rate Limit Reached. Please try again later.",
-            };
         }
 
         return {

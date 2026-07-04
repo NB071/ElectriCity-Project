@@ -2,6 +2,7 @@
 // CQRS - Mutation side (writes)
 
 import getStrategy from "./strategies/index.js";
+import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
 
 /**
  * This function processes a payment for an order.
@@ -18,33 +19,28 @@ import getStrategy from "./strategies/index.js";
  * @returns {Promise<object>} Payment result with attempt_id and status
  * @throws {Error} If validation fails or payment processing fails
  */
-async function processPayment({
-    user_id,
-    order_id,
-    amount,
-    payment_method,
-    payment_details,
-}) {
-    // TODO: Implement
-    // validateProcessPaymentInput({ user_id, order_id, amount, payment_method, payment_details });
-    // const gatewayResult = await getStrategy(payment_method).process({
-    //     user_id,
-    //     order_id,
-    //     amount,
-    //     payment_details,
-    // });
-    // await recordPaymentAttempt({ order_id, user_id, amount, payment_method, status: gatewayResult.status });
-    // if (gatewayResult.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS) {
-    //     await updateOrderPaymentStatus(order_id, VALIDATIONS.ORDER_PAYMENT_STATUS.PAID);
-    // }
-    // return gatewayResult;
+async function processPayment({user_id, order_id, amount, payment_method, payment_details}) {
 
-    await getStrategy(payment_method).process({
+    const gatewayResult = await getStrategy(payment_method).process({
         user_id,
         order_id,
         amount,
         payment_details,
     });
+
+    await recordPaymentAttempt({
+        order_id,
+        user_id,
+        amount,
+        payment_method,
+        status: gatewayResult.status,
+    });
+
+    if (gatewayResult.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS) {
+        await updateOrderPaymentStatus(order_id, VALIDATIONS.ORDER_PAYMENT_STATUS.PAID);
+    }
+
+    return //gatewayResultDTO.toPaymentResultDTO({;
 }
 
 /**
@@ -66,8 +62,14 @@ async function recordPaymentAttempt({
     payment_method,
     status,
 }) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    return paymentDAO.insertPaymentAttempt({
+        order_id,
+        user_id,
+        amount,
+        payment_method,
+        status,
+    });
+    
 }
 
 /**
