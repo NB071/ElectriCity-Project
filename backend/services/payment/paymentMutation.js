@@ -34,27 +34,29 @@ async function processPayment({user_id, order_id, amount, payment_method, paymen
             payment_details: validate.payment_details
         })
 
-        const insertPayment = await paymentDAO.insertPaymentAttempt({
+        const recordPayment = await recordPaymentAttempt({
             order_id: validate.order_id,
             user_id: validate.user_id,
             amount: validate.amount,
             payment_method: validate.payment_method,
             status: strategyProcess.status,
         })
-        
+        const payment_status = null;
         if(strategyProcess.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS){
+            payment_status = VALIDATIONS.ORDER_PAYMENT_STATUS.PAID;
             await paymentDAO.updateOrderPaymentStatus(
                 validate.order_id,
-                VALIDATIONS.ORDER_PAYMENT_STATUS.PAID,
+                payment_status
             )
         }
         else{
+            payment_status = VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED;
             await paymentDAO.updateOrderPaymentStatus(
                 validate.order_id,
-                VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED
+                payment_status
             )
         }
-        return ({attempt_id : insertPayment, status : strategyProcess.status})
+        return ({payment_status: payment_status, attempt_id : recordPayment});
     } 
     catch(err){
         console.error("[Service: Payment] processPayment failed:", err.message);
