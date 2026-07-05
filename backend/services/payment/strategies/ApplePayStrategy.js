@@ -17,7 +17,7 @@ class ApplePayStrategy extends PaymentStrategy {
      * @param {number} input.order_id
      * @param {number} input.amount
      * @param {object} input.payment_details Expected: { apple_pay_token }
-     * @returns {Promise<{ status: string, gateway_reference: string|null, gateway_payload: object|null }>}
+     * @returns {Promise<{ status: string, gateway_payload: object|null }>}
      */
     async process(input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
@@ -32,27 +32,23 @@ class ApplePayStrategy extends PaymentStrategy {
         if (requestsCount % 3 === 0) {
             return {
                 status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
-                gateway_reference: null,
                 gateway_payload: {
                     reason: "simulated_gateway_denial",
                     apple_pay_token: token,
                     amount,
                     order_id,
                     user_id,
-                    attempt: requestsCount,
                 },
             };
         }
 
         return {
             status: VALIDATIONS.ATTEMPT_STATUS.SUCCESS,
-            gateway_reference: `applepay_${Date.now()}_${requestsCount}`,
             gateway_payload: {
                 apple_pay_token: token,
                 amount,
                 order_id,
                 user_id,
-                attempt: requestsCount,
             },
         };
     }

@@ -128,7 +128,7 @@ class PaymentDAO extends BaseDAO {
         payment_method,
         status,
     }) {
-        await this._query(
+        const [row] = await this._query(
             'INSERT INTO payment_attempts (order_id, user_id, amount, payment_method, status) VALUES (?, ?, ?, ?, ?)',
             [
                 order_id, 
@@ -137,6 +137,7 @@ class PaymentDAO extends BaseDAO {
                 payment_method,
                 status],
         );
+        return {attempt_id : row.insertId};
     }
 
     /**

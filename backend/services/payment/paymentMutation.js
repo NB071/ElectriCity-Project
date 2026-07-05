@@ -5,6 +5,7 @@ import getStrategy from "./strategies/index.js";
 import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
 import { validateProcessPaymentInput } from "./paymentValidator.js";
 import paymentDAO from "./paymentDAO.js";
+import { VALIDATIONS } from "./constants.js";
 
 /**
  * This function processes a payment for an order.
@@ -17,15 +18,43 @@ import paymentDAO from "./paymentDAO.js";
  * @param {number} input.order_id
  * @param {number} input.amount
  * @param {string} input.payment_method
- * @param {object} [input.payment_details] Gateway-specific payload (card token, etc.)
+ * @param {object} [input.payment_details] Gateway specific payload (card token, etc.)
  * @returns {Promise<object>} Payment result with attempt_id and status
  * @throws {Error} If validation fails or payment processing fails
  */
 async function processPayment({user_id, order_id, amount, payment_method, payment_details}) {
     try{
         const validate = validateProcessPaymentInput({user_id, order_id, amount, payment_method, payment_details})
-        //Confused about the implementation of the processPayment function, not sure what function to call.
+        const strategy = getStrategy(validate.payment_method);
+        const strategyProcess = strategy.process({
+            user_id: validate.user_id,
+            order_id: validate.order_id,
+            amount: validate.amount,
+            payment_method: validate.payment_method,
+            payment_details: validate.payment_details
+        })
 
+        const insertPayment = await paymentDAO.insertPaymentAttempt({
+            order_id: validate.order_id,
+            user_id: validate.user_id,
+            amount: validate.amount,
+            payment_method: validate.payment_method,
+            status: strategyProcess.status,
+        })
+        
+        if(strategyProcess.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS){
+            await paymentDAO.updateOrderPaymentStatus(
+                validate.order_id,
+                VALIDATIONS.ORDER_PAYMENT_STATUS.PAID,
+            )
+        }
+        else{
+            await paymentDAO.updateOrderPaymentStatus(
+                validate.order_id,
+                VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED
+            )
+        }
+        return ({attempt_id : insertPayment, status : strategyProcess.status})
     } 
     catch(err){
         console.error("[Service: Payment] processPayment failed:", err.message);
@@ -73,8 +102,13 @@ async function recordPaymentAttempt({order_id,user_id,amount,payment_method,stat
  * @throws {Error} If validation fails or the update fails
  */
 async function updateOrderPaymentStatus(order_id, payment_status) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    try{
+
+    }
+    catch(err){
+        console.error("[Service: Payment] updateOrderPaymentStatus failed:", err.message);
+        throw err;
+    }
 }
 
 export { processPayment, recordPaymentAttempt, updateOrderPaymentStatus };
