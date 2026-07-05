@@ -41,20 +41,23 @@ async function processPayment({user_id, order_id, amount, payment_method, paymen
             payment_method: validate.payment_method,
             status: strategyProcess.status,
         })
+        const paymentStatus = null;
+
         if(strategyProcess.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS){
+            paymentStatus = VALIDATIONS.ORDER_PAYMENT_STATUS.PAID;
             updateOrderPaymentStatus(
                 validate.order_id,
                 VALIDATIONS.ORDER_PAYMENT_STATUS.PAID
             )
         }
         else{
-            payment_status = VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED;
+            paymentStatus = VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED;
             updateOrderPaymentStatus(
                 validate.order_id,
                 VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED
             )
         }
-        return ({payment_status: payment_status, attempt_id : recordPayment});
+        return ({payment_status: paymentStatus, attempt_id : recordPayment});
     } 
     catch(err){
         console.error("[Service: Payment] processPayment failed:", err.message);
