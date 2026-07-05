@@ -3,7 +3,7 @@
 
 import getStrategy from "./strategies/index.js";
 import toPaymentResultDTO from "./DTOs/paymentResultDTO.js";
-import { validateProcessPaymentInput } from "./paymentValidator.js";
+import { validateOrderId, validateProcessPaymentInput } from "./paymentValidator.js";
 import paymentDAO from "./paymentDAO.js";
 import { VALIDATIONS } from "./constants.js";
 
@@ -41,19 +41,17 @@ async function processPayment({user_id, order_id, amount, payment_method, paymen
             payment_method: validate.payment_method,
             status: strategyProcess.status,
         })
-        const payment_status = null;
         if(strategyProcess.status === VALIDATIONS.ATTEMPT_STATUS.SUCCESS){
-            payment_status = VALIDATIONS.ORDER_PAYMENT_STATUS.PAID;
-            await paymentDAO.updateOrderPaymentStatus(
+            updateOrderPaymentStatus(
                 validate.order_id,
-                payment_status
+                VALIDATIONS.ORDER_PAYMENT_STATUS.PAID
             )
         }
         else{
             payment_status = VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED;
-            await paymentDAO.updateOrderPaymentStatus(
+            updateOrderPaymentStatus(
                 validate.order_id,
-                payment_status
+                VALIDATIONS.ORDER_PAYMENT_STATUS.FAILED
             )
         }
         return ({payment_status: payment_status, attempt_id : recordPayment});
@@ -105,7 +103,19 @@ async function recordPaymentAttempt({order_id,user_id,amount,payment_method,stat
  */
 async function updateOrderPaymentStatus(order_id, payment_status) {
     try{
-
+        const validate = validateOrderId(order_id);
+        if(payment_status === VALIDATIONS.ORDER_PAYMENT_STATUS.PAID){
+            await paymentDAO.updateOrderPaymentStatus(
+                order_id,
+                payment_status
+            )
+        }
+        else{
+            await paymentDAO.updateOrderPaymentStatus(
+                order_id,
+                payment_status
+            )
+        }
     }
     catch(err){
         console.error("[Service: Payment] updateOrderPaymentStatus failed:", err.message);
