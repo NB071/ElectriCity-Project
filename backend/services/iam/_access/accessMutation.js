@@ -1,14 +1,100 @@
 // IAM Access Management
 // CQRS - Mutations
 
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
 import tokenDAO from "./tokenDAO.js";
+import accountDAO from "../_identity/accountDAO.js";
 import {
     validateRegisterInput,
     validateLoginInput,
     validateRefreshTokenInput,
     validateLogoutContext,
 } from "./accessValidator.js";
-import { ValidationError, UnauthorizedError } from "../../../utils/errors.js";
+import { TOKEN_TYPES, JWT } from "./constants.js";
+import env from "../../../configs/env.js";
+import {
+    UnauthorizedError,
+    ForbiddenError,
+    NotFoundError,
+} from "../../../utils/errors.js";
+
+const BCRYPT_SALT_ROUNDS = 10;
+
+/**
+ * Generates a unique JWT ID (jti). Matches CHAR(36) columns and VALIDATIONS.JTI.LENGTH.
+ * @returns {string}
+ */
+function generateJti() {
+    return crypto.randomUUID();
+}
+
+/**
+ * SHA-256 hashes a raw token for at-rest storage (refresh_tokens.token_hash CHAR(64)).
+ * @param {string} rawToken
+ * @returns {string} 64-char hex digest
+ */
+function hashToken(rawToken) {
+    return crypto.createHash("sha256").update(rawToken).digest("hex");
+}
+
+/**
+ * Signs a short-lived access JWT carrying user_id + role claims.
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.role
+ * @param {string} data.jti
+ * @returns {string}
+ */
+function signAccessToken({ userId, role, jti }) {
+    return jwt.sign({ user_id: userId, role }, env.jwt.JWT_SIGN_KEY, {
+        algorithm: JWT.ALGORITHM,
+        issuer: JWT.ISSUER,
+        expiresIn: JWT.ACCESS_EXPIRY,
+        jwtid: jti,
+    });
+}
+
+/**
+ * Signs a long-lived refresh JWT.
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.jti
+ * @returns {string}
+ */
+function signRefreshToken({ userId, jti }) {
+    return jwt.sign({ user_id: userId }, env.jwt.JWT_SIGN_KEY, {
+        algorithm: JWT.ALGORITHM,
+        issuer: JWT.ISSUER,
+        expiresIn: JWT.REFRESH_EXPIRY,
+        jwtid: jti,
+    });
+}
+
+/**
+ * Issues a fresh access + refresh token pair and persists the refresh token.
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.role
+ * @returns {Promise<{ accessToken: string, refreshToken: string, tokenId: number }>}
+ */
+async function issueTokenPair({ userId, role }) {
+    const accessToken = signAccessToken({ userId, role, jti: generateJti() });
+
+    const refreshJti = generateJti();
+    const refreshToken = signRefreshToken({ userId, jti: refreshJti });
+    const { exp } = jwt.decode(refreshToken);
+
+    const tokenId = await tokenDAO.insertRefreshToken({
+        jti: refreshJti,
+        userId,
+        tokenHash: hashToken(refreshToken),
+        expiresAt: new Date(exp * 1000),
+    });
+
+    return { accessToken, refreshToken, tokenId };
+}
 
 /**
  * This function registers a new customer account.
@@ -20,17 +106,31 @@ import { ValidationError, UnauthorizedError } from "../../../utils/errors.js";
  * @param {string} data.password
  * @param {string|null} [data.phoneNumber]
  * @returns {Promise<object>} Created user summary (no password fields)
- * @throws {ValidationError} If validation fails, email exists, or insert fails
+ * @throws {ValidationError} If validation fails
+ * @throws {ConflictError} If the email is already registered
  * @throws {DatabaseError} If insert fails
  */
 async function register({ firstName, lastName, email, password, phoneNumber }) {
-    void tokenDAO;
-    void validateRegisterInput;
-    // TODO: validateRegisterInput({ firstName, lastName, email, password, phoneNumber })
-    // TODO: Hash password (bcrypt)
-    // TODO: INSERT user with default customer role_id
-    // TODO: Return safe user DTO (user_id, email, role, names)
-    throw new ValidationError("Not implemented");
+    const validated = validateRegisterInput({
+        firstName,
+        lastName,
+        email,
+        password,
+        phoneNumber,
+    });
+
+    const passwordHash = await bcrypt.hash(
+        validated.password,
+        BCRYPT_SALT_ROUNDS,
+    );
+
+    return accountDAO.create({
+        firstName: validated.firstName,
+        lastName: validated.lastName,
+        email: validated.email,
+        passwordHash,
+        phoneNumber: validated.phoneNumber ?? null,
+    });
 }
 
 /**
@@ -39,18 +139,42 @@ async function register({ firstName, lastName, email, password, phoneNumber }) {
  * @param {string} data.email
  * @param {string} data.password
  * @returns {Promise<object>} { accessToken, refreshToken, user }
- * @throws {ValidationError} If validation fails or credentials are invalid
- * @throws {DatabaseError} If insert fails
+ * @throws {ValidationError} If validation fails
  * @throws {UnauthorizedError} If credentials are invalid
+ * @throws {DatabaseError} If a database operation fails
  */
 async function login({ email, password }) {
-    void validateLoginInput;
-    // TODO: validate login input i.e. validateLoginInput()
-    // TODO: Load user by email (exclude soft-deleted!!)
-    // TODO: Compare password_hash with bcrypt library
-    // TODO: Sign access JWT (short-lived) with jti, user_id, role claims i.e. create a new access token
-    // TODO: Sign refresh JWT, hash it, persist it on db via tokenDAO.insertRefreshToken
-    throw new UnauthorizedError("Not implemented");
+    const validated = validateLoginInput({ email, password });
+
+    const user = await accountDAO.findByEmail(validated.email);
+    if (!user) {
+        throw new UnauthorizedError("Invalid email or password");
+    }
+
+    const passwordMatches = await bcrypt.compare(
+        validated.password,
+        user.password_hash,
+    );
+    if (!passwordMatches) {
+        throw new UnauthorizedError("Invalid email or password");
+    }
+
+    const { accessToken, refreshToken } = await issueTokenPair({
+        userId: user.user_id,
+        role: user.role,
+    });
+
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            user_id: user.user_id,
+            email: user.email,
+            role: user.role,
+            first_name: user.first_name,
+            last_name: user.last_name,
+        },
+    };
 }
 
 /**
@@ -65,12 +189,23 @@ async function login({ email, password }) {
  * @throws {DatabaseError} If blocklist insert fails
  */
 async function logout({ userId, jti, tokenExpiry }) {
-    void validateLogoutContext;
-    // TODO: validateLogoutContext({ userId, jti, tokenType: TOKEN_TYPES.ACCESS })
-    // TODO: Blocklist access token jti via tokenDAO.blocklistToken
-    // TODO: Optionally revoke active refresh tokens for this user/session
-    void tokenExpiry;
-    throw new ValidationError("Not implemented");
+    const validated = validateLogoutContext({
+        userId,
+        jti,
+        tokenType: TOKEN_TYPES.ACCESS,
+    });
+
+    const expiresAt =
+        tokenExpiry instanceof Date
+            ? tokenExpiry
+            : new Date(Number(tokenExpiry) * 1000);
+
+    await tokenDAO.blocklistToken({
+        jti: validated.jti,
+        userId: validated.userId,
+        expiresAt,
+        tokenType: TOKEN_TYPES.ACCESS,
+    });
 }
 
 /**
@@ -78,19 +213,58 @@ async function logout({ userId, jti, tokenExpiry }) {
  * @param {string} refreshToken Raw refresh JWT from body or cookie
  * @returns {Promise<object>} { accessToken, refreshToken }
  * @throws {ValidationError} If validation fails
- * @throws {UnauthorizedError} If token is invalid, expired, revoked, or blocklisted
+ * @throws {UnauthorizedError} If token is invalid, expired, revoked, or replaced
+ * @throws {ForbiddenError} If the user no longer exists
  */
 async function refreshTokens(refreshToken) {
-    void validateRefreshTokenInput;
-    void refreshToken;
-    // TODO: validateRefreshTokenInput(refTK) i.e. validate the refresh token
-    // TODO: Verify refresh JWT signature and expiry i.e. verify the refresh token
-    // TODO: Reject if tokenDAO.isBlocklisted(jti) i.e. if the token is blocklisted
-    // TODO: if user is deleted, reject with ForbiddenError
-    // TODO: Load refresh token row; reject if missing or replaced_by is set i.e. if the refresh token is missing or replaced
-    // TODO: Compare token hash; rotate via revokeRefreshToken + insertRefreshToken i.e. rotate the refresh token
-    // TODO: Issue new access + refresh JWT pair i.e. issue a new access token and refresh token
-    throw new ValidationError("Not implemented");
+    const validated = validateRefreshTokenInput(refreshToken);
+
+    let payload;
+    try {
+        payload = jwt.verify(validated, env.jwt.JWT_SIGN_KEY, {
+            algorithms: [JWT.ALGORITHM],
+            issuer: JWT.ISSUER,
+        });
+    } catch {
+        throw new UnauthorizedError("Invalid or expired refresh token");
+    }
+
+    const { user_id: userId, jti } = payload;
+    if (!userId || !jti) {
+        throw new UnauthorizedError("Malformed refresh token");
+    }
+
+    if (await tokenDAO.isBlocklisted(jti)) {
+        throw new UnauthorizedError("Refresh token has been revoked");
+    }
+
+    const stored = await tokenDAO.findRefreshTokenByJti(jti);
+    if (!stored || stored.replaced_by !== null) {
+        throw new UnauthorizedError("Refresh token is no longer valid");
+    }
+
+    if (stored.token_hash !== hashToken(validated)) {
+        throw new UnauthorizedError("Refresh token mismatch");
+    }
+
+    // Reject if the user has been soft-deleted since the token was issued
+    let user;
+    try {
+        user = await accountDAO.findById(userId);
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            throw new ForbiddenError("User account no longer exists");
+        }
+        throw err;
+    }
+
+    const { accessToken, refreshToken: newRefreshToken, tokenId } =
+        await issueTokenPair({ userId: user.user_id, role: user.role });
+
+    // Mark the old refresh token as rotated (reuse detection)
+    await tokenDAO.revokeRefreshToken(jti, tokenId);
+
+    return { accessToken, refreshToken: newRefreshToken };
 }
 
 export { register, login, logout, refreshTokens };

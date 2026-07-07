@@ -24,11 +24,12 @@ class TokenDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async insertRefreshToken({ jti, userId, tokenHash, expiresAt }) {
-        void jti;
-        void userId;
-        void tokenHash;
-        void expiresAt;
-        throw new Error("Not implemented");
+        const [result] = await this._query(
+            `INSERT INTO refresh_tokens (jti, user_id, token_hash, expires_at)
+             VALUES (?, ?, ?, ?)`,
+            [jti, userId, tokenHash, expiresAt],
+        );
+        return result.insertId;
     }
 
     /**
@@ -38,8 +39,13 @@ class TokenDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async findRefreshTokenByJti(jti) {
-        void jti;
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            `SELECT token_id, jti, user_id, token_hash, expires_at, replaced_by, created_at
+             FROM refresh_tokens
+             WHERE jti = ?`,
+            [jti],
+        );
+        return rows[0] ?? null;
     }
 
     /**
@@ -50,9 +56,12 @@ class TokenDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async revokeRefreshToken(jti, replacedByTokenId) {
-        void jti;
-        void replacedByTokenId;
-        throw new Error("Not implemented");
+        await this._query(
+            `UPDATE refresh_tokens
+             SET replaced_by = ?
+             WHERE jti = ?`,
+            [replacedByTokenId, jti],
+        );
     }
 
     // #########################
@@ -70,11 +79,11 @@ class TokenDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async blocklistToken({ jti, userId, expiresAt, tokenType }) {
-        void jti;
-        void userId;
-        void expiresAt;
-        void tokenType;
-        throw new Error("Not implemented");
+        await this._query(
+            `INSERT INTO token_blocklist (jti, user_id, expires_at, token_type)
+             VALUES (?, ?, ?, ?)`,
+            [jti, userId, expiresAt, tokenType],
+        );
     }
 
     /**
@@ -84,8 +93,11 @@ class TokenDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async isBlocklisted(jti) {
-        void jti;
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            `SELECT 1 FROM token_blocklist WHERE jti = ? LIMIT 1`,
+            [jti],
+        );
+        return rows.length > 0;
     }
 }
 

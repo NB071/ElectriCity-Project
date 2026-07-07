@@ -1,3 +1,5 @@
+import iamService from "../services/iam/iam.service.js";
+
 /**
  * Returns middleware that verifies the authenticated user has an allowed role.
  * @middleware
@@ -5,10 +7,15 @@
  */
 function authzMiddleware(...allowedRoles) {
     return (req, res, next) => {
-        // Use iamService.access_management.authorizeUser(req.user, ...allowedRoles)
-        // Requires authnMiddleware to have set req.user first
-        void allowedRoles;
-        next();
+        try {
+            iamService.access_management.authorizeUser(
+                req.user,
+                ...allowedRoles,
+            );
+            next();
+        } catch (err) {
+            next(err);
+        }
     };
 }
 

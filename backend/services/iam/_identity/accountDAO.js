@@ -4,6 +4,7 @@
 import BaseDAO from "../../../utils/BaseDAO.js";
 import { NotFoundError, ValidationError } from "../../../utils/errors.js";
 import { DEFAULTS, VALIDATIONS, USER_FIELDS } from "./constants.js";
+import { ROLES } from "../_access/constants.js";
 
 /**
  * This class is used to interact with the users table.
@@ -256,9 +257,67 @@ class AccountDAO extends BaseDAO {
         return rows.length > 0;
     }
 
+    /**
+     * This method finds an active user by email, including the password hash for login.
+     * @param {string} email
+     * @returns {Promise<object|null>} { user_id, first_name, last_name, email, password_hash, role } or null
+     * @throws {DatabaseError} On database failures
+     */
+    async findByEmail(email) {
+        const [rows] = await this._query(
+            `SELECT
+                u.user_id,
+                u.first_name,
+                u.last_name,
+                u.email,
+                u.password_hash,
+                r.role_name AS role
+             FROM users u
+             JOIN roles r ON r.role_id = u.role_id
+             WHERE u.email = ? AND u.deleted_at IS NULL
+             LIMIT 1`,
+            [email],
+            { suppressNotFound: true },
+        );
+
+        return rows[0] ?? null;
+    }
+
     // #########################
     // Write operations
     // #########################
+
+    /**
+     * This method creates a new user with the default customer role.
+     * @param {object} data
+     * @param {string} data.firstName
+     * @param {string} data.lastName
+     * @param {string} data.email
+     * @param {string} data.passwordHash bcrypt hash of the user's password
+     * @param {string|null} [data.phoneNumber]
+     * @returns {Promise<object>} Safe created-user profile (no password fields)
+     * @throws {ConflictError} If the email is already registered
+     * @throws {DatabaseError} On database failures
+     */
+    async create({
+        firstName,
+        lastName,
+        email,
+        passwordHash,
+        phoneNumber = null,
+    }) {
+        const [result] = await this._query(
+            `INSERT INTO users (role_id, first_name, last_name, email, password_hash, phone_number)
+             VALUES ((SELECT role_id FROM roles WHERE role_name = ?), ?, ?, ?, ?, ?)`,
+            [ROLES.CUSTOMER, firstName, lastName, email, passwordHash, phoneNumber],
+            {
+                conflictMessage: "Email is already registered.",
+                conflictDetails: { email },
+            },
+        );
+
+        return this.findById(result.insertId);
+    }
 
     /**
      * This method updates profile columns for an active user.

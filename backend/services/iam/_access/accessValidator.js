@@ -1,17 +1,64 @@
 // IAM Access Management
 // Validation
 
-import { VALIDATIONS } from "./constants.js";
+import { VALIDATIONS, AUTH_HEADERS } from "./constants.js";
 import { z } from "zod";
 import { ValidationError } from "../../../utils/errors.js";
 
 // Schema definition(s)
-// TODO: Implement schema definitions (zod)
-const registerSchema = null;
-const loginSchema = null;
-const refreshTokenSchema = null;
-const bearerTokenSchema = null;
-const logoutSchema = null;
+const registerSchema = z.object({
+    firstName: z.string().trim().min(1).max(VALIDATIONS.NAME.MAX_LENGTH),
+    lastName: z.string().trim().min(1).max(VALIDATIONS.NAME.MAX_LENGTH),
+    email: z.email().max(VALIDATIONS.EMAIL.MAX_LENGTH),
+    password: z
+        .string()
+        .min(VALIDATIONS.PASSWORD.MIN_LENGTH)
+        .max(VALIDATIONS.PASSWORD.MAX_LENGTH),
+    phoneNumber: z
+        .string()
+        .trim()
+        .max(VALIDATIONS.PHONE.MAX_LENGTH)
+        .nullable()
+        .optional(),
+});
+
+const loginSchema = z.object({
+    email: z.email().max(VALIDATIONS.EMAIL.MAX_LENGTH),
+    password: z.string().min(1).max(VALIDATIONS.PASSWORD.MAX_LENGTH),
+});
+
+const refreshTokenSchema = z.string().min(1);
+
+const bearerTokenSchema = z
+    .string()
+    .startsWith(AUTH_HEADERS.BEARER_PREFIX)
+    .transform((header) => header.slice(AUTH_HEADERS.BEARER_PREFIX.length).trim())
+    .pipe(z.string().min(1));
+
+const logoutSchema = z.object({
+    userId: z.number().int().positive(),
+    jti: z.string().length(VALIDATIONS.JTI.LENGTH),
+    tokenType: z.enum([
+        VALIDATIONS.TOKEN_TYPES.ACCESS,
+        VALIDATIONS.TOKEN_TYPES.REFRESH,
+    ]),
+});
+
+/**
+ * This helper parses data against a schema and throws a ValidationError on failure.
+ * @param {import('zod').ZodType} schema
+ * @param {unknown} data
+ * @param {string} message Error message used when validation fails
+ * @returns {unknown} The parsed, validated data
+ * @throws {ValidationError} If validation fails
+ */
+function parseOrThrow(schema, data, message) {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+        throw new ValidationError(message, result.error.issues);
+    }
+    return result.data;
+}
 
 /**
  * This function validates registration input.
@@ -25,10 +72,7 @@ const logoutSchema = null;
  * @throws {ValidationError} If validation fails
  */
 function validateRegisterInput(data) {
-    void registerSchema;
-    void VALIDATIONS;
-    // TODO: Validate names, email format/length, password strength, optional phone
-    throw new ValidationError("Not implemented");
+    return parseOrThrow(registerSchema, data, "Invalid registration input");
 }
 
 /**
@@ -40,10 +84,7 @@ function validateRegisterInput(data) {
  * @throws {ValidationError} If validation fails
  */
 function validateLoginInput(data) {
-    void loginSchema;
-    void VALIDATIONS;
-    // TODO: make sure validation on email format and non-empty password
-    throw new ValidationError("Not implemented");
+    return parseOrThrow(loginSchema, data, "Invalid login credentials");
 }
 
 /**
@@ -53,9 +94,7 @@ function validateLoginInput(data) {
  * @throws {ValidationError} If validation fails
  */
 function validateRefreshTokenInput(refreshToken) {
-    void refreshTokenSchema;
-    // TODO: make sure token is a non-empty string
-    throw new ValidationError("Not implemented");
+    return parseOrThrow(refreshTokenSchema, refreshToken, "Invalid refresh token");
 }
 
 /**
@@ -65,10 +104,11 @@ function validateRefreshTokenInput(refreshToken) {
  * @throws {ValidationError} If the header is missing or malformed
  */
 function validateBearerToken(authorizationHeader) {
-    void bearerTokenSchema;
-    void VALIDATIONS;
-    // TODO: Require "Bearer <token>" format
-    throw new ValidationError("Not implemented");
+    return parseOrThrow(
+        bearerTokenSchema,
+        authorizationHeader,
+        "Missing or malformed Authorization header",
+    );
 }
 
 /**
@@ -81,10 +121,11 @@ function validateBearerToken(authorizationHeader) {
  * @throws {ValidationError} If validation fails
  */
 function validateLogoutContext({ userId, jti, tokenType }) {
-    void logoutSchema;
-    void VALIDATIONS;
-    // TODO: Please validate userId, jti length, and supported token type
-    throw new ValidationError("Not implemented");
+    return parseOrThrow(
+        logoutSchema,
+        { userId, jti, tokenType },
+        "Invalid logout context",
+    );
 }
 
 /**
@@ -95,9 +136,14 @@ function validateLogoutContext({ userId, jti, tokenType }) {
  * @throws {ValidationError} If allowedRoles is empty or userRole is missing
  */
 function validateAuthorizationContext(userRole, ...allowedRoles) {
-    void VALIDATIONS;
-    // TODO: Please make sure userRole and at least one allowed role are present
-    throw new ValidationError("Not implemented");
+    if (typeof userRole !== "string" || userRole.length === 0) {
+        throw new ValidationError("Missing user role for authorization");
+    }
+    if (allowedRoles.length === 0) {
+        throw new ValidationError(
+            "No allowed roles specified for authorization",
+        );
+    }
 }
 
 export {

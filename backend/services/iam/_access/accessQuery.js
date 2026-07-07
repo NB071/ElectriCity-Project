@@ -1,34 +1,64 @@
 // IAM Access Management
 // CQRS - Queries (authentication & authorization)
 
+import jwt from "jsonwebtoken";
 import tokenDAO from "./tokenDAO.js";
-import {
-    validateBearerToken,
-    validateAuthorizationContext,
-} from "./accessValidator.js";
+import accountDAO from "../_identity/accountDAO.js";
+import { JWT } from "./constants.js";
+import env from "../../../configs/env.js";
+import { validateAuthorizationContext } from "./accessValidator.js";
 import {
     UnauthorizedError,
     ForbiddenError,
-    ValidationError,
+    NotFoundError,
 } from "../../../utils/errors.js";
 
 /**
  * This function verifies an access JWT and returns the authenticated user context.
+ * The token is expected to carry a `user_id` claim and a `jti` (set via jwtid on sign).
  * @used_by middlewares/authn.middleware.js
  * @param {string} accessToken Raw JWT from the Authorization header
- * @returns {Promise<object>} req.user shape: { user_id, role, jti, ...claims }
- * @throws {ValidationError} If validation fails
- * @throws {UnauthorizedError} If token is missing, invalid, expired, or blocklisted
+ * @returns {Promise<object>} req.user shape: { user_id, role, email, jti, exp }
+ * @throws {UnauthorizedError} If token is missing, invalid, expired, blocklisted, or the user no longer exists
  */
 async function authenticateAccessToken(accessToken) {
-    void tokenDAO;
-    void accessToken;
-    void validateBearerToken;
-    // TODO: Verify JWT signature and expiry (use env.jwt.JWT_SIGN_KEY)
-    // TODO: Reject if tokenDAO.isBlocklisted(jti) i.e. if the token is blocklisted
-    // TODO: Load user by user_id; reject if deleted i.e. if the user is deleted
-    // TODO: Return { user_id, role, jti, email, ... } for req.user
-    throw new UnauthorizedError("Not implemented");
+    let payload;
+    try {
+        payload = jwt.verify(accessToken, env.jwt.JWT_SIGN_KEY, {
+            algorithms: [JWT.ALGORITHM],
+            issuer: JWT.ISSUER,
+        });
+    } catch {
+        throw new UnauthorizedError("Invalid or expired access token");
+    }
+
+    const { user_id, jti, exp } = payload;
+    if (!user_id || !jti) {
+        throw new UnauthorizedError("Malformed access token");
+    }
+
+    if (await tokenDAO.isBlocklisted(jti)) {
+        throw new UnauthorizedError("Access token has been revoked");
+    }
+
+    let user;
+    try {
+        // findById filters soft-deleted users and throws NotFoundError if gone
+        user = await accountDAO.findById(user_id);
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            throw new UnauthorizedError("User account no longer exists");
+        }
+        throw err;
+    }
+
+    return {
+        user_id: user.user_id,
+        role: user.role,
+        email: user.email,
+        jti,
+        exp,
+    };
 }
 
 /**
@@ -42,13 +72,10 @@ async function authenticateAccessToken(accessToken) {
  * @throws {ForbiddenError} If the user's role is not permitted
  */
 function authorizeUser(user, ...allowedRoles) {
-    void validateAuthorizationContext;
-    void user;
-    void allowedRoles;
-    // TODO: validateAuthorizationContext(user.role, ...allowedRoles) i.e. validate the user's role against the allowed roles
-    // TODO: Compare user.role == allowedRoles ?
-    // TODO: Throw ForbiddenError when role is not allowed i.e. if the user's role is not in the allowed roles
-    throw new ForbiddenError("Not implemented");
+    validateAuthorizationContext(user?.role, ...allowedRoles);
+    if (!allowedRoles.includes(user.role)) {
+        throw new ForbiddenError();
+    }
 }
 
 export { authenticateAccessToken, authorizeUser };
