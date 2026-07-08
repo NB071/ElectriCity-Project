@@ -24,6 +24,7 @@ import {
     dashboardRateLimiter,
     shopRateLimiter,
 } from "./middlewares/rateLimit.middleware.js";
+import { AppError } from "./utils/errors.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -64,8 +65,18 @@ async function checkRedis() {
     );
 }
 
+function checkJwtConfig() {
+    if (!env.jwt.JWT_SIGN_KEY) {
+        throw new AppError(
+            "JWT_SIGN_KEY is missing. Please set it in .env before starting the server.",
+        );
+    }
+}
+
 (async () => {
     try {
+        checkJwtConfig();
+
         // Connection checks
         await checkDatabase();
         await checkRedis();

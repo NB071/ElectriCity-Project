@@ -6,7 +6,7 @@ import iamService from "../services/iam/iam.service.js";
  * @param {...string} allowedRoles e.g. "customer", "admin"
  */
 function authzMiddleware(...allowedRoles) {
-    return (req, res, next) => {
+    return (req, _res, next) => {
         try {
             iamService.access_management.authorizeUser(
                 req.user,

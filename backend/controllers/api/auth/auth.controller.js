@@ -31,12 +31,14 @@ export const login = tryCatch(async (req, res, _) => {
     const responseData = await iamService.access_management.login({
         email,
         password,
+        ipAddress: req.ip ?? null,
+        userAgent: req.headers["user-agent"] ?? null,
     });
     return apiResponse(res, responseData, 200);
 });
 
 /**
- * This controller blocklists the current access token and revokes the refresh token chain.
+ * This controller revokes the current session (per-device logout).
  * @required_role Customer/Admin
  * @route POST /api/auth/logout
  * @services_used IAM (access_management)
@@ -44,10 +46,22 @@ export const login = tryCatch(async (req, res, _) => {
 export const logout = tryCatch(async (req, res, _) => {
     await iamService.access_management.logout({
         userId: req.user.user_id,
-        jti: req.user.jti,
-        tokenExpiry: req.user.exp,
+        sid: req.user.sid,
     });
     return apiResponse(res, { loggedOut: true }, 200);
+});
+
+/**
+ * This controller revokes every session for the user (sign out on all devices).
+ * @required_role Customer/Admin
+ * @route POST /api/auth/logout-all
+ * @services_used IAM (access_management)
+ */
+export const logoutAll = tryCatch(async (req, res, _) => {
+    await iamService.access_management.logoutAllDevices({
+        userId: req.user.user_id,
+    });
+    return apiResponse(res, { loggedOutAllDevices: true }, 200);
 });
 
 /**
@@ -58,8 +72,27 @@ export const logout = tryCatch(async (req, res, _) => {
  */
 export const refresh = tryCatch(async (req, res, _) => {
     const { refresh_token: refreshToken } = req.body;
-    const responseData =
-        await iamService.access_management.refreshTokens(refreshToken);
+    const responseData = await iamService.access_management.refreshTokens(
+        refreshToken,
+        {
+            ipAddress: req.ip ?? null,
+            userAgent: req.headers["user-agent"] ?? null,
+        },
+    );
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller returns the authenticated user's active login sessions.
+ * @required_role Customer/Admin
+ * @route GET /api/auth/me/sessions
+ * @services_used IAM (access_management)
+ */
+export const getMySessions = tryCatch(async (req, res, _) => {
+    const responseData = await iamService.access_management.listUserSessions({
+        userId: req.user.user_id,
+        currentSessionId: req.user.sid,
+    });
     return apiResponse(res, responseData, 200);
 });
 

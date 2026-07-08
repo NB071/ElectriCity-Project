@@ -372,7 +372,7 @@ class AccountDAO extends BaseDAO {
     }
 
     /**
-     * This method soft-deletes a user and revokes their refresh tokens.
+     * This method soft-deletes a user and tears down their sessions and refresh tokens.
      * @param {number} userId
      * @returns {Promise<void>}
      * @throws {NotFoundError} If the user does not exist or is already deleted
@@ -393,6 +393,10 @@ class AccountDAO extends BaseDAO {
             }
 
             await conn.execute(`DELETE FROM refresh_tokens WHERE user_id = ?`, [
+                userId,
+            ]);
+
+            await conn.execute(`DELETE FROM sessions WHERE user_id = ?`, [
                 userId,
             ]);
         });

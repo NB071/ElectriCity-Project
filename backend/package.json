@@ -8,6 +8,7 @@
         "db:seed:apply": "node models/apply-seed.js",
         "test:email": "node tests/email-service/email-service.test.js",
         "test:media": "node tests/media-service/media-service.test.js",
+        "test:iam:access": "node tests/iam-service/access-auth.test.js",
         "test:analytics:event": "node tests/analytics-service/generate-event.test.js",
         "test:analytics:report": "node tests/analytics-service/generate-report.test.js",
         "test:catalog:browse": "node tests/catalog-service/browse-vehicles.test.js",
@@ -40,6 +41,7 @@
         "nodemailer": "^9.0.1",
         "nodemon": "^3.1.14",
         "stripe": "^22.2.1",
+        "ua-parser-js": "^2.0.10",
         "uuid": "^14.0.0",
         "zod": "^4.4.3"
     }

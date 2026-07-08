@@ -11,8 +11,6 @@ function errorHandlerMiddleware(err, _req, res, _next) {
     const errMsg = err.message || "Something went wrong";
 
     const errorDetails = {
-        success: false,
-        status: errStatus,
         message: errMsg,
         stack: process.env.NODE_ENV === "development" ? err.stack : null,
     };
