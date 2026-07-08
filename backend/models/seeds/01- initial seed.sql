@@ -17,6 +17,21 @@ INSERT INTO addresses (address_id, user_id, street, city, province, country, pos
   (1, 1, '12 Maple Ave', 'Toronto',  'ON', 'Canada', 'M4B1B3', TRUE),
   (2, 2, '88 King St',   'Markham',  'ON', 'Canada', 'L3R0B8', TRUE);
 
+-- ============== IAM: sessions & refresh tokens ==============
+-- Active login sessions for demo users. Access tokens are validated against
+-- sessions (current_access_jti + revoked_at); refresh_tokens.session_id FKs here.
+-- Hashes are placeholders — use POST /api/auth/login for real tokens.
+
+INSERT INTO sessions (session_id, user_id, current_access_jti, device_label, ip_address, user_agent) VALUES
+  ('11111111-1111-4111-8111-111111111101', 1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1', 'Chrome on Windows', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0) Seed/1.0'),
+  ('11111111-1111-4111-8111-111111111102', 1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2', 'Safari on iPhone',  '192.168.1.20', 'Mozilla/5.0 (iPhone) Seed/1.0'),
+  ('11111111-1111-4111-8111-111111111103', 3, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3', 'Firefox on Linux',  '10.0.0.5',     'Mozilla/5.0 (X11; Linux) Seed/1.0');
+
+INSERT INTO refresh_tokens (jti, session_id, user_id, token_hash, expires_at) VALUES
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1', '11111111-1111-4111-8111-111111111101', 1, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', DATE_ADD(NOW(), INTERVAL 7 DAY)),
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2', '11111111-1111-4111-8111-111111111102', 1, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', DATE_ADD(NOW(), INTERVAL 7 DAY)),
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3', '11111111-1111-4111-8111-111111111103', 3, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', DATE_ADD(NOW(), INTERVAL 7 DAY));
+
 -- ============== Media (before vehicle_history & catalog_images) ==============
 INSERT INTO media (media_id, url, file_type, alt_text) VALUES
   (1, 'https://cdn.voltdrive.test/model3-front.jpg', 'image/jpeg', 'Model 3 front'),

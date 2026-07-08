@@ -7,8 +7,11 @@ import env from "../configs/env.js";
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const seedsDir = path.join(dir, "seeds");
 
-const { DB_LOCAL_DBNAME: db, DB_LOCAL_USER: user, DB_LOCAL_PASSWORD: pass } =
-    env.db;
+const {
+    DB_LOCAL_DBNAME: db,
+    DB_LOCAL_USER: user,
+    DB_LOCAL_PASSWORD: pass,
+} = env.db;
 
 const creds = [`-u${user}`, `-p${pass}`, db];
 
