@@ -19,8 +19,29 @@ import { validatePublishReview, validateReviewId } from "./reviewValidator.js";
  * @throws {Error} If validation fails or the insert fails
  */
 async function publishReview({ userId, cid, title, body, rating }) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validated = validatePublishReview({
+        userId,
+        cid,
+        title,
+        body,
+        rating,
+    });
+
+    const reviewId = await reviewDAO.insertReview({
+        user_id: validated.userId,
+        cid: validated.cid,
+        title: validated.title ?? null,
+        body: validated.body,
+        rating: validated.rating,
+    });
+
+    return {
+        review_id: reviewId,
+        cid: validated.cid,
+        title: validated.title ?? null,
+        body: validated.body,
+        rating: validated.rating,
+    };
 }
 
 /**
@@ -31,8 +52,8 @@ async function publishReview({ userId, cid, title, body, rating }) {
  * @throws {Error} If the review id is invalid, not found, or the delete fails
  */
 async function deleteReview(rid) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validRid = validateReviewId(rid);
+    await reviewDAO.deleteById(validRid);
 }
 
 export { publishReview, deleteReview };
