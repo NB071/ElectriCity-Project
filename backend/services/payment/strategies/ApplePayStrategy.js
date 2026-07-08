@@ -21,12 +21,7 @@ class ApplePayStrategy extends PaymentStrategy {
      */
     async process(input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
-        const token = payment_details.apple_pay_token ?? payment_details.token;
-
-        if (!token) {
-            throw new Error("Apple Pay token is not valid");
-        }
-
+        
         requestsCount += 1;
 
         if (requestsCount % 3 === 0) {
