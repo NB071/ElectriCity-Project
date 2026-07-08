@@ -53,11 +53,11 @@ class PaymentDAO extends BaseDAO {
      * @returns {Promise<number>}
      * @throws {DatabaseError} On database failures
      */
-    async countAttemptsByUserId(user_id) {
+    async countPaymentMethodAttempts(user_id, payment_method) {
         //Returns list with all attempts made by the given user ID
         const [rows] = await this._query(
-            'SELECT * FROM payment_attempts WHERE user_id = ? ORDER BY created_at DESC',
-            [user_id],
+            'SELECT * FROM payment_attempts WHERE user_id = ? AND payment_method = ? ORDER BY created_at DESC',
+            [user_id, payment_method],
         );
         //If no attempts are returned, throw a NotFoundError
         if (rows.length === 0) {

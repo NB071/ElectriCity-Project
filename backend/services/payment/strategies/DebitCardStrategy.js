@@ -19,9 +19,9 @@ class DebitCardStrategy extends PaymentStrategy {
     async process(_input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
 
-        requestsCount += 1;
+        const requests = await paymentDAO.countPaymentMethodAttempts(user_id, VALIDATIONS.PAYMENT_METHODS.DEBIT_CARD);
 
-        if (requestsCount % 3 === 0) {
+        if (requests % 3 === 0) {
             return {
                 status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
                 gateway_payload: {

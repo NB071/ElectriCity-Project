@@ -4,8 +4,6 @@
 import PaymentStrategy from "./PaymentStrategy.js";
 import { VALIDATIONS } from "../constants.js";
 
-let requestsCount = 0;
-
 /**
  * Processes Apple Pay payments via the configured gateway.
  * @extends PaymentStrategy (Strategy pattern)
@@ -22,9 +20,9 @@ class ApplePayStrategy extends PaymentStrategy {
     async process(input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
         
-        requestsCount += 1;
+        const requests = await paymentDAO.countPaymentMethodAttempts(user_id, VALIDATIONS.PAYMENT_METHODS.APPLE_PAY);
 
-        if (requestsCount % 3 === 0) {
+        if (requests % 3 === 0) {
             return {
                 status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
                 gateway_payload: {
@@ -46,6 +44,7 @@ class ApplePayStrategy extends PaymentStrategy {
                 user_id,
             },
         };
+
     }
 }
 

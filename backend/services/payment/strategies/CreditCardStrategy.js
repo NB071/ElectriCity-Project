@@ -2,7 +2,7 @@
 // Strategy pattern / credit card strategy (concrete strategy)
 
 import PaymentStrategy from "./PaymentStrategy.js";
-let requestsCount = 0;
+
 /**
  * Processes credit card payments via the configured gateway.
  * @extends PaymentStrategy (Strategy pattern)
@@ -19,9 +19,9 @@ class CreditCardStrategy extends PaymentStrategy {
     async process(_input) {
         const { user_id, order_id, amount, payment_details = {} } = input;
 
-        requestsCount += 1;
+        const requests = await paymentDAO.countPaymentMethodAttempts(user_id, VALIDATIONS.PAYMENT_METHODS.CREDIT_CARD);
 
-        if (requestsCount % 3 === 0) {
+        if (requests % 3 === 0) {
             return {
                 status: VALIDATIONS.ATTEMPT_STATUS.FAILED,
                 gateway_payload: {
