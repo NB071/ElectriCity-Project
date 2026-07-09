@@ -5,6 +5,7 @@ import CatalogDetailsHandler from "./catalogDetailsHandler.js";
 import { NotFoundError } from "../../../../utils/errors.js";
 import { toVehicleDetailsDTO } from "../DTOs/vehicleDetailsDTO.js";
 import { getPromotionsForItem } from "../../_promotions/promotionsQuery.js";
+import { getCatalogReviewSummary } from "../../../review/reviewQuery.js";
 
 /**
  * This template-method class is used to handle the details of a vehicle.
@@ -67,6 +68,7 @@ class VehicleDetailsHandler extends CatalogDetailsHandler {
         }
 
         const promotions = await getPromotionsForItem(base.cid);
+        const reviewSummary = await getCatalogReviewSummary(base.cid);
 
         return toVehicleDetailsDTO(
             base,
@@ -76,6 +78,7 @@ class VehicleDetailsHandler extends CatalogDetailsHandler {
             images,
             historyReport,
             promotions,
+            reviewSummary,
         );
     }
 }

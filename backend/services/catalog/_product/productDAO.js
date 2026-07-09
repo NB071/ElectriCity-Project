@@ -211,6 +211,24 @@ class ProductDAO extends BaseDAO {
     }
 
     /**
+     * This method checks whether a catalog item exists by primary key.
+     * @param {number} cid
+     * @param {object} [options]
+     * @param {boolean} [options.requireActive=false] When true, only active items match
+     * @returns {Promise<boolean>}
+     * @throws {DatabaseError} On database failures
+     */
+    async existsById(cid, { requireActive = false } = {}) {
+        const sql = requireActive
+            ? `SELECT 1 AS found FROM catalog_items WHERE cid = ? AND is_active = TRUE LIMIT 1`
+            : `SELECT 1 AS found FROM catalog_items WHERE cid = ? LIMIT 1`;
+        const [rows] = await this._query(sql, [cid], {
+            suppressNotFound: true,
+        });
+        return rows.length > 0;
+    }
+
+    /**
      * This method finds the vehicle by its ID.
      * @param {number} cid
      * @returns {Promise<object|null>}

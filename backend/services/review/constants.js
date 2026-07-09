@@ -8,6 +8,7 @@ const VALIDATIONS = {
     },
     REVIEW_LIMITS: {
         TITLE_MAX: 150,
+        BODY_MAX: 5000,
     },
 };
 

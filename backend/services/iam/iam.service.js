@@ -4,15 +4,16 @@ import {
     register,
     login,
     logout,
+    logoutAllDevices,
     refreshTokens,
 } from "./_access/accessMutation.js";
 import {
     authenticateAccessToken,
     authorizeUser,
+    listUserSessions,
 } from "./_access/accessQuery.js";
 import {
     ROLES,
-    TOKEN_TYPES,
     JWT,
     AUTH_HEADERS,
     VALIDATIONS as ACCESS_VALIDATIONS,
@@ -36,15 +37,16 @@ const access_management = {
     register,
     login,
     logout,
+    logoutAllDevices,
     refreshTokens,
 
     // queries
     authenticateAccessToken,
     authorizeUser,
+    listUserSessions,
 
     // constants
     ROLES,
-    TOKEN_TYPES,
     JWT,
     AUTH_HEADERS,
     VALIDATIONS: ACCESS_VALIDATIONS,
@@ -80,15 +82,16 @@ export {
     register,
     login,
     logout,
+    logoutAllDevices,
     refreshTokens,
 
     // Access queries
     authenticateAccessToken,
     authorizeUser,
+    listUserSessions,
 
     // Access constants
     ROLES,
-    TOKEN_TYPES,
     JWT,
     AUTH_HEADERS,
     ACCESS_VALIDATIONS,

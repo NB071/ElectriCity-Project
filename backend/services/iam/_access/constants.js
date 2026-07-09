@@ -6,11 +6,6 @@ const ROLES = {
     ADMIN: "admin",
 };
 
-const TOKEN_TYPES = {
-    ACCESS: "access",
-    REFRESH: "refresh",
-};
-
 const JWT = {
     ACCESS_EXPIRY: "15m",
     REFRESH_EXPIRY: "7d",
@@ -25,7 +20,6 @@ const AUTH_HEADERS = {
 
 const VALIDATIONS = {
     ROLES,
-    TOKEN_TYPES,
     PASSWORD: {
         MIN_LENGTH: 8,
         MAX_LENGTH: 128,
@@ -39,9 +33,16 @@ const VALIDATIONS = {
     PHONE: {
         MAX_LENGTH: 20,
     },
-    JTI: {
+    SESSION_ID: {
         LENGTH: 36,
+    },
+    DEVICE_LABEL: {
+        MAX_LENGTH: 100,
     },
 };
 
-export { ROLES, TOKEN_TYPES, JWT, AUTH_HEADERS, VALIDATIONS };
+const DEFAULTS = {
+    BCRYPT_SALT_ROUNDS: 10,
+};
+
+export { ROLES, JWT, AUTH_HEADERS, VALIDATIONS, DEFAULTS };
