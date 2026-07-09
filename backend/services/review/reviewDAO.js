@@ -1,14 +1,20 @@
 import BaseDAO from "../../utils/BaseDAO.js";
 
-// Shared SQL fragments for joining a review to its catalog item context
-// (brand + model name and primary image), mirroring the catalog/wishlist joins.
+// Shared SQL fragments
+const ACTIVE_AUTHOR_JOIN = `JOIN users u ON u.user_id = r.user_id AND u.deleted_at IS NULL`;
+const ALL_AUTHORS_JOIN = `JOIN users u ON u.user_id = r.user_id`;
+
 const CATALOG_CONTEXT_JOIN = `
     JOIN catalog_items ci ON ci.cid = r.cid
     JOIN models m         ON m.model_id = ci.model_id
     JOIN brands b         ON b.brand_id = m.brand_id
-    LEFT JOIN catalog_images ci_img
-        ON ci_img.cid = r.cid AND ci_img.is_primary = TRUE
-    LEFT JOIN media pm ON pm.media_id = ci_img.media_id`;
+    LEFT JOIN (
+        SELECT cid, MIN(media_id) AS media_id
+        FROM catalog_images
+        WHERE is_primary = TRUE
+        GROUP BY cid
+    ) primary_img ON primary_img.cid = r.cid
+    LEFT JOIN media pm ON pm.media_id = primary_img.media_id`;
 
 const CATALOG_CONTEXT_COLUMNS = `
     r.cid,
@@ -18,36 +24,91 @@ const CATALOG_CONTEXT_COLUMNS = `
     pm.url AS primary_image_url`;
 
 /**
+ * @private
+ * @param {boolean} includeDeletedAuthors
+ * @returns {string}
+ */
+function authorJoin(includeDeletedAuthors) {
+    return includeDeletedAuthors ? ALL_AUTHORS_JOIN : ACTIVE_AUTHOR_JOIN;
+}
+
+/**
+ * @private
+ * @param {boolean} includeAdminFields
+ * @returns {string}
+ */
+function authorColumns(includeAdminFields) {
+    const base = `u.user_id, u.first_name, u.last_name`;
+    return includeAdminFields ? `${base}, u.email, u.deleted_at` : base;
+}
+
+/**
  * This class is used to interact with the reviews database.
  */
 class ReviewDAO extends BaseDAO {
     // #########################
     // Read operations
     // #########################
+
     /**
-     * This method counts reviews for a catalog item.
+     * This method returns review_count and avg_rating for a catalog item.
+     * Only counts reviews from active (non-deleted) authors.
      * @param {number} cid
-     * @returns {Promise<number>}
+     * @returns {Promise<{ review_count: number, avg_rating: number|null }>}
      * @throws {DatabaseError} On database failures
      */
-    async countByCatalogItem(cid) {
+    async getCatalogReviewSummary(cid) {
         const [rows] = await this._query(
-            `SELECT COUNT(*) AS total FROM reviews WHERE cid = ?`,
+            `SELECT COUNT(*) AS review_count, AVG(r.rating) AS avg_rating
+             FROM reviews r
+             ${ACTIVE_AUTHOR_JOIN}
+             WHERE r.cid = ?`,
             [cid],
         );
-        return rows[0].total;
+        const count = Number(rows[0].review_count);
+        const avg = rows[0].avg_rating;
+
+        return {
+            review_count: count,
+            avg_rating: count === 0 ? null : Number(Number(avg).toFixed(2)),
+        };
     }
 
     /**
-     * This method returns paginated reviews for a catalog item (newest first),
-     * joined with the author for display.
+     * This method counts reviews for a catalog item.
+     * @param {number} cid
+     * @param {object} [options]
+     * @param {boolean} [options.includeDeletedAuthors=false]
+     * @returns {Promise<number>}
+     * @throws {DatabaseError} On database failures
+     */
+    async countByCatalogItem(cid, { includeDeletedAuthors = false } = {}) {
+        const [rows] = await this._query(
+            `SELECT COUNT(*) AS total
+             FROM reviews r
+             ${authorJoin(includeDeletedAuthors)}
+             WHERE r.cid = ?`,
+            [cid],
+        );
+        return Number(rows[0].total);
+    }
+
+    /**
+     * This method returns paginated reviews for a catalog item (newest first).
      * @param {number} cid
      * @param {number} limit
      * @param {number} offset
+     * @param {object} [options]
+     * @param {boolean} [options.includeDeletedAuthors=false]
      * @returns {Promise<object[]>}
      * @throws {DatabaseError} On database failures
      */
-    async findByCatalogItem(cid, limit, offset) {
+    async findByCatalogItem(
+        cid,
+        limit,
+        offset,
+        { includeDeletedAuthors = false } = {},
+    ) {
         const safeLimit = Number(limit);
         const safeOffset = Number(offset);
         const [rows] = await this._query(
@@ -57,12 +118,9 @@ class ReviewDAO extends BaseDAO {
                 r.body,
                 r.rating,
                 r.created_at,
-                u.user_id,
-                u.first_name,
-                u.last_name,
-                u.email
+                ${authorColumns(includeDeletedAuthors)}
              FROM reviews r
-             JOIN users u ON u.user_id = r.user_id
+             ${authorJoin(includeDeletedAuthors)}
              WHERE r.cid = ?
              ORDER BY r.created_at DESC
              LIMIT ${safeLimit} OFFSET ${safeOffset}`,
@@ -83,7 +141,7 @@ class ReviewDAO extends BaseDAO {
             `SELECT COUNT(*) AS total FROM reviews WHERE user_id = ?`,
             [userId],
         );
-        return rows[0].total;
+        return Number(rows[0].total);
     }
 
     /**
@@ -118,26 +176,31 @@ class ReviewDAO extends BaseDAO {
     }
 
     /**
-     * This method counts all reviews across the platform.
+     * This method counts all reviews across the platform (admin includes deleted authors).
+     * @param {object} [options]
+     * @param {boolean} [options.includeDeletedAuthors=true]
      * @returns {Promise<number>}
      * @throws {DatabaseError} On database failures
      */
-    async countAllReviews() {
+    async countAllReviews({ includeDeletedAuthors = true } = {}) {
         const [rows] = await this._query(
-            `SELECT COUNT(*) AS total FROM reviews`,
+            `SELECT COUNT(*) AS total
+             FROM reviews r
+             ${authorJoin(includeDeletedAuthors)}`,
         );
-        return rows[0].total;
+        return Number(rows[0].total);
     }
 
     /**
-     * This method returns a paginated admin list of all reviews (newest first),
-     * joined with author and catalog item context.
+     * This method returns a paginated admin list of all reviews (newest first).
      * @param {number} limit
      * @param {number} offset
+     * @param {object} [options]
+     * @param {boolean} [options.includeDeletedAuthors=true]
      * @returns {Promise<object[]>}
      * @throws {DatabaseError} On database failures
      */
-    async findAllReviews(limit, offset) {
+    async findAllReviews(limit, offset, { includeDeletedAuthors = true } = {}) {
         const safeLimit = Number(limit);
         const safeOffset = Number(offset);
         const [rows] = await this._query(
@@ -147,13 +210,10 @@ class ReviewDAO extends BaseDAO {
                 r.body,
                 r.rating,
                 r.created_at,
-                u.user_id,
-                u.first_name,
-                u.last_name,
-                u.email,
+                ${authorColumns(includeDeletedAuthors)},
                 ${CATALOG_CONTEXT_COLUMNS}
              FROM reviews r
-             JOIN users u ON u.user_id = r.user_id
+             ${authorJoin(includeDeletedAuthors)}
              ${CATALOG_CONTEXT_JOIN}
              ORDER BY r.created_at DESC
              LIMIT ${safeLimit} OFFSET ${safeOffset}`,
@@ -165,12 +225,15 @@ class ReviewDAO extends BaseDAO {
 
     /**
      * This method returns one review with author + catalog item context.
+     * Admin reads include reviews whose authors have been soft-deleted.
      * @param {number} reviewId
+     * @param {object} [options]
+     * @param {boolean} [options.includeDeletedAuthors=true]
      * @returns {Promise<object>}
      * @throws {NotFoundError} If the review is not found
      * @throws {DatabaseError} On database failures
      */
-    async findByIdWithAuthor(reviewId) {
+    async findByIdWithAuthor(reviewId, { includeDeletedAuthors = true } = {}) {
         const [rows] = await this._query(
             `SELECT
                 r.review_id,
@@ -178,13 +241,10 @@ class ReviewDAO extends BaseDAO {
                 r.body,
                 r.rating,
                 r.created_at,
-                u.user_id,
-                u.first_name,
-                u.last_name,
-                u.email,
+                ${authorColumns(includeDeletedAuthors)},
                 ${CATALOG_CONTEXT_COLUMNS}
              FROM reviews r
-             JOIN users u ON u.user_id = r.user_id
+             ${authorJoin(includeDeletedAuthors)}
              ${CATALOG_CONTEXT_JOIN}
              WHERE r.review_id = ?`,
             [reviewId],
@@ -196,6 +256,7 @@ class ReviewDAO extends BaseDAO {
     // #########################
     // Write operations
     // #########################
+
     /**
      * This method inserts a new review.
      * Relies on UNIQUE KEY (cid, user_id) for one review per user per item.
@@ -205,7 +266,7 @@ class ReviewDAO extends BaseDAO {
      * @param {string|null} review.title
      * @param {string} review.body
      * @param {number} review.rating
-     * @returns {Promise<number>} The inserted review_id
+     * @returns {Promise<{ reviewId: number, createdAt: Date }>}
      * @throws {ConflictError} If the user already reviewed this item
      * @throws {DatabaseError} On database failures
      */
@@ -219,7 +280,17 @@ class ReviewDAO extends BaseDAO {
                 conflictDetails: { cid, user_id },
             },
         );
-        return result.insertId;
+
+        const [rows] = await this._query(
+            `SELECT created_at FROM reviews WHERE review_id = ?`,
+            [result.insertId],
+            { suppressNotFound: true },
+        );
+
+        return {
+            reviewId: result.insertId,
+            createdAt: rows[0].created_at,
+        };
     }
 
     /**

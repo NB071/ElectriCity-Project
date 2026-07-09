@@ -1,3 +1,5 @@
+import { toReviewSummaryDTO } from "../../../review/DTOs/reviewSummaryDTO.js";
+
 /**
  * This function maps the vehicle details to a representable format.
  * @param {object} base Base catalog item details
@@ -7,6 +9,7 @@
  * @param {object[]} images Images of the vehicle
  * @param {object|null} historyReport Resolved media record for vehicle history report
  * @param {object[]} [promotions]
+ * @param {{ review_count: number, avg_rating: number|null }} [reviewSummary]
  * @returns {object}
  */
 function toVehicleDetailsDTO(
@@ -17,6 +20,7 @@ function toVehicleDetailsDTO(
     images = [],
     historyReport = null,
     promotions = [],
+    reviewSummary = { review_count: 0, avg_rating: null },
 ) {
     return {
         id: base.cid,
@@ -26,6 +30,7 @@ function toVehicleDetailsDTO(
         base_price: Number(base.base_price),
         stock: base.quantity,
         is_active: Boolean(base.is_active),
+        ...toReviewSummaryDTO(reviewSummary),
         brand: {
             id: base.brand_id,
             name: base.brand_name,

@@ -156,9 +156,27 @@ async function compareCatalogItems(queryParams = {}) {
     return handler.compare(validCids);
 }
 
+/**
+ * This function verifies that a catalog item exists.
+ * @param {number|string} cid Catalog item id
+ * @param {object} [options]
+ * @param {boolean} [options.requireActive=false] When true, inactive items are treated as not found
+ * @returns {Promise<void>}
+ * @throws {ValidationError} If the catalog item id is invalid
+ * @throws {NotFoundError} If the catalog item does not exist (or is inactive when required)
+ */
+async function ensureCatalogItemExists(cid, { requireActive = false } = {}) {
+    const id = validateCatalogItemId(cid);
+    const exists = await productDAO.existsById(id, { requireActive });
+    if (!exists) {
+        throw new NotFoundError("Catalog item");
+    }
+}
+
 export {
     browseVehicles,
     searchVehicles,
     getCatalogItemDetails,
     compareCatalogItems,
+    ensureCatalogItemExists,
 };

@@ -17,11 +17,6 @@ INSERT INTO addresses (address_id, user_id, street, city, province, country, pos
   (1, 1, '12 Maple Ave', 'Toronto',  'ON', 'Canada', 'M4B1B3', TRUE),
   (2, 2, '88 King St',   'Markham',  'ON', 'Canada', 'L3R0B8', TRUE);
 
--- ============== IAM: sessions & refresh tokens ==============
--- Active login sessions for demo users. Access tokens are validated against
--- sessions (current_access_jti + revoked_at); refresh_tokens.session_id FKs here.
--- Hashes are placeholders — use POST /api/auth/login for real tokens.
-
 INSERT INTO sessions (session_id, user_id, current_access_jti, device_label, ip_address, user_agent) VALUES
   ('11111111-1111-4111-8111-111111111101', 1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1', 'Chrome on Windows', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0) Seed/1.0'),
   ('11111111-1111-4111-8111-111111111102', 1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2', 'Safari on iPhone',  '192.168.1.20', 'Mozilla/5.0 (iPhone) Seed/1.0'),
