@@ -2,6 +2,7 @@
 // Strategy pattern / debit card strategy (concrete strategy)
 
 import PaymentStrategy from "./PaymentStrategy.js";
+import { resolveMockAttemptStatus } from "./mockGateway.js";
 
 /**
  * Processes debit card payments via the configured gateway.
@@ -10,15 +11,14 @@ import PaymentStrategy from "./PaymentStrategy.js";
 class DebitCardStrategy extends PaymentStrategy {
     /**
      * @param {object} input
-     * @param {number} input.user_id
+     * @param {number|null} [input.user_id]
      * @param {number} input.order_id
-     * @param {number} input.amount
-     * @param {object} input.payment_details Expected: { token } or card fields per gateway
-     * @returns {Promise<{ status: string, gateway_reference: string|null }>}
+     * @param {string} input.payment_method
+     * @returns {Promise<{ status: string }>}
      */
-    async process(_input) {
-        // TODO: Implement debit card gateway integration
-        throw new Error("Not implemented");
+    async process(input) {
+        const status = await resolveMockAttemptStatus(input);
+        return { status };
     }
 }
 

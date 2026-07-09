@@ -3,7 +3,6 @@
 
 /**
  * This is the context that wraps the payment processing strategy.
- * @extends PaymentStrategy (Strategy pattern)
  */
 class PaymentContext {
     /** @type {PaymentStrategy} */
@@ -23,10 +22,11 @@ class PaymentContext {
      * @param {number} input.user_id
      * @param {number} input.order_id
      * @param {number} input.amount
+     * @param {string} input.payment_method
      * @param {object} input.payment_details Gateway-specific payload
-     * @returns {Promise<object>}
+     * @returns {Promise<{ status: string }>}
      */
-    process(input) {
+    async process(input) {
         if (!this.#strategy) {
             throw new Error("No payment strategy set.");
         }

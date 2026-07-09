@@ -1,4 +1,5 @@
 -- Test seed
+-- Seed users password: Password1!
 
 SET FOREIGN_KEY_CHECKS = 1;
 START TRANSACTION;
@@ -9,9 +10,9 @@ INSERT INTO roles (role_id, role_name) VALUES
   (2, 'admin');
 
 INSERT INTO users (user_id, role_id, first_name, last_name, email, password_hash, phone_number) VALUES
-  (1, 1, 'John',  'Doe',   'john@example.com',  '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '4165550101'),
-  (2, 1, 'Jane',  'Smith', 'jane@example.com',  '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '4165550102'),
-  (3, 2, 'Admin', 'User',  'admin@example.com', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', NULL);
+  (1, 1, 'John',  'Doe',   'john@example.com',  '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165550101'),
+  (2, 1, 'Jane',  'Smith', 'jane@example.com',  '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165550102'),
+  (3, 2, 'Admin', 'User',  'admin@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', NULL);
 
 INSERT INTO addresses (address_id, user_id, street, city, province, country, postal_code, is_default) VALUES
   (1, 1, '12 Maple Ave', 'Toronto',  'ON', 'Canada', 'M4B1B3', TRUE),
@@ -126,19 +127,30 @@ INSERT INTO cart_items (cart_item_id, cart_id, cid, config_id, quantity) VALUES
   (2, 1, 5, NULL, 2);    -- bZ4X, no config
 
 -- ============== Order ==============
-INSERT INTO orders (order_id, user_id, order_status, payment_status, subtotal, tax, total) VALUES
-  (1, 1, 'confirmed', 'paid', 58990.00, 7668.70, 66658.70);
+INSERT INTO orders (order_id, user_id, guest_email, order_status, payment_status, subtotal, tax, total) VALUES
+  (1, 1, NULL,                'confirmed', 'paid',   58990.00, 7668.70, 66658.70),
+  (2, 1, NULL,                'pending',   'failed', 44995.00, 5849.35, 50844.35),
+  (3, NULL, 'guest@example.com', 'pending',   'failed', 52990.00, 6888.70, 59878.70);
 
 INSERT INTO order_addresses (order_address_id, order_id, address_type, full_name, phone_number, street, city, province, country, postal_code) VALUES
-  (1, 1, 'shipping', 'John Doe', '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3'),
-  (2, 1, 'billing',  'John Doe', '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3');
+  (1, 1, 'shipping', 'John Doe',   '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3'),
+  (2, 1, 'billing',  'John Doe',   '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3'),
+  (3, 2, 'shipping', 'John Doe',   '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3'),
+  (4, 2, 'billing',  'John Doe',   '4165550101', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3'),
+  (5, 3, 'shipping', 'Guest Shopper', '4165550199', '40 Bay St', 'Toronto', 'ON', 'Canada', 'M5J2X2'),
+  (6, 3, 'billing',  'Guest Shopper', '4165550199', '40 Bay St', 'Toronto', 'ON', 'Canada', 'M5J2X2');
 
 INSERT INTO order_items (order_item_id, order_id, cid, config_id, quantity, unit_price) VALUES
-  (1, 1, 3, 2, 1, 58990.00);
+  (1, 1, 3, 2,    1, 58990.00),
+  (2, 2, 5, NULL, 1, 44995.00),
+  (3, 3, 1, NULL, 1, 52990.00);
 
 -- ============== Payment ==============
 INSERT INTO payment_attempts (attempt_id, order_id, user_id, amount, payment_method, status) VALUES
-  (1, 1, 1, 66658.70, 'credit_card', 'success');
+  (1, 1, 1, 66658.70, 'credit_card', 'success'),
+  (2, 2, 1, 50844.35, 'credit_card', 'failed'),
+  (3, 2, 1, 50844.35, 'debit_card',  'failed'),
+  (4, 1, 1, 66658.70, 'apple_pay',   'success');
 
 -- ============== Review ==============
 INSERT INTO reviews (review_id, cid, user_id, title, body, rating) VALUES

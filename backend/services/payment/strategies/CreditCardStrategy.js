@@ -2,6 +2,7 @@
 // Strategy pattern / credit card strategy (concrete strategy)
 
 import PaymentStrategy from "./PaymentStrategy.js";
+import { resolveMockAttemptStatus } from "./mockGateway.js";
 
 /**
  * Processes credit card payments via the configured gateway.
@@ -10,15 +11,14 @@ import PaymentStrategy from "./PaymentStrategy.js";
 class CreditCardStrategy extends PaymentStrategy {
     /**
      * @param {object} input
-     * @param {number} input.user_id
+     * @param {number|null} [input.user_id]
      * @param {number} input.order_id
-     * @param {number} input.amount
-     * @param {object} input.payment_details Expected: { token } or card fields per gateway
-     * @returns {Promise<{ status: string, gateway_reference: string|null }>}
+     * @param {string} input.payment_method
+     * @returns {Promise<{ status: string }>}
      */
-    async process(_input) {
-        // TODO: Implement credit card gateway integration
-        throw new Error("Not implemented");
+    async process(input) {
+        const status = await resolveMockAttemptStatus(input);
+        return { status };
     }
 }
 
