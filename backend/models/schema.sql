@@ -76,9 +76,35 @@ CREATE TABLE addresses (
 );
 
 
+-- One row per login/device. Access tokens are validated against this table
+
+CREATE TABLE sessions (
+  session_id          CHAR(36)        NOT NULL,
+  user_id             BIGINT UNSIGNED NOT NULL,
+  current_access_jti  CHAR(36)        NOT NULL,
+  device_label        VARCHAR(100)    DEFAULT NULL,
+  ip_address          VARCHAR(45)     DEFAULT NULL,
+  user_agent          VARCHAR(512)    DEFAULT NULL,
+  last_seen_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  revoked_at          TIMESTAMP       NULL DEFAULT NULL,
+  created_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- Constraints, Keys, and Indexes
+  PRIMARY KEY (session_id),
+
+  KEY idx_sessions_user_id (user_id),
+  KEY idx_sessions_user_active (user_id, revoked_at),
+
+  CONSTRAINT fk_sessions_user
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
 CREATE TABLE refresh_tokens (
   token_id     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   jti          CHAR(36)        NOT NULL,
+  session_id   CHAR(36)        NOT NULL, -- used for device-aware token management
   user_id      BIGINT UNSIGNED NOT NULL,
   token_hash   CHAR(64)        NOT NULL,
   expires_at   TIMESTAMP       NOT NULL,
@@ -90,34 +116,18 @@ CREATE TABLE refresh_tokens (
 
   UNIQUE KEY uq_refresh_tokens_jti (jti),
   KEY idx_refresh_tokens_user_id (user_id),
+  KEY idx_refresh_tokens_session_id (session_id),
   KEY idx_refresh_tokens_replaced_by (replaced_by),
   
   CONSTRAINT fk_refresh_tokens_user
     FOREIGN KEY (user_id) REFERENCES users (user_id)
     ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_refresh_tokens_session
+    FOREIGN KEY (session_id) REFERENCES sessions (session_id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_refresh_tokens_replaced_by
     FOREIGN KEY (replaced_by) REFERENCES refresh_tokens (token_id)
     ON UPDATE CASCADE ON DELETE SET NULL
-);
-
-
-CREATE TABLE token_blocklist (
-  blocklist_id  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  jti           CHAR(36)        NOT NULL,
-  user_id       BIGINT UNSIGNED NOT NULL,
-  expires_at    TIMESTAMP       NOT NULL,
-  token_type    VARCHAR(20)     NOT NULL,
-  created_at    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-  -- Constraints, Keys, and Indexes
-  PRIMARY KEY (blocklist_id),
-
-  UNIQUE KEY uq_token_blocklist_jti (jti),
-  KEY idx_token_blocklist_user_id (user_id),
-
-  CONSTRAINT fk_token_blocklist_user
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
-    ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- #########################################################

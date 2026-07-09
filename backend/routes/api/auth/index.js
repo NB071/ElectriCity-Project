@@ -8,6 +8,8 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.post("/refresh", authController.refresh);
 router.post("/logout", authnMiddleware, authController.logout);
+router.post("/logout-all", authnMiddleware, authController.logoutAll);
+router.get("/me/sessions", authnMiddleware, authController.getMySessions);
 router.get("/me", authnMiddleware, authController.getMe);
 router.patch("/me", authnMiddleware, authController.updateMe);
 router.delete("/me", authnMiddleware, authController.deleteMe);

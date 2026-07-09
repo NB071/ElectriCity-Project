@@ -1,10 +1,20 @@
-function authnMiddleware(req, res, next) {
-    // Use iamService.access_management.authenticateAccessToken
-    // 1. Read Authorization header (AUTH_HEADERS.AUTHORIZATION)
-    // 2. validateBearerToken(header) → raw access token
-    // 3. authenticateAccessToken(token) → req.user
-    // 4. next(err) with UnauthorizedError on failure
-    next();
+import iamService from "../services/iam/iam.service.js";
+
+/**
+ * Authenticates the request by verifying the Bearer access token and attaching req.user.
+ * @middleware
+ */
+async function authnMiddleware(req, _res, next) {
+    try {
+        req.user = await iamService.access_management.authenticateAccessToken(
+            req.headers[
+                iamService.access_management.AUTH_HEADERS.AUTHORIZATION
+            ],
+        );
+        next();
+    } catch (err) {
+        next(err);
+    }
 }
 
 export default authnMiddleware;
