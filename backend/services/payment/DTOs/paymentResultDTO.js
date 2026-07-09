@@ -5,7 +5,8 @@
  * @param {number} result.order_id
  * @param {number} result.amount
  * @param {string} result.payment_method
- * @param {string} result.status
+ * @param {string} result.status Attempt status
+ * @param {string} result.payment_status Order payment status
  * @returns {object}
  */
 function toPaymentResultDTO({
@@ -14,6 +15,7 @@ function toPaymentResultDTO({
     amount,
     payment_method,
     status,
+    payment_status,
 }) {
     return {
         attempt_id,
@@ -21,6 +23,7 @@ function toPaymentResultDTO({
         amount: Number(amount),
         payment_method,
         status,
+        payment_status,
     };
 }
 

@@ -9,13 +9,6 @@ const VALIDATIONS = {
         SUCCESS: "success",
         FAILED: "failed",
     },
-
-    ORDER_PAYMENT_STATUS: {
-        PAID: "paid",
-        FAILED: "failed",
-    },
-
-    MIN_AMOUNT: 0,
 };
 
 export { VALIDATIONS };

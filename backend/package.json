@@ -10,6 +10,7 @@
         "test:media": "node tests/media-service/media-service.test.js",
         "test:iam:access": "node tests/iam-service/access-auth.test.js",
         "test:review": "node tests/review-service/review.test.js",
+        "test:payment": "node tests/payment-service/payment.test.js",
         "test:analytics:event": "node tests/analytics-service/generate-event.test.js",
         "test:analytics:report": "node tests/analytics-service/generate-report.test.js",
         "test:catalog:browse": "node tests/catalog-service/browse-vehicles.test.js",

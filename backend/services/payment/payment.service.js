@@ -1,6 +1,7 @@
 // Payment Service (Facade)
 
 import {
+    viewAllPaymentAttempts,
     getPaymentAttemptById,
     getPaymentAttemptsByOrderId,
     getPaymentAttemptsByUserId,
@@ -13,12 +14,18 @@ import {
 import { VALIDATIONS } from "./constants.js";
 
 const paymentService = {
+    // Queries
+    viewAllPaymentAttempts,
     getPaymentAttemptById,
     getPaymentAttemptsByOrderId,
     getPaymentAttemptsByUserId,
+
+    // Mutations
     processPayment,
     recordPaymentAttempt,
     updateOrderPaymentStatus,
+
+    // Constants
     VALIDATIONS,
 };
 
@@ -26,6 +33,7 @@ export default paymentService;
 
 export {
     // Queries
+    viewAllPaymentAttempts,
     getPaymentAttemptById,
     getPaymentAttemptsByOrderId,
     getPaymentAttemptsByUserId,
