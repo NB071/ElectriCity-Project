@@ -2,6 +2,7 @@
 // CQRS - Query side (reads)
 
 import reviewDAO from "./reviewDAO.js";
+import catalogService from "../catalog/catalog.service.js";
 import {
     validateReviewId,
     validateCatalogItemId,
@@ -10,291 +11,166 @@ import {
 import {
     parsePaginationQuery,
     paginationMeta,
-    validatePaginationParams,
 } from "../../utils/pagination.js";
+import { toCatalogReviewDTO } from "./DTOs/catalogReviewDTO.js";
+import { toCustomerReviewDTO } from "./DTOs/customerReviewDTO.js";
+import { toReviewDetailDTO } from "./DTOs/reviewDetailDTO.js";
+import {
+    toAdminReviewListDTO,
+    toAdminCatalogReviewDTO,
+} from "./DTOs/adminReviewListDTO.js";
+import { toReviewSummaryDTO } from "./DTOs/reviewSummaryDTO.js";
 
 /**
- * This function maps a review row to a public catalog listing shape.
- * Used on the catalog item detail page. Do not expose author email.
- * @helper_function
- * @private
- * @param {object} row DAO row (reviews joined with users for display name)
- * @returns {object}
- * @example
- * {
- *     review_id: 1,
- *     title: "Great vehicle",
- *     body: "Smooth ride and excellent range.",
- *     rating: 5,
- *     created_at: "2026-05-01T14:30:00.000Z",
- *     author: {
- *         user_id: 12,
- *         first_name: "Jane",
- *         last_name: "Doe",
- *     },
- * }
+ * This function returns review_count and avg_rating for a catalog item.
+ * We only count reviews from active (non-deleted) authors.
+ * @param {number|string} cid Catalog item id
+ * @returns {Promise<{ review_count: number, avg_rating: number|null }>}
+ * @throws {ValidationError} If the catalog item id is invalid
+ * @throws {DatabaseError} On database failures
  */
-function mapCatalogReview(row) {
-    // TODO: Implement
-    throw new Error("Not implemented");
-}
-
-/**
- * This function maps a review row to a customer-owned listing shape.
- * Used for "my reviews". Includes catalog item context for each review.
- * @helper_function
- * @private
- * @param {object} row DAO row (reviews joined with catalog_items, brands, models)
- * @returns {object}
- * @example
- * {
- *     review_id: 1,
- *     title: "Great vehicle",
- *     body: "Smooth ride and excellent range.",
- *     rating: 5,
- *     created_at: "2026-05-01T14:30:00.000Z",
- *     catalog_item: {
- *         cid: 5,
- *         item_type: "vehicle",
- *         name: "Tesla Model 3",
- *         primary_image_url: "https://example.com/model-3.jpg",
- *     },
- * }
- */
-function mapCustomerReview(row) {
-    // TODO: Implement
-    throw new Error("Not implemented");
-}
-
-/**
- * This function maps a review row with author info to an admin detail shape.
- * @helper_function
- * @private
- * @param {object} row DAO row (from reviewDAO.findByIdWithAuthor)
- * @returns {object}
- * @example
- * {
- *     review_id: 1,
- *     title: "Great vehicle",
- *     body: "Smooth ride and excellent range.",
- *     rating: 5,
- *     created_at: "2026-05-01T14:30:00.000Z",
- *     user: {
- *         user_id: 12,
- *         first_name: "Jane",
- *         last_name: "Doe",
- *         email: "jane.doe@example.com",
- *     },
- *     catalog_item: {
- *         cid: 5,
- *         item_type: "vehicle",
- *         name: "Tesla Model 3",
- *     },
- * }
- */
-function mapReviewDetail(row) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+async function getCatalogReviewSummary(cid) {
+    const validCid = validateCatalogItemId(cid);
+    const summary = await reviewDAO.getCatalogReviewSummary(validCid);
+    return toReviewSummaryDTO(summary);
 }
 
 /**
  * This function returns paginated reviews for one catalog item (detail page).
- * @requiredRole customer
+ * @requiredRole N/A (public)
  * @param {number|string} cid Catalog item id from route params
  * @param {object} [paginationQuery] Raw query params from req.query (page, limit)
  * @returns {Promise<{ items: object[], pagination: object }>}
- * @throws {Error} If validation fails or the query fails
- * @example
- * {
- *     items: [
- *         {
- *             review_id: 1,
- *             title: "Great vehicle",
- *             body: "Smooth ride and excellent range.",
- *             rating: 5,
- *             created_at: "2026-05-01T14:30:00.000Z",
- *             author: {
- *                 user_id: 12,
- *                 first_name: "Jane",
- *                 last_name: "Doe",
- *             },
- *         },
- *     ],
- *     pagination: {
- *         page: 1,
- *         limit: 10,
- *         total: 1,
- *         totalPages: 1,
- *         hasNext: false,
- *         hasPrev: false,
- *     },
- * }
+ * @throws {ValidationError} If validation fails
+ * @throws {NotFoundError} If the catalog item does not exist or is inactive
+ * @throws {DatabaseError} On database failures
  */
 async function viewCatalogReviews(cid, paginationQuery = {}) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validCid = validateCatalogItemId(cid);
+    await catalogService.ensureCatalogItemExists(validCid, {
+        requireActive: true,
+    });
+
+    const { page, limit, offset } = parsePaginationQuery(paginationQuery);
+
+    const total = await reviewDAO.countByCatalogItem(validCid);
+    const rows =
+        total === 0
+            ? []
+            : await reviewDAO.findByCatalogItem(validCid, limit, offset);
+
+    return {
+        items: rows.map(toCatalogReviewDTO),
+        pagination: paginationMeta({ page, limit, total }),
+    };
 }
 
 /**
  * This function returns paginated reviews authored by the current user.
- * userId must come from req.user.user_id, not the request body.
  * @requiredRole customer
  * @param {number|string} userId Authenticated user id from req.user.user_id
  * @param {object} [paginationQuery] Raw query params from req.query (page, limit)
  * @returns {Promise<{ items: object[], pagination: object }>}
- * @throws {Error} If validation fails or the query fails
- * @example
- * {
- *     items: [
- *         {
- *             review_id: 1,
- *             title: "Great vehicle",
- *             body: "Smooth ride and excellent range.",
- *             rating: 5,
- *             created_at: "2026-05-01T14:30:00.000Z",
- *             catalog_item: {
- *                 cid: 5,
- *                 item_type: "vehicle",
- *                 name: "Tesla Model 3",
- *                 primary_image_url: "https://example.com/model-3.jpg",
- *             },
- *         },
- *         ...
- *     ],
- *     pagination: {
- *         page: 1,
- *         limit: 10,
- *         total: 1,
- *         totalPages: 1,
- *         hasNext: false,
- *         hasPrev: false,
- *     },
- * }
+ * @throws {ValidationError} If validation fails
+ * @throws {DatabaseError} On database failures
  */
 async function viewCustomerReviews(userId, paginationQuery = {}) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validUserId = validateUserId(userId);
+    const { page, limit, offset } = parsePaginationQuery(paginationQuery);
+
+    const total = await reviewDAO.countByUser(validUserId);
+    const rows =
+        total === 0
+            ? []
+            : await reviewDAO.findByUser(validUserId, limit, offset);
+
+    return {
+        items: rows.map(toCustomerReviewDTO),
+        pagination: paginationMeta({ page, limit, total }),
+    };
 }
 
 /**
  * This function returns paginated reviews for one catalog item (admin view).
- * Same pagination contract as viewCatalogReviews but may include admin fields per item.
+ * We include reviews from soft-deleted authors for moderation.
  * @requiredRole admin
  * @param {number|string} cid Catalog item id from route params
  * @param {object} [paginationQuery] Raw query params from req.query (page, limit)
  * @returns {Promise<{ items: object[], pagination: object }>}
- * @throws {Error} If validation fails or the query fails
- * @example
- * {
- *     items: [
- *         {
- *             review_id: 1,
- *             title: "Great vehicle",
- *             body: "Smooth ride and excellent range.",
- *             rating: 5,
- *             created_at: "2026-05-01T14:30:00.000Z",
- *             user: {
- *                 user_id: 12,
- *                 first_name: "Jane",
- *                 last_name: "Doe",
- *                 email: "jane.doe@example.com",
- *             },
- *         },
- *         ...
- *     ],
- *     pagination: {
- *         page: 1,
- *         limit: 20,
- *         total: 1,
- *         totalPages: 1,
- *         hasNext: false,
- *         hasPrev: false,
- *     },
- * }
+ * @throws {ValidationError} If validation fails
+ * @throws {NotFoundError} If the catalog item does not exist or is inactive
+ * @throws {DatabaseError} On database failures
  */
 async function viewAllCatalogReviews(cid, paginationQuery = {}) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validCid = validateCatalogItemId(cid);
+    await catalogService.ensureCatalogItemExists(validCid, {
+        requireActive: true,
+    });
+    const { page, limit, offset } = parsePaginationQuery(paginationQuery);
+
+    const total = await reviewDAO.countByCatalogItem(validCid, {
+        includeDeletedAuthors: true,
+    });
+    const rows =
+        total === 0
+            ? []
+            : await reviewDAO.findByCatalogItem(validCid, limit, offset, {
+                  includeDeletedAuthors: true,
+              });
+
+    return {
+        items: rows.map(toAdminCatalogReviewDTO),
+        pagination: paginationMeta({ page, limit, total }),
+    };
 }
 
 /**
  * This function returns paginated reviews across all users (admin view).
+ * We include reviews from soft-deleted authors for moderation.
  * @requiredRole admin
  * @param {object} [paginationQuery] Raw query params from req.query (page, limit)
  * @returns {Promise<{ items: object[], pagination: object }>}
- * @throws {Error} If validation fails or the query fails
- * @example
- * {
- *     items: [
- *         {
- *             review_id: 1,
- *             title: "Great vehicle",
- *             body: "Smooth ride and excellent range.",
- *             rating: 5,
- *             created_at: "2026-05-01T14:30:00.000Z",
- *             user: {
- *                 user_id: 12,
- *                 first_name: "Jane",
- *                 last_name: "Doe",
- *                 email: "jane.doe@example.com",
- *             },
- *             catalog_item: {
- *                 cid: 5,
- *                 item_type: "vehicle",
- *                 name: "Tesla Model 3",
- *                 primary_image_url: "https://example.com/model-3.jpg",
- *             },
- *         },
- *         ...
- *     ],
- *     pagination: {
- *         page: 1,
- *         limit: 20,
- *         total: 1,
- *         totalPages: 1,
- *         hasNext: false,
- *         hasPrev: false,
- *     },
- * }
+ * @throws {DatabaseError} On database failures
  */
 async function viewAllReviews(paginationQuery = {}) {
-    // TODO: Implement this. use toAdminReviewListDTO from ./DTOs/adminReviewListDTO.js
-    throw new Error("Not implemented");
+    const { page, limit, offset } = parsePaginationQuery(paginationQuery);
+
+    const total = await reviewDAO.countAllReviews({
+        includeDeletedAuthors: true,
+    });
+    const rows =
+        total === 0
+            ? []
+            : await reviewDAO.findAllReviews(limit, offset, {
+                  includeDeletedAuthors: true,
+              });
+
+    return {
+        items: rows.map(toAdminReviewListDTO),
+        pagination: paginationMeta({ page, limit, total }),
+    };
 }
 
 /**
  * This function returns full detail for one review keyed by rid (review_id).
+ * We include reviews whose authors have been soft-deleted.
  * @requiredRole admin
  * @param {number|string} rid Review id from route params (maps to reviews.review_id)
  * @returns {Promise<object>}
- * @throws {Error} If the review id is invalid, not found, or the query fails
- * @example
- * {
- *     review_id: 1,
- *     title: "Great vehicle",
- *     body: "Smooth ride and excellent range.",
- *     rating: 5,
- *     created_at: "2026-05-01T14:30:00.000Z",
- *     user: {
- *         user_id: 12,
- *         first_name: "Jane",
- *         last_name: "Doe",
- *         email: "jane.doe@example.com",
- *     },
- *     catalog_item: {
- *         cid: 5,
- *         item_type: "vehicle",
- *         name: "Tesla Model 3",
- *         primary_image_url: "https://example.com/model-3.jpg",
- *     },
- * }
+ * @throws {ValidationError} If the review id is invalid
+ * @throws {NotFoundError} If the review is not found
+ * @throws {DatabaseError} On database failures
  */
 async function viewReviewDetail(rid) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const validRid = validateReviewId(rid);
+    const row = await reviewDAO.findByIdWithAuthor(validRid, {
+        includeDeletedAuthors: true,
+    });
+    return toReviewDetailDTO(row);
 }
 
 export {
+    getCatalogReviewSummary,
     viewCatalogReviews,
     viewCustomerReviews,
     viewAllCatalogReviews,

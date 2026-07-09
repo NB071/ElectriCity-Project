@@ -32,12 +32,18 @@ function toAuthorDTO(row) {
  * @returns {object}
  */
 function toReviewUserDTO(row) {
-    return {
+    const dto = {
         user_id: row.user_id,
         first_name: row.first_name,
         last_name: row.last_name,
         email: row.email,
     };
+
+    if (row.deleted_at !== undefined) {
+        dto.is_deleted = row.deleted_at != null;
+    }
+
+    return dto;
 }
 
 /**
