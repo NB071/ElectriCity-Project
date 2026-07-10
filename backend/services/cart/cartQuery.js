@@ -9,6 +9,7 @@ import {
     paginationMeta,
     validatePaginationParams,
 } from "../../utils/pagination.js";
+import { toCartItemDTO } from "./DTOs/cartItemDTO.js";
 
 /**
  * This function maps a cart item row to a response shape.
@@ -86,8 +87,7 @@ import {
  * }
  */
 function mapCartItem(row, options = []) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    return toCartItemDTO(row, options);
 }
 
 /**
@@ -187,8 +187,48 @@ async function viewCart(userId, queryParams = {}) {
         const { sort } = validateSortParams(queryParams);
         const pagination = parsePaginationQuery(queryParams);
 
-        // TODO:
-        throw new Error("Not implemented");
+        let cart = await cartDAO.findCartByUserId(id);
+        if (!cart) {
+            const cart_id = await cartDAO.insertCart(id);
+            cart = { cart_id };
+        }
+
+        const total = await cartDAO.countItemsByCartId(cart.cart_id);
+        const rows = await cartDAO.findItemsByCartId(
+            cart.cart_id,
+            pagination.limit,
+            pagination.offset,
+            sort,
+        );
+
+        const configIds = [
+            ...new Set(
+                rows
+                    .filter((row) => row.config_id != null)
+                    .map((row) => row.config_id),
+            ),
+        ];
+        const allOptions = configIds.length
+            ? await cartDAO.findOptionsByConfigIds(configIds)
+            : [];
+
+        const items = rows.map((row) =>
+            mapCartItem(
+                row,
+                row.config_id != null
+                    ? allOptions.filter(
+                          (option) => option.config_id === row.config_id,
+                      )
+                    : [],
+            ),
+        );
+
+        return {
+            cart_id: cart.cart_id,
+            items,
+            pagination: paginationMeta({ ...pagination, total }),
+            sort,
+        };
     } catch (err) {
         console.error("[Service: Cart] viewCart failed:", err.message);
         throw err;

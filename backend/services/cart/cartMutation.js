@@ -8,6 +8,33 @@ import {
     validateCartItemRef,
     validateUserId,
 } from "./cartValidator.js";
+import { toCartItemDTO } from "./DTOs/cartItemDTO.js";
+import { NotFoundError, ValidationError } from "../../utils/errors.js";
+import { VALIDATIONS } from "./constants.js";
+
+/**
+ * This function loads a cart item by user and id, and maps it to the response shape.
+ * @helper_function
+ * @private
+ * @param {number} userId
+ * @param {number} cartItemId
+ * @returns {Promise<object>}
+ * @throws {NotFoundError} If the cart item is not found or not owned by the user
+ */
+async function loadMappedItem(userId, cartItemId) {
+    const item = await cartDAO.findItemByUserAndId(userId, cartItemId);
+
+    if (!item) {
+        throw new NotFoundError("Cart item");
+    }
+
+    const options =
+        item.config_id != null
+            ? await cartDAO.findOptionsByConfigIds([item.config_id])
+            : [];
+
+    return toCartItemDTO(item, options);
+}
 
 /**
  * This function adds a catalog item to the user's cart.
@@ -65,13 +92,44 @@ async function addToCart({ userId, cid, configId, quantity }) {
             configId,
             quantity,
         });
+        const configId_ = valid.configId ?? null;
 
-        // TODO:
-        // resolve or create cart for valid.userId
-        // insert or merge line item via cartDAO
-        // return mapped cart item
+        const cart = await cartDAO.findCartByUserId(valid.userId);
+        const cartId = cart
+            ? cart.cart_id
+            : await cartDAO.insertCart(valid.userId);
 
-        throw new Error("Not implemented");
+        const existing = await cartDAO.findItemByCartCidConfig(
+            cartId,
+            valid.cid,
+            configId_,
+        );
+
+        let cartItemId;
+        if (existing) {
+            const newQuantity = existing.quantity + valid.quantity;
+
+            if (newQuantity > VALIDATIONS.QUANTITY.MAX) {
+                throw new ValidationError(
+                    `quantity must be at most ${VALIDATIONS.QUANTITY.MAX}.`,
+                );
+            }
+
+            await cartDAO.updateItemQuantity(
+                existing.cart_item_id,
+                newQuantity,
+            );
+            cartItemId = existing.cart_item_id;
+        } else {
+            cartItemId = await cartDAO.insertCartItem({
+                cart_id: cartId,
+                cid: valid.cid,
+                config_id: configId_,
+                quantity: valid.quantity,
+            });
+        }
+
+        return await loadMappedItem(valid.userId, cartItemId);
     } catch (err) {
         console.error("[Service: Cart] addToCart failed:", err.message);
         throw err;
@@ -99,12 +157,18 @@ async function updateCartItemQuantity({ userId, cartItemId, quantity }) {
             quantity,
         });
 
-        // TODO:
-        // verify ownership
-        // update the quantity of the cart item
-        // return updated item
+        const item = await cartDAO.findItemByUserAndId(
+            valid.userId,
+            valid.cartItemId,
+        );
 
-        throw new Error("Not implemented");
+        if (!item) {
+            throw new NotFoundError("Cart item");
+        }
+
+        await cartDAO.updateItemQuantity(valid.cartItemId, valid.quantity);
+
+        return await loadMappedItem(valid.userId, valid.cartItemId);
     } catch (err) {
         console.error(
             "[Service: Cart] updateCartItemQuantity failed:",
@@ -130,12 +194,18 @@ async function removeFromCart({ userId, cartItemId }) {
     try {
         const valid = validateCartItemRef({ userId, cartItemId });
 
-        // TODO:
-        // verify ownership
-        // delete the cart item
-        // return the cart item id
+        const item = await cartDAO.findItemByUserAndId(
+            valid.userId,
+            valid.cartItemId,
+        );
 
-        throw new Error("Not implemented");
+        if (!item) {
+            throw new NotFoundError("Cart item");
+        }
+
+        await cartDAO.deleteItemById(valid.cartItemId);
+
+        return { cart_item_id: valid.cartItemId };
     } catch (err) {
         console.error("[Service: Cart] removeFromCart failed:", err.message);
         throw err;
@@ -155,11 +225,13 @@ async function clearCart(userId) {
     try {
         const id = validateUserId(userId);
 
-        // TODO:
-        // resolve cart for id
-        // delete all items from the cart
+        const cart = await cartDAO.findCartByUserId(id);
 
-        throw new Error("Not implemented");
+        if (!cart) {
+            return;
+        }
+
+        await cartDAO.deleteAllItemsByCartId(cart.cart_id);
     } catch (err) {
         console.error("[Service: Cart] clearCart failed:", err.message);
         throw err;

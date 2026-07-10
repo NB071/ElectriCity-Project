@@ -26,13 +26,65 @@ function throwValidationError(zodError) {
     throw new ValidationError(message, zodError.issues);
 }
 
-const addToCartSchema = null;
+const userIdSchema = z.coerce
+    .number()
+    .int("userId must be an integer.")
+    .positive("userId must be a positive integer.");
 
-const updateCartItemSchema = null;
+const cartItemIdSchema = z.coerce
+    .number()
+    .int("cartItemId must be an integer.")
+    .positive("cartItemId must be a positive integer.");
 
-const cartItemRefSchema = null;
+const catalogItemIdSchema = z.coerce
+    .number()
+    .int("cid must be an integer.")
+    .positive("cid must be a positive integer.");
 
-const sortParamsSchema = null;
+const configIdSchema = z.coerce
+    .number()
+    .int("configId must be an integer.")
+    .positive("configId must be a positive integer.");
+
+const quantitySchema = z.coerce
+    .number()
+    .int("quantity must be an integer.")
+    .min(
+        VALIDATIONS.QUANTITY.MIN,
+        `quantity must be at least ${VALIDATIONS.QUANTITY.MIN}.`,
+    )
+    .max(
+        VALIDATIONS.QUANTITY.MAX,
+        `quantity must be at most ${VALIDATIONS.QUANTITY.MAX}.`,
+    );
+
+const addToCartSchema = z.object({
+    userId: userIdSchema,
+    cid: catalogItemIdSchema,
+    configId: configIdSchema.nullable().optional(),
+    quantity: quantitySchema.default(DEFAULTS.QUANTITY),
+});
+
+const updateCartItemSchema = z.object({
+    userId: userIdSchema,
+    cartItemId: cartItemIdSchema,
+    quantity: quantitySchema,
+});
+
+const cartItemRefSchema = z.object({
+    userId: userIdSchema,
+    cartItemId: cartItemIdSchema,
+});
+
+const sortParamsSchema = z.object({
+    sort: z
+        .enum(ALL_SORT_OPTIONS, {
+            error: () => ({
+                message: `sort must be one of: ${ALL_SORT_OPTIONS.join(", ")}`,
+            }),
+        })
+        .default(DEFAULTS.SORT),
+});
 
 /**
  * This function validates the input for adding an item to a cart.
@@ -42,8 +94,13 @@ const sortParamsSchema = null;
  * @throws {ValidationError} If the cart data is invalid
  */
 function validateAddToCart(data) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = addToCartSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 /**
@@ -54,8 +111,13 @@ function validateAddToCart(data) {
  * @throws {ValidationError} If the cart data is invalid
  */
 function validateUpdateCartItem(data) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = updateCartItemSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 /**
@@ -82,8 +144,13 @@ function validateCartItemRef(data) {
  * @throws {ValidationError} If the cart item id is invalid
  */
 function validateCartItemId(cartItemId) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = cartItemIdSchema.safeParse(cartItemId);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 /**
@@ -93,8 +160,13 @@ function validateCartItemId(cartItemId) {
  * @throws {ValidationError} If the catalog item id is invalid
  */
 function validateCatalogItemId(catalogItemId) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = catalogItemIdSchema.safeParse(catalogItemId);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 /**
@@ -105,8 +177,13 @@ function validateCatalogItemId(catalogItemId) {
  * @throws {ValidationError} If the user id is invalid
  */
 function validateUserId(userId) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = userIdSchema.safeParse(userId);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 /**
@@ -116,8 +193,13 @@ function validateUserId(userId) {
  * @throws {ValidationError} If the sort parameter is invalid
  */
 function validateSortParams(params = {}) {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const parsed = sortParamsSchema.safeParse(params);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
 }
 
 export {

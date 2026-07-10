@@ -46,8 +46,14 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async findCartByUserId(user_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            `SELECT cart_id, user_id, session_token, expires_at, created_at, updated_at
+             FROM carts
+             WHERE user_id = ?`,
+            [user_id],
+            { suppressNotFound: true },
+        );
+        return rows[0] ?? null;
     }
 
     /**
@@ -57,8 +63,11 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async countItemsByCartId(cart_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            `SELECT COUNT(*) AS total FROM cart_items WHERE cart_id = ?`,
+            [cart_id],
+        );
+        return Number(rows[0].total);
     }
 
     /**
@@ -71,8 +80,38 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async findItemsByCartId(cart_id, limit, offset, sort) {
-        // TODO:
-        throw new Error("Not implemented");
+        const orderBy = this.#resolveSortClause(sort);
+        const safeLimit = Number(limit);
+        const safeOffset = Number(offset);
+
+        const [rows] = await this._query(
+            `SELECT
+                ci.cart_item_id,
+                ci.cart_id,
+                ci.cid,
+                ci.config_id,
+                ci.quantity,
+                ci.added_at,
+                cat.item_type,
+                cat.base_price,
+                cat.quantity AS stock,
+                cat.is_active,
+                b.name AS brand_name,
+                m.name AS model_name,
+                cfg.total_price AS config_total_price,
+                cfg.created_at AS config_created_at
+             FROM cart_items ci
+             JOIN catalog_items cat ON cat.cid = ci.cid
+             JOIN models m ON m.model_id = cat.model_id
+             JOIN brands b ON b.brand_id = m.brand_id
+             LEFT JOIN configurations cfg ON cfg.config_id = ci.config_id
+             WHERE ci.cart_id = ?
+             ORDER BY ${orderBy}
+             LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+            [cart_id],
+            { suppressNotFound: true },
+        );
+        return rows;
     }
 
     /**
@@ -83,8 +122,29 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async findOptionsByConfigIds(config_ids) {
-        // TODO:
-        throw new Error("Not implemented");
+        if (!config_ids.length) {
+            return [];
+        }
+
+        const placeholders = config_ids.map(() => "?").join(", ");
+        const [rows] = await this._query(
+            `SELECT
+                co.config_id,
+                co.option_id,
+                ov.name AS option_name,
+                ov.price_delta,
+                oc.category_id,
+                oc.name AS category_name,
+                oc.select_type
+             FROM config_options co
+             JOIN option_values ov ON ov.option_id = co.option_id
+             JOIN option_categories oc ON oc.category_id = ov.category_id
+             WHERE co.config_id IN (${placeholders})
+             ORDER BY oc.category_id ASC, ov.name ASC`,
+            config_ids,
+            { suppressNotFound: true },
+        );
+        return rows;
     }
 
     /**
@@ -95,8 +155,58 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async findItemByUserAndId(user_id, cart_item_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        const [rows] = await this._query(
+            `SELECT
+                ci.cart_item_id,
+                ci.cart_id,
+                ci.cid,
+                ci.config_id,
+                ci.quantity,
+                ci.added_at,
+                cat.item_type,
+                cat.base_price,
+                cat.quantity AS stock,
+                cat.is_active,
+                b.name AS brand_name,
+                m.name AS model_name,
+                cfg.total_price AS config_total_price,
+                cfg.created_at AS config_created_at
+             FROM cart_items ci
+             JOIN carts c ON c.cart_id = ci.cart_id
+             JOIN catalog_items cat ON cat.cid = ci.cid
+             JOIN models m ON m.model_id = cat.model_id
+             JOIN brands b ON b.brand_id = m.brand_id
+             LEFT JOIN configurations cfg ON cfg.config_id = ci.config_id
+             WHERE c.user_id = ? AND ci.cart_item_id = ?`,
+            [user_id, cart_item_id],
+            { suppressNotFound: true },
+        );
+        return rows[0] ?? null;
+    }
+
+    /**
+     * This method finds an existing cart item for a given cart, catalog item, and
+     * configuration, so addToCart can merge quantities instead of duplicating rows.
+     * @param {number} cart_id
+     * @param {number} cid
+     * @param {number|null} config_id
+     * @returns {Promise<object|null>}
+     * @throws {DatabaseError} On database failures
+     */
+    async findItemByCartCidConfig(cart_id, cid, config_id) {
+        const sql =
+            config_id == null
+                ? `SELECT cart_item_id, quantity FROM cart_items
+                   WHERE cart_id = ? AND cid = ? AND config_id IS NULL`
+                : `SELECT cart_item_id, quantity FROM cart_items
+                   WHERE cart_id = ? AND cid = ? AND config_id = ?`;
+        const params =
+            config_id == null ? [cart_id, cid] : [cart_id, cid, config_id];
+
+        const [rows] = await this._query(sql, params, {
+            suppressNotFound: true,
+        });
+        return rows[0] ?? null;
     }
 
     // #########################
@@ -109,8 +219,11 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async insertCart(user_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        const [result] = await this._query(
+            `INSERT INTO carts (user_id) VALUES (?)`,
+            [user_id],
+        );
+        return result.insertId;
     }
 
     /**
@@ -124,8 +237,12 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async insertCartItem({ cart_id, cid, config_id = null, quantity }) {
-        // TODO:
-        throw new Error("Not implemented");
+        const [result] = await this._query(
+            `INSERT INTO cart_items (cart_id, cid, config_id, quantity)
+             VALUES (?, ?, ?, ?)`,
+            [cart_id, cid, config_id, quantity],
+        );
+        return result.insertId;
     }
 
     /**
@@ -137,8 +254,11 @@ class CartDAO extends BaseDAO {
      * @throws {NotFoundError} If the cart item is not found
      */
     async updateItemQuantity(cart_item_id, quantity) {
-        // TODO:
-        throw new Error("Not implemented");
+        await this._query(
+            `UPDATE cart_items SET quantity = ? WHERE cart_item_id = ?`,
+            [quantity, cart_item_id],
+            { notFoundResource: "Cart item" },
+        );
     }
 
     /**
@@ -149,8 +269,11 @@ class CartDAO extends BaseDAO {
      * @throws {NotFoundError} If the cart item is not found
      */
     async deleteItemById(cart_item_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        await this._query(
+            `DELETE FROM cart_items WHERE cart_item_id = ?`,
+            [cart_item_id],
+            { notFoundResource: "Cart item" },
+        );
     }
 
     /**
@@ -160,8 +283,9 @@ class CartDAO extends BaseDAO {
      * @throws {DatabaseError} On database failures
      */
     async deleteAllItemsByCartId(cart_id) {
-        // TODO:
-        throw new Error("Not implemented");
+        await this._query(`DELETE FROM cart_items WHERE cart_id = ?`, [
+            cart_id,
+        ]);
     }
 }
 
