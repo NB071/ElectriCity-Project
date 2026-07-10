@@ -7,4 +7,5 @@ export {
     authRateLimiter,
     dashboardRateLimiter,
     shopRateLimiter,
+    chatbotRateLimiter,
 } from "./rateLimit.middleware.js";

@@ -18,9 +18,11 @@
         "test:catalog:details": "node tests/catalog-service/catalog-details.test.js",
         "test:catalog:compare": "node tests/catalog-service/catalog-compare.test.js",
         "test:catalog": "node tests/catalog-service/browse-vehicles.test.js && node tests/catalog-service/search-vehicles.test.js && node tests/catalog-service/catalog-details.test.js && node tests/catalog-service/catalog-compare.test.js",
+        "test:chatbot": "node tests/chatbot-service/chatbot.test.js",
         "docker:up": "docker compose -f ../docker/docker-compose.yml --env-file .env up -d --build",
         "docker:down": "docker compose -f ../docker/docker-compose.yml --env-file .env down",
-        "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f"
+        "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f",
+        "docker:npm-ci": "docker exec electricity-backend npm ci"
     },
     "keywords": [],
     "author": "EECS 4413 Group G",
@@ -28,6 +30,7 @@
     "type": "module",
     "description": "Backend for Electricity E-Commerce Platform",
     "dependencies": {
+        "@google/genai": "^2.11.0",
         "axios": "^1.16.1",
         "bcrypt": "^6.0.0",
         "bullmq": "^5.78.1",

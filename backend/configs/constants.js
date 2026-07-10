@@ -18,6 +18,13 @@ const APP_CONSTANTS = {
         DEFAULT_LIMIT: 10,
         MAX_LIMIT: 100,
     },
+    AI: {
+        DEFAULT_MODEL: "gemini-3.1-flash-lite",
+        DEFAULT_MAX_TOOL_ROUNDS: 5,
+        DEFAULT_MAX_TOOL_RESULT_CHARS: 12000,
+        DEFAULT_RETRY_ATTEMPTS: 3,
+        DEFAULT_RETRY_DELAY_MS: 1500,
+    },
 };
 
 export default APP_CONSTANTS;
