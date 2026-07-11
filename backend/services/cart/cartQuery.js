@@ -230,7 +230,7 @@ async function viewCart(userId, queryParams = {}) {
             sort,
         };
     } catch (err) {
-        console.error("[Service: Cart] viewCart failed:", err.message);
+        log.error("Cart", "viewCart", "viewCart failed", err);
         throw err;
     }
 }

@@ -11,6 +11,8 @@ import {
 import paymentDAO from "./paymentDAO.js";
 import orderService from "../order/order.service.js";
 import { VALIDATIONS } from "./constants.js";
+import { AppError, PaymentError } from "../../utils/errors.js";
+import { setSafeContext } from "../../utils/sentryHelpers.js";
 
 /**
  * This function processes a payment for an order.
@@ -24,6 +26,7 @@ import { VALIDATIONS } from "./constants.js";
  * @returns {Promise<object>} Payment result with attempt_id and status
  * @throws {ValidationError} If validation fails
  * @throws {NotFoundError} If the order does not exist when updating payment_status
+ * @throws {PaymentError} If the payment gateway fails unexpectedly
  * @throws {DatabaseError} On database failures
  */
 async function processPayment({
@@ -41,14 +44,29 @@ async function processPayment({
         payment_details,
     });
 
+    setSafeContext({ user_id: validated.user_id });
+
     const strategy = getStrategy(validated.payment_method);
-    const strategyResult = await strategy.process({
-        user_id: validated.user_id,
-        order_id: validated.order_id,
-        amount: validated.amount,
-        payment_method: validated.payment_method,
-        payment_details: validated.payment_details,
-    });
+
+    let strategyResult;
+    try {
+        strategyResult = await strategy.process({
+            user_id: validated.user_id,
+            order_id: validated.order_id,
+            amount: validated.amount,
+            payment_method: validated.payment_method,
+            payment_details: validated.payment_details,
+        });
+    } catch (error) {
+        if (error instanceof AppError) {
+            throw error;
+        }
+        // Never forward gateway/raw payment payloads to Sentry via error.details
+        throw new PaymentError("Payment gateway request failed", {
+            order_id: validated.order_id,
+            payment_method: validated.payment_method,
+        });
+    }
 
     const recordPayment = await recordPaymentAttempt({
         order_id: validated.order_id,

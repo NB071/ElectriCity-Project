@@ -4,7 +4,9 @@ import {
     ConflictError,
     NotFoundError,
     ValidationError,
+    InternalError,
 } from "./errors.js";
+import log from "./logger.js";
 
 /**
  * This is the base class for all DAOs.
@@ -21,7 +23,7 @@ class BaseDAO {
      */
     constructor() {
         if (new.target === BaseDAO) {
-            throw new Error("BaseDAO cannot be instantiated directly.");
+            throw new InternalError("BaseDAO cannot be instantiated directly.");
         }
     }
 
@@ -110,10 +112,7 @@ class BaseDAO {
             try {
                 await conn.rollback();
             } catch (rollbackErr) {
-                console.error(
-                    "[BaseDAO] rollback failed:",
-                    rollbackErr.message,
-                );
+                log.error("DB", "BaseDAO", "rollback failed", rollbackErr);
             }
 
             // if error is not raised explicitly, throw a database error;

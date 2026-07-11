@@ -4,6 +4,7 @@
 import analyticsDAO from "./analyticsDAO.js";
 import getRedisClient from "../../configs/redis.js";
 import { REDIS } from "./constants.js";
+import log from "../../utils/logger.js";
 
 // Module-level Set for the single source the hot path reads from.
 let activeIds = new Set();
@@ -19,10 +20,7 @@ async function loadActiveEventTypes() {
         const rows = await analyticsDAO.findActiveEventTypeIds();
         activeIds = new Set(rows.map((r) => r.event_type_id));
     } catch (err) {
-        console.error(
-            "[Service: Analytics] loadActiveEventTypes failed:",
-            err.message,
-        );
+        log.error("Analytics", "loadActiveEventTypes", "loadActiveEventTypes failed", err);
         throw err;
     }
 }
@@ -52,10 +50,7 @@ async function subscribeToEventTypeChanges() {
             try {
                 await loadActiveEventTypes();
             } catch (err) {
-                console.error(
-                    "[Service: Analytics] cache reload failed:",
-                    err.message,
-                );
+                log.error("Analytics", "subscribeToEventTypeChanges", "cache reload failed", err);
                 throw err;
             }
         }

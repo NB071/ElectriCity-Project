@@ -131,7 +131,7 @@ async function addToCart({ userId, cid, configId, quantity }) {
 
         return await loadMappedItem(valid.userId, cartItemId);
     } catch (err) {
-        console.error("[Service: Cart] addToCart failed:", err.message);
+        log.error("Cart", "addToCart", "addToCart failed", err);
         throw err;
     }
 }
@@ -170,9 +170,11 @@ async function updateCartItemQuantity({ userId, cartItemId, quantity }) {
 
         return await loadMappedItem(valid.userId, valid.cartItemId);
     } catch (err) {
-        console.error(
-            "[Service: Cart] updateCartItemQuantity failed:",
-            err.message,
+        log.error(
+            "Cart",
+            "updateCartItemQuantity",
+            "updateCartItemQuantity failed",
+            err,
         );
         throw err;
     }
@@ -207,7 +209,7 @@ async function removeFromCart({ userId, cartItemId }) {
 
         return { cart_item_id: valid.cartItemId };
     } catch (err) {
-        console.error("[Service: Cart] removeFromCart failed:", err.message);
+        log.error("Cart", "removeFromCart", "removeFromCart failed", err);
         throw err;
     }
 }
@@ -233,7 +235,7 @@ async function clearCart(userId) {
 
         await cartDAO.deleteAllItemsByCartId(cart.cart_id);
     } catch (err) {
-        console.error("[Service: Cart] clearCart failed:", err.message);
+        log.error("Cart", "clearCart", "clearCart failed", err);
         throw err;
     }
 }

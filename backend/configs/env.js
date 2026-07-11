@@ -10,9 +10,25 @@
 
 import dotenv from "dotenv";
 import APP_CONSTANTS from "./constants.js";
-dotenv.config();
+
+const { parsed } = dotenv.config();
+
+if (parsed?.NODE_ENV) {
+    process.env.NODE_ENV = parsed.NODE_ENV.trim();
+}
+
+const nodeEnv = (
+    process.env.NODE_ENV || APP_CONSTANTS.APP.DEFAULT_NODE_ENV
+).trim();
+const isDev = nodeEnv === "development";
 
 export default {
+    app: {
+        NODE_ENV: nodeEnv,
+        LOG_LEVEL: (
+            process.env.LOG_LEVEL || APP_CONSTANTS.APP.DEFAULT_APP_LOG_LEVEL
+        ).trim(),
+    },
     db: {
         DB_HOST: process.env.DB_HOST,
         DB_LOCAL_DBNAME: process.env.DB_LOCAL_DBNAME,
@@ -42,5 +58,43 @@ export default {
             parseInt(process.env.REDIS_PORT) ||
             APP_CONSTANTS.REDIS.DEFAULT_PORT,
         REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    },
+    ai: {
+        apiKey: (
+            process.env.GEMINI_API_KEY ??
+            process.env.GOOGLE_API_KEY ??
+            ""
+        ).trim(),
+        model: process.env.GEMINI_MODEL || APP_CONSTANTS.AI.DEFAULT_MODEL,
+        maxToolRounds:
+            parseInt(process.env.GEMINI_MAX_TOOL_ROUNDS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_MAX_TOOL_ROUNDS,
+        maxToolResultChars:
+            parseInt(process.env.GEMINI_MAX_TOOL_RESULT_CHARS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_MAX_TOOL_RESULT_CHARS,
+        retryAttempts:
+            parseInt(process.env.GEMINI_RETRY_ATTEMPTS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_RETRY_ATTEMPTS,
+        retryDelayMs:
+            parseInt(process.env.GEMINI_RETRY_DELAY_MS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_RETRY_DELAY_MS,
+    },
+    sentry: {
+        SENTRY_DSN: process.env.SENTRY_DSN,
+        SENTRY_TRACES_SAMPLE_RATE:
+            parseFloat(
+                isDev
+                    ? process.env.SENTRY_DEV_TRACES_SAMPLE_RATE
+                    : process.env.SENTRY_PROD_TRACES_SAMPLE_RATE,
+            ) || APP_CONSTANTS.SENTRY.DEFAULT_TRACES_SAMPLE_RATE,
+        SENTRY_PROFILE_SESSION_SAMPLE_RATE:
+            parseFloat(
+                isDev
+                    ? process.env.SENTRY_DEV_PROFILE_SESSION_SAMPLE_RATE
+                    : process.env.SENTRY_PROD_PROFILE_SESSION_SAMPLE_RATE,
+            ) || APP_CONSTANTS.SENTRY.DEFAULT_PROFILE_SESSION_SAMPLE_RATE,
+        SENTRY_ENABLED:
+            process.env.SENTRY_ENABLED === "true" ||
+            APP_CONSTANTS.SENTRY.DEFAULT_ENABLED,
     },
 };

@@ -2,7 +2,7 @@
 // This file is used for validation of cart data
 
 import { z } from "zod";
-import { ValidationError } from "../../utils/errors.js";
+import { ValidationError, InternalError } from "../../utils/errors.js";
 import { VALIDATIONS, DEFAULTS } from "./constants.js";
 
 const ALL_SORT_OPTIONS = VALIDATIONS.SORT_VALUES;
