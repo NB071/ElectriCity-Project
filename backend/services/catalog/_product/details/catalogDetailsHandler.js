@@ -39,7 +39,8 @@ class CatalogDetailsHandler {
             throw new NotFoundError("Catalog item subtype");
         }
         const customizations = await this.optionsQuery.getForItem(cid);
-        const equipped_options = await this.optionsQuery.getEquippedForItem(cid);
+        const equipped_options =
+            await this.optionsQuery.getEquippedForItem(cid);
         const history = await this._fetchHistory(cid);
 
         return this._assemble({
@@ -78,9 +79,10 @@ class CatalogDetailsHandler {
      * @protected
      * @param {number} cid
      * @returns {Promise<object>}
+     * @throws {InternalError} If the subtype method is not implemented by the subclass
      */
     async _fetchSubtype(_cid) {
-        throw new Error("_fetchSubtype not implemented");
+        throw new InternalError("_fetchSubtype not implemented");
     }
 
     /**
@@ -89,9 +91,10 @@ class CatalogDetailsHandler {
      * @protected
      * @param {object} _parts
      * @returns {Promise<object>}
+     * @throws {InternalError} If the assemble method is not implemented by the subclass
      */
     _assemble(_parts) {
-        throw new Error("_assemble not implemented");
+        throw new InternalError("_assemble not implemented");
     }
 }
 

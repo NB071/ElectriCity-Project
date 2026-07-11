@@ -5,6 +5,7 @@ import promptDirector from "./builder/PromptDirector.js";
 import aiClient from "./AIClient.js";
 import { getDeclarationsForTemplate } from "./strategies/index.js";
 import { toChatReplyDTO } from "./DTOs/chatReplyDTO.js";
+import log from "../../utils/logger.js";
 
 /**
  * Validates input, builds prompts, and sends a chat completion request to Gemini.
@@ -38,7 +39,7 @@ async function sendMessage({ template, userMessage, vars = {}, context = [] }) {
 
         return toChatReplyDTO({ reply });
     } catch (err) {
-        console.error("[Service: Chatbot] sendMessage failed:", err.message);
+        log.error("Chatbot", "sendMessage", "sendMessage failed", err);
         throw err;
     }
 }

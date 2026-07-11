@@ -16,6 +16,7 @@ import {
     paginationMeta,
     validatePaginationParams,
 } from "../../../utils/pagination.js";
+import log from "../../../utils/logger.js";
 
 /**
  * This function returns user information by id with optional field projection.
@@ -37,10 +38,7 @@ async function getUserById(userId, options = {}) {
         const row = await accountDAO.findById(id, selectedFields);
         return toUserDTO(row);
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] getUserById failed:",
-            err.message,
-        );
+        log.error("IAM", "getUserById", "getUserById failed", err);
         throw err;
     }
 }
@@ -82,10 +80,7 @@ async function viewAllUsers(queryParams = {}) {
             pagination: paginationMeta({ ...pagination, total }),
         };
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] viewAllUsers failed:",
-            err.message,
-        );
+        log.error("IAM", "viewAllUsers", "viewAllUsers failed", err);
         throw err;
     }
 }
@@ -118,10 +113,7 @@ async function searchUsers(queryParams = {}) {
             q,
         };
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] searchUsers failed:",
-            err.message,
-        );
+        log.error("IAM", "searchUsers", "searchUsers failed", err);
         throw err;
     }
 }

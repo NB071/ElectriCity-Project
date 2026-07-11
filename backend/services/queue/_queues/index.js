@@ -5,6 +5,7 @@ import emailQueue from "./EmailQueue.js";
 import analyticsQueue from "./AnalyticsQueue.js";
 import QueueContext from "./QueueContext.js";
 import { QUEUES } from "../constants.js";
+import { InternalError } from "../../../utils/errors.js";
 
 /**
  * Registry of available queue strategies, key'ed by queue name.
@@ -18,13 +19,13 @@ const strategies = {
  * This looks up a queue strategy by name and returns it wrapped in a context.
  * @param {string} name - Queue name from QUEUES constants (key'ed by queue name)
  * @returns {QueueContext} (Strategy pattern)
- * @throws {Error} If no queue is registered under the given name
+ * @throws {InternalError} If no queue is registered under the given name
  */
 function getQueue(name) {
     const strategy = strategies[name];
 
     if (!strategy) {
-        throw new Error(
+        throw new InternalError(
             `Unknown queue "${name}". Registered: ${Object.keys(strategies).join(", ")}`,
         );
     }

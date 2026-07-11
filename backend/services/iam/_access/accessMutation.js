@@ -20,6 +20,7 @@ import {
     UnauthorizedError,
     ForbiddenError,
     NotFoundError,
+    InternalError,
 } from "../../../utils/errors.js";
 import { toRegisterResponseDTO } from "./DTOs/registerResponseDTO.js";
 import { toAuthSessionDTO } from "./DTOs/authSessionDTO.js";
@@ -83,7 +84,7 @@ function parseDeviceLabel(userAgent) {
     const label =
         browserName && platform
             ? `${browserName} on ${platform}`
-            : browserName ?? platform ?? null;
+            : (browserName ?? platform ?? null);
 
     if (!label) {
         return null;
@@ -164,7 +165,7 @@ function buildTokenPair({ userId, role, sid = generateSessionId() }) {
     const decoded = jwt.decode(refreshToken);
     const exp = decoded?.exp;
     if (typeof exp !== "number") {
-        throw new Error("Failed to derive refresh token expiry");
+        throw new InternalError("Failed to derive refresh token expiry");
     }
 
     return {

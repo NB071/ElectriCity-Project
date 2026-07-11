@@ -5,6 +5,7 @@ import configureAIClient, { aiConfig } from "../../configs/ai.js";
 import executeTool from "./toolExecutor.js";
 import { ROLES } from "./constants.js";
 import { AppError } from "../../utils/errors.js";
+import log from "../../utils/logger.js";
 
 /**
  * This class is used to send chat completion requests to the AI provider.
@@ -237,8 +238,10 @@ class AIClient {
                 }
 
                 const delay = aiConfig.retryDelayMs * attempt;
-                console.warn(
-                    `[AI] Gemini ${status} on attempt ${attempt}/${maxAttempts}. Retrying in ${delay}ms...`,
+                log.warn(
+                    "AI",
+                    "AIClient",
+                    `Gemini ${status} on attempt ${attempt}/${maxAttempts}. Retrying in ${delay}ms...`,
                 );
                 await this.#sleep(delay);
             }

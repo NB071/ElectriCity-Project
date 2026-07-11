@@ -1,6 +1,8 @@
 // Payment Service
 // Strategy pattern / payment context
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the context that wraps the payment processing strategy.
  */
@@ -28,7 +30,7 @@ class PaymentContext {
      */
     async process(input) {
         if (!this.#strategy) {
-            throw new Error("No payment strategy set.");
+            throw new InternalError("No payment strategy set.");
         }
 
         return this.#strategy.process(input);

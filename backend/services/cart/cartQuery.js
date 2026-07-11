@@ -9,6 +9,7 @@ import {
     paginationMeta,
     validatePaginationParams,
 } from "../../utils/pagination.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function maps a cart item row to a response shape.
@@ -190,7 +191,7 @@ async function viewCart(userId, queryParams = {}) {
         // TODO:
         throw new Error("Not implemented");
     } catch (err) {
-        console.error("[Service: Cart] viewCart failed:", err.message);
+        log.error("Cart", "viewCart", "viewCart failed", err);
         throw err;
     }
 }

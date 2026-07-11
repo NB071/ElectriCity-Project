@@ -1,6 +1,8 @@
 // Media Service
 // Strategy pattern / media context
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the context that wraps the media resolution strategy.
  * @extends MediaStrategy (Strategy pattern)
@@ -21,11 +23,11 @@ class MediaContext {
      * Resolves media for a given catalog item.
      * @param {number} cid
      * @returns {Promise<object[]>}
-     * @throws {Error} If the strategy is not set
+     * @throws {InternalError} If the strategy is not set
      */
     resolve(cid) {
         if (!this.#strategy) {
-            throw new Error("No media strategy set.");
+            throw new InternalError("No media strategy set.");
         }
 
         return this.#strategy.resolve(cid);
@@ -41,11 +43,11 @@ class MediaContext {
      * @param {number} [input.display_order]
      * @param {boolean} [input.is_primary]
      * @returns {Promise<{ media_id: number }>}
-     * @throws {Error} If the strategy is not set
+     * @throws {InternalError} If the strategy is not set
      */
     record(input) {
         if (!this.#strategy) {
-            throw new Error("No media strategy set.");
+            throw new InternalError("No media strategy set.");
         }
 
         return this.#strategy.record(input);

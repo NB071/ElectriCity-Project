@@ -5,6 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 import env from "./env.js";
 import APP_CONSTANTS from "./constants.js";
 import { AppError } from "../utils/errors.js";
+import log from "../utils/logger.js";
 
 export const aiConfig = {
     // Gemini API key
@@ -43,7 +44,7 @@ function configureAIClient() {
         vertexai: false,
     });
 
-    console.log("[AI] Gemini client configured successfully");
+    log.info("AI", "configureAIClient", "Gemini client configured successfully");
     return client;
 }
 

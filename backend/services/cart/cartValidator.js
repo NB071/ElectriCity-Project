@@ -2,7 +2,7 @@
 // This file is used for validation of cart data
 
 import { z } from "zod";
-import { ValidationError } from "../../utils/errors.js";
+import { ValidationError, InternalError } from "../../utils/errors.js";
 import { VALIDATIONS, DEFAULTS } from "./constants.js";
 
 const ALL_SORT_OPTIONS = VALIDATIONS.SORT_VALUES;
@@ -43,7 +43,7 @@ const sortParamsSchema = null;
  */
 function validateAddToCart(data) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 /**
@@ -55,7 +55,7 @@ function validateAddToCart(data) {
  */
 function validateUpdateCartItem(data) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 /**
@@ -83,7 +83,7 @@ function validateCartItemRef(data) {
  */
 function validateCartItemId(cartItemId) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 /**
@@ -94,7 +94,7 @@ function validateCartItemId(cartItemId) {
  */
 function validateCatalogItemId(catalogItemId) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 /**
@@ -106,7 +106,7 @@ function validateCatalogItemId(catalogItemId) {
  */
 function validateUserId(userId) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 /**
@@ -117,7 +117,7 @@ function validateUserId(userId) {
  */
 function validateSortParams(params = {}) {
     // TODO: Implement
-    throw new Error("Not implemented");
+    throw new InternalError("Not implemented");
 }
 
 export {

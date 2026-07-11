@@ -4,6 +4,7 @@
 import { getProducer } from "../services/queue/queue.service.js";
 import { QUEUES } from "../services/queue/constants.js";
 import { isEventActive } from "../services/analytics/analyticsCache.js";
+import log from "../utils/logger.js";
 
 /**
  * Returns middleware that enqueues the given event after the response is sent.
@@ -29,9 +30,11 @@ function track(eventTypeId) {
             getProducer(QUEUES.ANALYTICS.PRODUCER_NAME)
                 .produce(payload)
                 .catch((err) =>
-                    console.error(
-                        "[Middleware: Analytics] enqueue failed:",
-                        err.message,
+                    log.error(
+                        "Analytics",
+                        "track",
+                        "enqueue failed",
+                        err,
                     ),
                 );
         });

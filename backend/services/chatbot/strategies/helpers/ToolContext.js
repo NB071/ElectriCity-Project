@@ -1,6 +1,8 @@
 // Chatbot Tool Strategies
 // Strategy pattern / tool context
 
+import { InternalError } from "../../../../utils/errors.js";
+
 /**
  * Context that delegates tool execution to a selected strategy.
  * @class
@@ -21,10 +23,11 @@ class ToolContext {
      * This method executes the tool.
      * @param {object} args Arguments to pass to the tool.
      * @returns {Promise<object>} Result of the tool execution.
+     * @throws {InternalError} If the strategy is not set
      */
     async execute(args) {
         if (!this.#strategy) {
-            throw new Error("No tool strategy set.");
+            throw new InternalError("No tool strategy set.");
         }
 
         return this.#strategy.execute(args);

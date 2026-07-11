@@ -1,6 +1,8 @@
 // Payment Service
 // Strategy pattern / payment strategy abstract class
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the abstract class for payment processing strategies.
  * @abstract
@@ -16,7 +18,9 @@ class PaymentStrategy {
      * @returns {Promise<object>}
      */
     process(_input) {
-        throw new Error("process() must be implemented by subclass");
+        throw new InternalError(
+            "Payment strategy process() is not implemented",
+        );
     }
 }
 
