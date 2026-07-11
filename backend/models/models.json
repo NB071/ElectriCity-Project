@@ -1,0 +1,4614 @@
+{
+    "media": [
+        {
+            "media_id": 1,
+            "url": "/media/vehicles/1-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 2,
+            "url": "/media/vehicles/1-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 3,
+            "url": "/media/vehicles/1-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 4,
+            "url": "/media/carfax/1.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 1 history report"
+        },
+        {
+            "media_id": 5,
+            "url": "/media/vehicles/2-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 6,
+            "url": "/media/vehicles/2-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 7,
+            "url": "/media/carfax/2.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 2 history report"
+        },
+        {
+            "media_id": 8,
+            "url": "/media/vehicles/3-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 9,
+            "url": "/media/vehicles/3-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 10,
+            "url": "/media/carfax/3.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 3 history report"
+        },
+        {
+            "media_id": 11,
+            "url": "/media/vehicles/4-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 12,
+            "url": "/media/vehicles/4-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 13,
+            "url": "/media/vehicles/4-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 14,
+            "url": "/media/carfax/4.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 4 history report"
+        },
+        {
+            "media_id": 15,
+            "url": "/media/vehicles/5-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 16,
+            "url": "/media/vehicles/5-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 17,
+            "url": "/media/carfax/5.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 5 history report"
+        },
+        {
+            "media_id": 18,
+            "url": "/media/vehicles/6-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 19,
+            "url": "/media/vehicles/6-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 20,
+            "url": "/media/vehicles/6-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 21,
+            "url": "/media/carfax/6.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 6 history report"
+        },
+        {
+            "media_id": 22,
+            "url": "/media/vehicles/7-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 23,
+            "url": "/media/vehicles/7-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 24,
+            "url": "/media/carfax/7.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 7 history report"
+        },
+        {
+            "media_id": 25,
+            "url": "/media/vehicles/8-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 26,
+            "url": "/media/vehicles/8-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 27,
+            "url": "/media/vehicles/8-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 28,
+            "url": "/media/carfax/8.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 8 history report"
+        },
+        {
+            "media_id": 29,
+            "url": "/media/vehicles/9-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 30,
+            "url": "/media/vehicles/9-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 31,
+            "url": "/media/vehicles/9-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 32,
+            "url": "/media/carfax/9.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 9 history report"
+        },
+        {
+            "media_id": 33,
+            "url": "/media/vehicles/10-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 34,
+            "url": "/media/vehicles/10-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 35,
+            "url": "/media/carfax/10.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 10 history report"
+        },
+        {
+            "media_id": 36,
+            "url": "/media/vehicles/11-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 37,
+            "url": "/media/vehicles/11-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 38,
+            "url": "/media/vehicles/11-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 39,
+            "url": "/media/carfax/11.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 11 history report"
+        },
+        {
+            "media_id": 40,
+            "url": "/media/vehicles/12-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 41,
+            "url": "/media/vehicles/12-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 42,
+            "url": "/media/carfax/12.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 12 history report"
+        },
+        {
+            "media_id": 43,
+            "url": "/media/vehicles/13-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 44,
+            "url": "/media/vehicles/13-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 45,
+            "url": "/media/carfax/13.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 13 history report"
+        },
+        {
+            "media_id": 46,
+            "url": "/media/vehicles/14-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 47,
+            "url": "/media/vehicles/14-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 48,
+            "url": "/media/vehicles/14-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 49,
+            "url": "/media/carfax/14.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 14 history report"
+        },
+        {
+            "media_id": 50,
+            "url": "/media/vehicles/15-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 51,
+            "url": "/media/vehicles/15-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 52,
+            "url": "/media/carfax/15.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 15 history report"
+        },
+        {
+            "media_id": 53,
+            "url": "/media/vehicles/16-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 54,
+            "url": "/media/vehicles/16-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 55,
+            "url": "/media/carfax/16.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 16 history report"
+        },
+        {
+            "media_id": 56,
+            "url": "/media/vehicles/17-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 57,
+            "url": "/media/vehicles/17-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 58,
+            "url": "/media/carfax/17.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 17 history report"
+        },
+        {
+            "media_id": 59,
+            "url": "/media/vehicles/18-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 60,
+            "url": "/media/vehicles/18-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 61,
+            "url": "/media/vehicles/18-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 62,
+            "url": "/media/carfax/18.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 18 history report"
+        },
+        {
+            "media_id": 63,
+            "url": "/media/vehicles/19-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 64,
+            "url": "/media/vehicles/19-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 65,
+            "url": "/media/carfax/19.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 19 history report"
+        },
+        {
+            "media_id": 66,
+            "url": "/media/vehicles/20-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 67,
+            "url": "/media/vehicles/20-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 68,
+            "url": "/media/carfax/20.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 20 history report"
+        },
+        {
+            "media_id": 69,
+            "url": "/media/vehicles/21-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 70,
+            "url": "/media/vehicles/21-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 71,
+            "url": "/media/vehicles/21-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 72,
+            "url": "/media/carfax/21.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 21 history report"
+        },
+        {
+            "media_id": 73,
+            "url": "/media/vehicles/22-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 74,
+            "url": "/media/vehicles/22-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 75,
+            "url": "/media/vehicles/22-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 76,
+            "url": "/media/carfax/22.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 22 history report"
+        },
+        {
+            "media_id": 77,
+            "url": "/media/vehicles/23-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 78,
+            "url": "/media/vehicles/23-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 79,
+            "url": "/media/vehicles/23-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 80,
+            "url": "/media/carfax/23.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 23 history report"
+        },
+        {
+            "media_id": 81,
+            "url": "/media/vehicles/24-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 82,
+            "url": "/media/vehicles/24-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 83,
+            "url": "/media/vehicles/24-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 84,
+            "url": "/media/carfax/24.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 24 history report"
+        },
+        {
+            "media_id": 85,
+            "url": "/media/vehicles/25-1.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 1"
+        },
+        {
+            "media_id": 86,
+            "url": "/media/vehicles/25-2.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 2"
+        },
+        {
+            "media_id": 87,
+            "url": "/media/vehicles/25-3.png",
+            "file_type": "image/png",
+            "alt_text": "Vehicle image 3"
+        },
+        {
+            "media_id": 88,
+            "url": "/media/carfax/25.pdf",
+            "file_type": "application/pdf",
+            "alt_text": "Vehicle 25 history report"
+        },
+        {
+            "media_id": 89,
+            "url": "/media/brands/tesla.png",
+            "file_type": "image/png",
+            "alt_text": "Tesla logo"
+        },
+        {
+            "media_id": 90,
+            "url": "/media/brands/hyundai.png",
+            "file_type": "image/png",
+            "alt_text": "Hyundai logo"
+        },
+        {
+            "media_id": 91,
+            "url": "/media/brands/kia.png",
+            "file_type": "image/png",
+            "alt_text": "Kia logo"
+        },
+        {
+            "media_id": 92,
+            "url": "/media/brands/ford.png",
+            "file_type": "image/png",
+            "alt_text": "Ford logo"
+        },
+        {
+            "media_id": 93,
+            "url": "/media/brands/chevrolet.png",
+            "file_type": "image/png",
+            "alt_text": "Chevrolet logo"
+        },
+        {
+            "media_id": 94,
+            "url": "/media/brands/rivian.png",
+            "file_type": "image/png",
+            "alt_text": "Rivian logo"
+        },
+        {
+            "media_id": 95,
+            "url": "/media/brands/lucid.png",
+            "file_type": "image/png",
+            "alt_text": "Lucid logo"
+        },
+        {
+            "media_id": 96,
+            "url": "/media/brands/polestar.png",
+            "file_type": "image/png",
+            "alt_text": "Polestar logo"
+        },
+        {
+            "media_id": 97,
+            "url": "/media/brands/volkswagen.png",
+            "file_type": "image/png",
+            "alt_text": "Volkswagen logo"
+        },
+        {
+            "media_id": 98,
+            "url": "/media/brands/nissan.png",
+            "file_type": "image/png",
+            "alt_text": "Nissan logo"
+        },
+        {
+            "media_id": 99,
+            "url": "/media/brands/bmw.png",
+            "file_type": "image/png",
+            "alt_text": "BMW logo"
+        },
+        {
+            "media_id": 100,
+            "url": "/media/brands/audi.png",
+            "file_type": "image/png",
+            "alt_text": "Audi logo"
+        },
+        {
+            "media_id": 101,
+            "url": "/media/brands/genesis.png",
+            "file_type": "image/png",
+            "alt_text": "Genesis logo"
+        },
+        {
+            "media_id": 102,
+            "url": "/media/brands/toyota.png",
+            "file_type": "image/png",
+            "alt_text": "Toyota logo"
+        },
+        {
+            "media_id": 103,
+            "url": "/media/brands/volvo.png",
+            "file_type": "image/png",
+            "alt_text": "Volvo logo"
+        }
+    ],
+    "roles": [
+        {
+            "role_id": 1,
+            "role_name": "customer"
+        },
+        {
+            "role_id": 2,
+            "role_name": "admin"
+        }
+    ],
+    "users": [
+        {
+            "user_id": 1,
+            "role_id": 1,
+            "first_name": "Maya",
+            "last_name": "Singh",
+            "email": "maya.singh@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551001",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 2,
+            "role_id": 1,
+            "first_name": "Daniel",
+            "last_name": "Osei",
+            "email": "daniel.osei@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551002",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 3,
+            "role_id": 1,
+            "first_name": "Kara",
+            "last_name": "Novak",
+            "email": "kara.novak@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551003",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 4,
+            "role_id": 1,
+            "first_name": "Jordan",
+            "last_name": "Okafor",
+            "email": "jordan.okafor@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551004",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 5,
+            "role_id": 1,
+            "first_name": "Lea",
+            "last_name": "Tremblay",
+            "email": "lea.tremblay@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551005",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 6,
+            "role_id": 1,
+            "first_name": "Soo",
+            "last_name": "Park",
+            "email": "soo.park@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551006",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 7,
+            "role_id": 1,
+            "first_name": "Tara",
+            "last_name": "Ahmadi",
+            "email": "tara.ahmadi@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551007",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 8,
+            "role_id": 1,
+            "first_name": "Paul",
+            "last_name": "Fontaine",
+            "email": "paul.fontaine@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551008",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 9,
+            "role_id": 1,
+            "first_name": "Amy",
+            "last_name": "Chen",
+            "email": "amy.chen@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551009",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 10,
+            "role_id": 1,
+            "first_name": "Rosa",
+            "last_name": "Bianchi",
+            "email": "rosa.bianchi@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551010",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 11,
+            "role_id": 1,
+            "first_name": "Noah",
+            "last_name": "Patel",
+            "email": "noah.patel@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551011",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 12,
+            "role_id": 1,
+            "first_name": "Emma",
+            "last_name": "Nguyen",
+            "email": "emma.nguyen@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551012",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 13,
+            "role_id": 1,
+            "first_name": "Liam",
+            "last_name": "Brooks",
+            "email": "liam.brooks@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551013",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 14,
+            "role_id": 1,
+            "first_name": "Olivia",
+            "last_name": "Martinez",
+            "email": "olivia.martinez@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551014",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 15,
+            "role_id": 1,
+            "first_name": "Ethan",
+            "last_name": "Walsh",
+            "email": "ethan.walsh@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551015",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 16,
+            "role_id": 1,
+            "first_name": "Ava",
+            "last_name": "Kowalski",
+            "email": "ava.kowalski@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551016",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 17,
+            "role_id": 1,
+            "first_name": "Mason",
+            "last_name": "Ibrahim",
+            "email": "mason.ibrahim@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551017",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 18,
+            "role_id": 1,
+            "first_name": "Isabella",
+            "last_name": "Rossi",
+            "email": "isabella.rossi@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551018",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 19,
+            "role_id": 1,
+            "first_name": "Lucas",
+            "last_name": "Kim",
+            "email": "lucas.kim@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551019",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 20,
+            "role_id": 1,
+            "first_name": "Mia",
+            "last_name": "Santos",
+            "email": "mia.santos@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551020",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 21,
+            "role_id": 1,
+            "first_name": "James",
+            "last_name": "OConnor",
+            "email": "james.oconnor@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551021",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 22,
+            "role_id": 1,
+            "first_name": "Sophia",
+            "last_name": "Ali",
+            "email": "sophia.ali@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551022",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 23,
+            "role_id": 1,
+            "first_name": "Benjamin",
+            "last_name": "Clarke",
+            "email": "benjamin.clarke@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": "4165551023",
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 24,
+            "role_id": 2,
+            "first_name": "Admin",
+            "last_name": "One",
+            "email": "admin.one@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": null,
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        },
+        {
+            "user_id": 25,
+            "role_id": 2,
+            "first_name": "Admin",
+            "last_name": "Two",
+            "email": "admin.two@example.com",
+            "password_hash": "$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G",
+            "phone_number": null,
+            "deleted_at": null,
+            "password": "Passwrd@123"
+        }
+    ],
+    "addresses": [
+        {
+            "address_id": 1,
+            "user_id": 2,
+            "street": "12 Maple Ave",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M4B1B3",
+            "is_default": true
+        },
+        {
+            "address_id": 2,
+            "user_id": 3,
+            "street": "88 King St W",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5H1J9",
+            "is_default": true
+        },
+        {
+            "address_id": 3,
+            "user_id": 3,
+            "street": "250 Yonge St",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5B2L7",
+            "is_default": false
+        },
+        {
+            "address_id": 4,
+            "user_id": 5,
+            "street": "45 Queen St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P1A0",
+            "is_default": true
+        },
+        {
+            "address_id": 5,
+            "user_id": 6,
+            "street": "100 Rideau St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1N5W8",
+            "is_default": true
+        },
+        {
+            "address_id": 6,
+            "user_id": 6,
+            "street": "77 Metcalfe St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P5L6",
+            "is_default": false
+        },
+        {
+            "address_id": 7,
+            "user_id": 8,
+            "street": "500 Burrard St",
+            "city": "Vancouver",
+            "province": "BC",
+            "country": "Canada",
+            "postal_code": "V6C3R8",
+            "is_default": true
+        },
+        {
+            "address_id": 8,
+            "user_id": 9,
+            "street": "200 Granville St",
+            "city": "Vancouver",
+            "province": "BC",
+            "country": "Canada",
+            "postal_code": "V6C1S4",
+            "is_default": true
+        },
+        {
+            "address_id": 9,
+            "user_id": 9,
+            "street": "350 Robson St",
+            "city": "Vancouver",
+            "province": "BC",
+            "country": "Canada",
+            "postal_code": "V6B2B2",
+            "is_default": false
+        },
+        {
+            "address_id": 10,
+            "user_id": 11,
+            "street": "1 Place Ville Marie",
+            "city": "Montreal",
+            "province": "QC",
+            "country": "Canada",
+            "postal_code": "H3B2B6",
+            "is_default": true
+        },
+        {
+            "address_id": 11,
+            "user_id": 12,
+            "street": "1250 Rene-Levesque Blvd W",
+            "city": "Montreal",
+            "province": "QC",
+            "country": "Canada",
+            "postal_code": "H3B4W8",
+            "is_default": true
+        },
+        {
+            "address_id": 12,
+            "user_id": 12,
+            "street": "2200 Rue Sainte-Catherine O",
+            "city": "Montreal",
+            "province": "QC",
+            "country": "Canada",
+            "postal_code": "H3H1M1",
+            "is_default": false
+        },
+        {
+            "address_id": 13,
+            "user_id": 14,
+            "street": "10180 101 St NW",
+            "city": "Edmonton",
+            "province": "AB",
+            "country": "Canada",
+            "postal_code": "T5J3S4",
+            "is_default": true
+        },
+        {
+            "address_id": 14,
+            "user_id": 15,
+            "street": "888 3 St SE",
+            "city": "Calgary",
+            "province": "AB",
+            "country": "Canada",
+            "postal_code": "T2G5C3",
+            "is_default": true
+        },
+        {
+            "address_id": 15,
+            "user_id": 15,
+            "street": "1969 Upper Water St",
+            "city": "Halifax",
+            "province": "NS",
+            "country": "Canada",
+            "postal_code": "B3J3R7",
+            "is_default": false
+        },
+        {
+            "address_id": 16,
+            "user_id": 17,
+            "street": "330 St Mary Ave",
+            "city": "Winnipeg",
+            "province": "MB",
+            "country": "Canada",
+            "postal_code": "R3C3Z5",
+            "is_default": true
+        },
+        {
+            "address_id": 17,
+            "user_id": 18,
+            "street": "12 Maple Ave",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M4B1B3",
+            "is_default": true
+        },
+        {
+            "address_id": 18,
+            "user_id": 18,
+            "street": "88 King St W",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5H1J9",
+            "is_default": false
+        },
+        {
+            "address_id": 19,
+            "user_id": 20,
+            "street": "250 Yonge St",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5B2L7",
+            "is_default": true
+        },
+        {
+            "address_id": 20,
+            "user_id": 21,
+            "street": "45 Queen St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P1A0",
+            "is_default": true
+        },
+        {
+            "address_id": 21,
+            "user_id": 21,
+            "street": "100 Rideau St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1N5W8",
+            "is_default": false
+        },
+        {
+            "address_id": 22,
+            "user_id": 23,
+            "street": "77 Metcalfe St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P5L6",
+            "is_default": true
+        }
+    ],
+    "brands": [
+        {
+            "brand_id": 1,
+            "name": "Tesla",
+            "description": "Electric vehicle manufacturer focused on EVs and energy products.",
+            "country": "United States",
+            "website_url": "https://www.tesla.com",
+            "logo_url": "/media/brands/tesla.png"
+        },
+        {
+            "brand_id": 2,
+            "name": "Hyundai",
+            "description": "Global automaker with a growing dedicated EV lineup.",
+            "country": "South Korea",
+            "website_url": "https://www.hyundai.com",
+            "logo_url": "/media/brands/hyundai.png"
+        },
+        {
+            "brand_id": 3,
+            "name": "Kia",
+            "description": "Automaker offering electric crossovers and SUVs.",
+            "country": "South Korea",
+            "website_url": "https://www.kia.com",
+            "logo_url": "/media/brands/kia.png"
+        },
+        {
+            "brand_id": 4,
+            "name": "Ford",
+            "description": "American automaker with electric trucks and SUVs.",
+            "country": "United States",
+            "website_url": "https://www.ford.com",
+            "logo_url": "/media/brands/ford.png"
+        },
+        {
+            "brand_id": 5,
+            "name": "Chevrolet",
+            "description": "GM brand with affordable and mid-range electric vehicles.",
+            "country": "United States",
+            "website_url": "https://www.chevrolet.com",
+            "logo_url": "/media/brands/chevrolet.png"
+        },
+        {
+            "brand_id": 6,
+            "name": "Rivian",
+            "description": "Adventure-focused electric truck and SUV manufacturer.",
+            "country": "United States",
+            "website_url": "https://www.rivian.com",
+            "logo_url": "/media/brands/rivian.png"
+        },
+        {
+            "brand_id": 7,
+            "name": "Lucid",
+            "description": "Luxury electric sedan manufacturer.",
+            "country": "United States",
+            "website_url": "https://www.lucidmotors.com",
+            "logo_url": "/media/brands/lucid.png"
+        },
+        {
+            "brand_id": 8,
+            "name": "Polestar",
+            "description": "Performance-oriented electric vehicle brand.",
+            "country": "Sweden",
+            "website_url": "https://www.polestar.com",
+            "logo_url": "/media/brands/polestar.png"
+        },
+        {
+            "brand_id": 9,
+            "name": "Volkswagen",
+            "description": "German automaker expanding its ID electric lineup.",
+            "country": "Germany",
+            "website_url": "https://www.vw.com",
+            "logo_url": "/media/brands/volkswagen.png"
+        },
+        {
+            "brand_id": 10,
+            "name": "Nissan",
+            "description": "Pioneer in mass-market electric vehicles.",
+            "country": "Japan",
+            "website_url": "https://www.nissanusa.com",
+            "logo_url": "/media/brands/nissan.png"
+        },
+        {
+            "brand_id": 11,
+            "name": "BMW",
+            "description": "Premium automaker with dedicated i-series EVs.",
+            "country": "Germany",
+            "website_url": "https://www.bmw.com",
+            "logo_url": "/media/brands/bmw.png"
+        },
+        {
+            "brand_id": 12,
+            "name": "Audi",
+            "description": "Premium brand with e-tron electric models.",
+            "country": "Germany",
+            "website_url": "https://www.audi.com",
+            "logo_url": "/media/brands/audi.png"
+        },
+        {
+            "brand_id": 13,
+            "name": "Genesis",
+            "description": "Luxury brand with electric SUVs and sedans.",
+            "country": "South Korea",
+            "website_url": "https://www.genesis.com",
+            "logo_url": "/media/brands/genesis.png"
+        },
+        {
+            "brand_id": 14,
+            "name": "Toyota",
+            "description": "Global automaker with battery-electric crossover models.",
+            "country": "Japan",
+            "website_url": "https://www.toyota.com",
+            "logo_url": "/media/brands/toyota.png"
+        },
+        {
+            "brand_id": 15,
+            "name": "Volvo",
+            "description": "Safety-focused brand with recharge electric models.",
+            "country": "Sweden",
+            "website_url": "https://www.volvocars.com",
+            "logo_url": "/media/brands/volvo.png"
+        }
+    ],
+    "models": [
+        {
+            "model_id": 1,
+            "brand_id": 1,
+            "model_type": "vehicle",
+            "name": "Model 3",
+            "description": "Tesla Model 3 electric vehicle model.",
+            "release_year": 2017
+        },
+        {
+            "model_id": 2,
+            "brand_id": 1,
+            "model_type": "vehicle",
+            "name": "Model Y",
+            "description": "Tesla Model Y electric vehicle model.",
+            "release_year": 2020
+        },
+        {
+            "model_id": 3,
+            "brand_id": 2,
+            "model_type": "vehicle",
+            "name": "Ioniq 5",
+            "description": "Hyundai Ioniq 5 electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 4,
+            "brand_id": 2,
+            "model_type": "vehicle",
+            "name": "Kona Electric",
+            "description": "Hyundai Kona Electric electric vehicle model.",
+            "release_year": 2018
+        },
+        {
+            "model_id": 5,
+            "brand_id": 3,
+            "model_type": "vehicle",
+            "name": "EV6",
+            "description": "Kia EV6 electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 6,
+            "brand_id": 3,
+            "model_type": "vehicle",
+            "name": "EV9",
+            "description": "Kia EV9 electric vehicle model.",
+            "release_year": 2023
+        },
+        {
+            "model_id": 7,
+            "brand_id": 4,
+            "model_type": "vehicle",
+            "name": "Mustang Mach-E",
+            "description": "Ford Mustang Mach-E electric vehicle model.",
+            "release_year": 2020
+        },
+        {
+            "model_id": 8,
+            "brand_id": 4,
+            "model_type": "vehicle",
+            "name": "F-150 Lightning",
+            "description": "Ford F-150 Lightning electric vehicle model.",
+            "release_year": 2022
+        },
+        {
+            "model_id": 9,
+            "brand_id": 5,
+            "model_type": "vehicle",
+            "name": "Equinox EV",
+            "description": "Chevrolet Equinox EV electric vehicle model.",
+            "release_year": 2024
+        },
+        {
+            "model_id": 10,
+            "brand_id": 5,
+            "model_type": "vehicle",
+            "name": "Bolt EV",
+            "description": "Chevrolet Bolt EV electric vehicle model.",
+            "release_year": 2016
+        },
+        {
+            "model_id": 11,
+            "brand_id": 6,
+            "model_type": "vehicle",
+            "name": "R1T",
+            "description": "Rivian R1T electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 12,
+            "brand_id": 6,
+            "model_type": "vehicle",
+            "name": "R1S",
+            "description": "Rivian R1S electric vehicle model.",
+            "release_year": 2022
+        },
+        {
+            "model_id": 13,
+            "brand_id": 7,
+            "model_type": "vehicle",
+            "name": "Air",
+            "description": "Lucid Air electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 14,
+            "brand_id": 8,
+            "model_type": "vehicle",
+            "name": "Polestar 2",
+            "description": "Polestar Polestar 2 electric vehicle model.",
+            "release_year": 2020
+        },
+        {
+            "model_id": 15,
+            "brand_id": 9,
+            "model_type": "vehicle",
+            "name": "ID.4",
+            "description": "Volkswagen ID.4 electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 16,
+            "brand_id": 10,
+            "model_type": "vehicle",
+            "name": "Leaf",
+            "description": "Nissan Leaf electric vehicle model.",
+            "release_year": 2010
+        },
+        {
+            "model_id": 17,
+            "brand_id": 10,
+            "model_type": "vehicle",
+            "name": "Ariya",
+            "description": "Nissan Ariya electric vehicle model.",
+            "release_year": 2022
+        },
+        {
+            "model_id": 18,
+            "brand_id": 11,
+            "model_type": "vehicle",
+            "name": "i4",
+            "description": "BMW i4 electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 19,
+            "brand_id": 11,
+            "model_type": "vehicle",
+            "name": "iX",
+            "description": "BMW iX electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 20,
+            "brand_id": 12,
+            "model_type": "vehicle",
+            "name": "Q4 e-tron",
+            "description": "Audi Q4 e-tron electric vehicle model.",
+            "release_year": 2021
+        },
+        {
+            "model_id": 21,
+            "brand_id": 13,
+            "model_type": "vehicle",
+            "name": "GV60",
+            "description": "Genesis GV60 electric vehicle model.",
+            "release_year": 2022
+        },
+        {
+            "model_id": 22,
+            "brand_id": 14,
+            "model_type": "vehicle",
+            "name": "bZ4X",
+            "description": "Toyota bZ4X electric vehicle model.",
+            "release_year": 2022
+        },
+        {
+            "model_id": 23,
+            "brand_id": 15,
+            "model_type": "vehicle",
+            "name": "XC40 Recharge",
+            "description": "Volvo XC40 Recharge electric vehicle model.",
+            "release_year": 2020
+        }
+    ],
+    "vehicle_models": [
+        {
+            "model_id": 1,
+            "body_shape": "Sedan",
+            "door_count": 4,
+            "drivetrain": "RWD"
+        },
+        {
+            "model_id": 2,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 3,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 4,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 5,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 6,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 7,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 8,
+            "body_shape": "Truck",
+            "door_count": 4,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 9,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 10,
+            "body_shape": "Hatchback",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 11,
+            "body_shape": "Truck",
+            "door_count": 4,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 12,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 13,
+            "body_shape": "Sedan",
+            "door_count": 4,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 14,
+            "body_shape": "Sedan",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 15,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "RWD"
+        },
+        {
+            "model_id": 16,
+            "body_shape": "Hatchback",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 17,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 18,
+            "body_shape": "Sedan",
+            "door_count": 4,
+            "drivetrain": "RWD"
+        },
+        {
+            "model_id": 19,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 20,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 21,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        },
+        {
+            "model_id": 22,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "FWD"
+        },
+        {
+            "model_id": 23,
+            "body_shape": "SUV",
+            "door_count": 5,
+            "drivetrain": "AWD"
+        }
+    ],
+    "option_categories": [
+        {
+            "category_id": 1,
+            "name": "Paint",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 2,
+            "name": "Wheels",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 3,
+            "name": "Interior",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 4,
+            "name": "Autopilot Package",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 5,
+            "name": "Drivetrain",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 6,
+            "name": "Interior Package",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 7,
+            "name": "Trim Level",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 8,
+            "name": "Tech Package",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 9,
+            "name": "Driver Assistance",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 10,
+            "name": "Battery Pack",
+            "select_type": "SINGLE"
+        },
+        {
+            "category_id": 11,
+            "name": "Adventure Gear",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 12,
+            "name": "Performance",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 13,
+            "name": "M Sport Package",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 14,
+            "name": "Solar Roof Package",
+            "select_type": "MULTI"
+        },
+        {
+            "category_id": 15,
+            "name": "Equipped",
+            "select_type": "SINGLE"
+        }
+    ],
+    "option_values": [
+        {
+            "option_id": 1,
+            "category_id": 1,
+            "name": "Pearl White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 2,
+            "category_id": 1,
+            "name": "Solid Black",
+            "price_delta": 1500
+        },
+        {
+            "option_id": 3,
+            "category_id": 1,
+            "name": "Deep Blue Metallic",
+            "price_delta": 2000
+        },
+        {
+            "option_id": 4,
+            "category_id": 1,
+            "name": "Ultra Red",
+            "price_delta": 3000
+        },
+        {
+            "option_id": 5,
+            "category_id": 2,
+            "name": "18-inch Aero",
+            "price_delta": 0
+        },
+        {
+            "option_id": 6,
+            "category_id": 2,
+            "name": "19-inch Sport",
+            "price_delta": 1900
+        },
+        {
+            "option_id": 7,
+            "category_id": 3,
+            "name": "Black Vegan Interior",
+            "price_delta": 0
+        },
+        {
+            "option_id": 8,
+            "category_id": 3,
+            "name": "Cream Vegan Interior",
+            "price_delta": 1200
+        },
+        {
+            "option_id": 9,
+            "category_id": 4,
+            "name": "Enhanced Autopilot",
+            "price_delta": 6000
+        },
+        {
+            "option_id": 10,
+            "category_id": 4,
+            "name": "Full Self-Driving Capability",
+            "price_delta": 12000
+        },
+        {
+            "option_id": 11,
+            "category_id": 1,
+            "name": "Atlas White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 12,
+            "category_id": 1,
+            "name": "Gravity Gold Matte",
+            "price_delta": 1000
+        },
+        {
+            "option_id": 13,
+            "category_id": 1,
+            "name": "Cyber Gray",
+            "price_delta": 800
+        },
+        {
+            "option_id": 14,
+            "category_id": 5,
+            "name": "Standard Range RWD",
+            "price_delta": 0
+        },
+        {
+            "option_id": 15,
+            "category_id": 5,
+            "name": "Long Range AWD",
+            "price_delta": 6500
+        },
+        {
+            "option_id": 16,
+            "category_id": 6,
+            "name": "Cloth Seats",
+            "price_delta": 0
+        },
+        {
+            "option_id": 17,
+            "category_id": 6,
+            "name": "Vegan Leather Seats + Heated/Vented",
+            "price_delta": 3200
+        },
+        {
+            "option_id": 18,
+            "category_id": 1,
+            "name": "Snow White Pearl",
+            "price_delta": 0
+        },
+        {
+            "option_id": 19,
+            "category_id": 1,
+            "name": "Aurora Black Pearl",
+            "price_delta": 900
+        },
+        {
+            "option_id": 20,
+            "category_id": 1,
+            "name": "Yacht Blue",
+            "price_delta": 1100
+        },
+        {
+            "option_id": 21,
+            "category_id": 7,
+            "name": "Light",
+            "price_delta": 0
+        },
+        {
+            "option_id": 22,
+            "category_id": 7,
+            "name": "Wind",
+            "price_delta": 4500
+        },
+        {
+            "option_id": 23,
+            "category_id": 7,
+            "name": "GT-Line",
+            "price_delta": 8900
+        },
+        {
+            "option_id": 24,
+            "category_id": 8,
+            "name": "Highway Driving Assist 2",
+            "price_delta": 2200
+        },
+        {
+            "option_id": 25,
+            "category_id": 8,
+            "name": "Meridian Premium Sound",
+            "price_delta": 1400
+        },
+        {
+            "option_id": 26,
+            "category_id": 8,
+            "name": "Vehicle-to-Load Adapter",
+            "price_delta": 600
+        },
+        {
+            "option_id": 27,
+            "category_id": 1,
+            "name": "Oxford White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 28,
+            "category_id": 1,
+            "name": "Grabber Blue",
+            "price_delta": 1200
+        },
+        {
+            "option_id": 29,
+            "category_id": 1,
+            "name": "Iconic Silver",
+            "price_delta": 900
+        },
+        {
+            "option_id": 30,
+            "category_id": 5,
+            "name": "Extended Range AWD",
+            "price_delta": 7200
+        },
+        {
+            "option_id": 31,
+            "category_id": 5,
+            "name": "GT Performance AWD",
+            "price_delta": 15000
+        },
+        {
+            "option_id": 32,
+            "category_id": 2,
+            "name": "18-inch",
+            "price_delta": 0
+        },
+        {
+            "option_id": 33,
+            "category_id": 2,
+            "name": "20-inch Machined-Face",
+            "price_delta": 2000
+        },
+        {
+            "option_id": 34,
+            "category_id": 1,
+            "name": "Summit White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 35,
+            "category_id": 1,
+            "name": "Radiant Red",
+            "price_delta": 1000
+        },
+        {
+            "option_id": 36,
+            "category_id": 1,
+            "name": "Sterling Gray Metallic",
+            "price_delta": 700
+        },
+        {
+            "option_id": 37,
+            "category_id": 7,
+            "name": "LT",
+            "price_delta": 0
+        },
+        {
+            "option_id": 38,
+            "category_id": 7,
+            "name": "RS",
+            "price_delta": 5200
+        },
+        {
+            "option_id": 39,
+            "category_id": 9,
+            "name": "Super Cruise",
+            "price_delta": 3000
+        },
+        {
+            "option_id": 40,
+            "category_id": 9,
+            "name": "Enhanced Parking Assist",
+            "price_delta": 850
+        },
+        {
+            "option_id": 41,
+            "category_id": 1,
+            "name": "Rivian Blue",
+            "price_delta": 0
+        },
+        {
+            "option_id": 42,
+            "category_id": 1,
+            "name": "Forest Green",
+            "price_delta": 1500
+        },
+        {
+            "option_id": 43,
+            "category_id": 1,
+            "name": "Launch Green",
+            "price_delta": 2200
+        },
+        {
+            "option_id": 44,
+            "category_id": 10,
+            "name": "Large Pack",
+            "price_delta": 0
+        },
+        {
+            "option_id": 45,
+            "category_id": 10,
+            "name": "Max Pack",
+            "price_delta": 16000
+        },
+        {
+            "option_id": 46,
+            "category_id": 11,
+            "name": "Camp Kitchen",
+            "price_delta": 3200
+        },
+        {
+            "option_id": 47,
+            "category_id": 11,
+            "name": "Gear Tunnel Shuttle",
+            "price_delta": 2800
+        },
+        {
+            "option_id": 48,
+            "category_id": 11,
+            "name": "Roof Rack Crossbars",
+            "price_delta": 900
+        },
+        {
+            "option_id": 49,
+            "category_id": 1,
+            "name": "Stellar White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 50,
+            "category_id": 1,
+            "name": "Infinite Black",
+            "price_delta": 2000
+        },
+        {
+            "option_id": 51,
+            "category_id": 1,
+            "name": "Zenith Red",
+            "price_delta": 2500
+        },
+        {
+            "option_id": 52,
+            "category_id": 7,
+            "name": "Pure",
+            "price_delta": 0
+        },
+        {
+            "option_id": 53,
+            "category_id": 7,
+            "name": "Touring",
+            "price_delta": 15000
+        },
+        {
+            "option_id": 54,
+            "category_id": 7,
+            "name": "Grand Touring",
+            "price_delta": 35000
+        },
+        {
+            "option_id": 55,
+            "category_id": 3,
+            "name": "Santa Cruz",
+            "price_delta": 0
+        },
+        {
+            "option_id": 56,
+            "category_id": 3,
+            "name": "Mojave Tahoe",
+            "price_delta": 4000
+        },
+        {
+            "option_id": 57,
+            "category_id": 1,
+            "name": "Snow",
+            "price_delta": 0
+        },
+        {
+            "option_id": 58,
+            "category_id": 1,
+            "name": "Magic Blue Metallic",
+            "price_delta": 1200
+        },
+        {
+            "option_id": 59,
+            "category_id": 1,
+            "name": "Space Black",
+            "price_delta": 1200
+        },
+        {
+            "option_id": 60,
+            "category_id": 12,
+            "name": "Performance Pack",
+            "price_delta": 5000
+        },
+        {
+            "option_id": 61,
+            "category_id": 12,
+            "name": "Plus Pack",
+            "price_delta": 4200
+        },
+        {
+            "option_id": 62,
+            "category_id": 12,
+            "name": "Pilot Pack",
+            "price_delta": 3300
+        },
+        {
+            "option_id": 63,
+            "category_id": 1,
+            "name": "Pure White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 64,
+            "category_id": 1,
+            "name": "Kings Red Metallic",
+            "price_delta": 800
+        },
+        {
+            "option_id": 65,
+            "category_id": 1,
+            "name": "Mythos Black Metallic",
+            "price_delta": 800
+        },
+        {
+            "option_id": 66,
+            "category_id": 5,
+            "name": "RWD Standard",
+            "price_delta": 0
+        },
+        {
+            "option_id": 67,
+            "category_id": 5,
+            "name": "AWD Pro",
+            "price_delta": 6000
+        },
+        {
+            "option_id": 68,
+            "category_id": 1,
+            "name": "Sunset Copper",
+            "price_delta": 1000
+        },
+        {
+            "option_id": 69,
+            "category_id": 7,
+            "name": "Engage",
+            "price_delta": 0
+        },
+        {
+            "option_id": 70,
+            "category_id": 7,
+            "name": "Evolve",
+            "price_delta": 4200
+        },
+        {
+            "option_id": 71,
+            "category_id": 7,
+            "name": "Platinum+",
+            "price_delta": 9500
+        },
+        {
+            "option_id": 72,
+            "category_id": 1,
+            "name": "Alpine White",
+            "price_delta": 0
+        },
+        {
+            "option_id": 73,
+            "category_id": 1,
+            "name": "Portimao Blue Metallic",
+            "price_delta": 1500
+        },
+        {
+            "option_id": 74,
+            "category_id": 1,
+            "name": "Frozen Black Metallic",
+            "price_delta": 2200
+        },
+        {
+            "option_id": 75,
+            "category_id": 7,
+            "name": "eDrive35",
+            "price_delta": 0
+        },
+        {
+            "option_id": 76,
+            "category_id": 7,
+            "name": "eDrive40",
+            "price_delta": 6000
+        },
+        {
+            "option_id": 77,
+            "category_id": 7,
+            "name": "M50 xDrive",
+            "price_delta": 16000
+        },
+        {
+            "option_id": 78,
+            "category_id": 13,
+            "name": "M Sport Package",
+            "price_delta": 4500
+        },
+        {
+            "option_id": 79,
+            "category_id": 13,
+            "name": "Harman Kardon Sound",
+            "price_delta": 1400
+        },
+        {
+            "option_id": 80,
+            "category_id": 1,
+            "name": "Glacier White Metallic",
+            "price_delta": 0
+        },
+        {
+            "option_id": 81,
+            "category_id": 1,
+            "name": "Daytona Gray Pearl",
+            "price_delta": 1300
+        },
+        {
+            "option_id": 82,
+            "category_id": 7,
+            "name": "Premium",
+            "price_delta": 0
+        },
+        {
+            "option_id": 83,
+            "category_id": 7,
+            "name": "Premium Plus",
+            "price_delta": 5500
+        },
+        {
+            "option_id": 84,
+            "category_id": 7,
+            "name": "Prestige",
+            "price_delta": 11000
+        },
+        {
+            "option_id": 85,
+            "category_id": 1,
+            "name": "Wind Chill Pearl",
+            "price_delta": 0
+        },
+        {
+            "option_id": 86,
+            "category_id": 1,
+            "name": "Supersonic Red",
+            "price_delta": 900
+        },
+        {
+            "option_id": 87,
+            "category_id": 5,
+            "name": "FWD",
+            "price_delta": 0
+        },
+        {
+            "option_id": 88,
+            "category_id": 5,
+            "name": "AWD",
+            "price_delta": 3500
+        },
+        {
+            "option_id": 89,
+            "category_id": 14,
+            "name": "Solar Charging Roof",
+            "price_delta": 1800
+        },
+        {
+            "option_id": 90,
+            "category_id": 15,
+            "name": "Black Interior",
+            "price_delta": 0
+        },
+        {
+            "option_id": 91,
+            "category_id": 15,
+            "name": "Tow Package",
+            "price_delta": 0
+        },
+        {
+            "option_id": 92,
+            "category_id": 15,
+            "name": "Gun Metallic",
+            "price_delta": 0
+        },
+        {
+            "option_id": 93,
+            "category_id": 15,
+            "name": "SV trim",
+            "price_delta": 0
+        },
+        {
+            "option_id": 94,
+            "category_id": 15,
+            "name": "Mars Orange",
+            "price_delta": 0
+        },
+        {
+            "option_id": 95,
+            "category_id": 15,
+            "name": "Crystal Sphere Shift-by-Wire",
+            "price_delta": 0
+        },
+        {
+            "option_id": 96,
+            "category_id": 15,
+            "name": "Sage Green Metallic",
+            "price_delta": 0
+        },
+        {
+            "option_id": 97,
+            "category_id": 15,
+            "name": "Advanced Driver Assist",
+            "price_delta": 0
+        }
+    ],
+    "catalog_items": [
+        {
+            "cid": 1,
+            "model_id": 1,
+            "item_type": "vehicle",
+            "base_price": 54990,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 2,
+            "model_id": 2,
+            "item_type": "vehicle",
+            "base_price": 47500,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 3,
+            "model_id": 3,
+            "item_type": "vehicle",
+            "base_price": 54999,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 4,
+            "model_id": 4,
+            "item_type": "vehicle",
+            "base_price": 33900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 5,
+            "model_id": 5,
+            "item_type": "vehicle",
+            "base_price": 53995,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 6,
+            "model_id": 6,
+            "item_type": "vehicle",
+            "base_price": 58900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 7,
+            "model_id": 7,
+            "item_type": "vehicle",
+            "base_price": 59000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 8,
+            "model_id": 8,
+            "item_type": "vehicle",
+            "base_price": 62000,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 9,
+            "model_id": 9,
+            "item_type": "vehicle",
+            "base_price": 47000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 10,
+            "model_id": 10,
+            "item_type": "vehicle",
+            "base_price": 21500,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 11,
+            "model_id": 11,
+            "item_type": "vehicle",
+            "base_price": 99000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 12,
+            "model_id": 12,
+            "item_type": "vehicle",
+            "base_price": 92000,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 13,
+            "model_id": 13,
+            "item_type": "vehicle",
+            "base_price": 110000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 14,
+            "model_id": 14,
+            "item_type": "vehicle",
+            "base_price": 39500,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 15,
+            "model_id": 14,
+            "item_type": "vehicle",
+            "base_price": 53000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 16,
+            "model_id": 15,
+            "item_type": "vehicle",
+            "base_price": 48000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 17,
+            "model_id": 15,
+            "item_type": "vehicle",
+            "base_price": 34900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 18,
+            "model_id": 16,
+            "item_type": "vehicle",
+            "base_price": 16900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 19,
+            "model_id": 17,
+            "item_type": "vehicle",
+            "base_price": 52000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 20,
+            "model_id": 18,
+            "item_type": "vehicle",
+            "base_price": 62000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 21,
+            "model_id": 19,
+            "item_type": "vehicle",
+            "base_price": 74900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 22,
+            "model_id": 20,
+            "item_type": "vehicle",
+            "base_price": 60000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 23,
+            "model_id": 21,
+            "item_type": "vehicle",
+            "base_price": 55900,
+            "quantity": 1,
+            "is_active": true
+        },
+        {
+            "cid": 24,
+            "model_id": 22,
+            "item_type": "vehicle",
+            "base_price": 50000,
+            "quantity": 5,
+            "is_active": true
+        },
+        {
+            "cid": 25,
+            "model_id": 23,
+            "item_type": "vehicle",
+            "base_price": 44500,
+            "quantity": 1,
+            "is_active": true
+        }
+    ],
+    "vehicles": [
+        {
+            "cid": 1,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 2,
+            "year": 2023,
+            "condition": "used",
+            "mileage": 38200
+        },
+        {
+            "cid": 3,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 4,
+            "year": 2021,
+            "condition": "used",
+            "mileage": 61000
+        },
+        {
+            "cid": 5,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 6,
+            "year": 2024,
+            "condition": "used",
+            "mileage": 22500
+        },
+        {
+            "cid": 7,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 8,
+            "year": 2023,
+            "condition": "used",
+            "mileage": 45300
+        },
+        {
+            "cid": 9,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 10,
+            "year": 2019,
+            "condition": "used",
+            "mileage": 88000
+        },
+        {
+            "cid": 11,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 12,
+            "year": 2024,
+            "condition": "used",
+            "mileage": 18700
+        },
+        {
+            "cid": 13,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 14,
+            "year": 2022,
+            "condition": "used",
+            "mileage": 52000
+        },
+        {
+            "cid": 15,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 16,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 17,
+            "year": 2022,
+            "condition": "used",
+            "mileage": 47000
+        },
+        {
+            "cid": 18,
+            "year": 2018,
+            "condition": "used",
+            "mileage": 71000
+        },
+        {
+            "cid": 19,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 20,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 21,
+            "year": 2023,
+            "condition": "used",
+            "mileage": 29000
+        },
+        {
+            "cid": 22,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 23,
+            "year": 2024,
+            "condition": "used",
+            "mileage": 15200
+        },
+        {
+            "cid": 24,
+            "year": 2026,
+            "condition": "new",
+            "mileage": 25
+        },
+        {
+            "cid": 25,
+            "year": 2022,
+            "condition": "used",
+            "mileage": 33800
+        }
+    ],
+    "vehicle_history": [
+        {
+            "history_id": 1,
+            "cid": 1,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 4
+        },
+        {
+            "history_id": 2,
+            "cid": 2,
+            "has_accidents": false,
+            "owners_count": 2,
+            "media_id": 7
+        },
+        {
+            "history_id": 3,
+            "cid": 3,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 10
+        },
+        {
+            "history_id": 4,
+            "cid": 4,
+            "has_accidents": true,
+            "owners_count": 1,
+            "media_id": 14
+        },
+        {
+            "history_id": 5,
+            "cid": 5,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 17
+        },
+        {
+            "history_id": 6,
+            "cid": 6,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 21
+        },
+        {
+            "history_id": 7,
+            "cid": 7,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 24
+        },
+        {
+            "history_id": 8,
+            "cid": 8,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 28
+        },
+        {
+            "history_id": 9,
+            "cid": 9,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 32
+        },
+        {
+            "history_id": 10,
+            "cid": 10,
+            "has_accidents": true,
+            "owners_count": 3,
+            "media_id": 35
+        },
+        {
+            "history_id": 11,
+            "cid": 11,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 39
+        },
+        {
+            "history_id": 12,
+            "cid": 12,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 42
+        },
+        {
+            "history_id": 13,
+            "cid": 13,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 45
+        },
+        {
+            "history_id": 14,
+            "cid": 14,
+            "has_accidents": false,
+            "owners_count": 2,
+            "media_id": 49
+        },
+        {
+            "history_id": 15,
+            "cid": 15,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 52
+        },
+        {
+            "history_id": 16,
+            "cid": 16,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 55
+        },
+        {
+            "history_id": 17,
+            "cid": 17,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 58
+        },
+        {
+            "history_id": 18,
+            "cid": 18,
+            "has_accidents": true,
+            "owners_count": 2,
+            "media_id": 62
+        },
+        {
+            "history_id": 19,
+            "cid": 19,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 65
+        },
+        {
+            "history_id": 20,
+            "cid": 20,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 68
+        },
+        {
+            "history_id": 21,
+            "cid": 21,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 72
+        },
+        {
+            "history_id": 22,
+            "cid": 22,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 76
+        },
+        {
+            "history_id": 23,
+            "cid": 23,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 80
+        },
+        {
+            "history_id": 24,
+            "cid": 24,
+            "has_accidents": false,
+            "owners_count": 0,
+            "media_id": 84
+        },
+        {
+            "history_id": 25,
+            "cid": 25,
+            "has_accidents": false,
+            "owners_count": 1,
+            "media_id": 88
+        }
+    ],
+    "catalog_options": [
+        {
+            "cid": 1,
+            "option_id": 1
+        },
+        {
+            "cid": 1,
+            "option_id": 2
+        },
+        {
+            "cid": 1,
+            "option_id": 3
+        },
+        {
+            "cid": 1,
+            "option_id": 4
+        },
+        {
+            "cid": 1,
+            "option_id": 5
+        },
+        {
+            "cid": 1,
+            "option_id": 6
+        },
+        {
+            "cid": 1,
+            "option_id": 7
+        },
+        {
+            "cid": 1,
+            "option_id": 8
+        },
+        {
+            "cid": 1,
+            "option_id": 9
+        },
+        {
+            "cid": 1,
+            "option_id": 10
+        },
+        {
+            "cid": 3,
+            "option_id": 11
+        },
+        {
+            "cid": 3,
+            "option_id": 12
+        },
+        {
+            "cid": 3,
+            "option_id": 13
+        },
+        {
+            "cid": 3,
+            "option_id": 14
+        },
+        {
+            "cid": 3,
+            "option_id": 15
+        },
+        {
+            "cid": 3,
+            "option_id": 16
+        },
+        {
+            "cid": 3,
+            "option_id": 17
+        },
+        {
+            "cid": 5,
+            "option_id": 18
+        },
+        {
+            "cid": 5,
+            "option_id": 19
+        },
+        {
+            "cid": 5,
+            "option_id": 20
+        },
+        {
+            "cid": 5,
+            "option_id": 21
+        },
+        {
+            "cid": 5,
+            "option_id": 22
+        },
+        {
+            "cid": 5,
+            "option_id": 23
+        },
+        {
+            "cid": 5,
+            "option_id": 24
+        },
+        {
+            "cid": 5,
+            "option_id": 25
+        },
+        {
+            "cid": 5,
+            "option_id": 26
+        },
+        {
+            "cid": 7,
+            "option_id": 27
+        },
+        {
+            "cid": 7,
+            "option_id": 28
+        },
+        {
+            "cid": 7,
+            "option_id": 29
+        },
+        {
+            "cid": 7,
+            "option_id": 14
+        },
+        {
+            "cid": 7,
+            "option_id": 30
+        },
+        {
+            "cid": 7,
+            "option_id": 31
+        },
+        {
+            "cid": 7,
+            "option_id": 32
+        },
+        {
+            "cid": 7,
+            "option_id": 33
+        },
+        {
+            "cid": 9,
+            "option_id": 34
+        },
+        {
+            "cid": 9,
+            "option_id": 35
+        },
+        {
+            "cid": 9,
+            "option_id": 36
+        },
+        {
+            "cid": 9,
+            "option_id": 37
+        },
+        {
+            "cid": 9,
+            "option_id": 38
+        },
+        {
+            "cid": 9,
+            "option_id": 39
+        },
+        {
+            "cid": 9,
+            "option_id": 40
+        },
+        {
+            "cid": 11,
+            "option_id": 41
+        },
+        {
+            "cid": 11,
+            "option_id": 42
+        },
+        {
+            "cid": 11,
+            "option_id": 43
+        },
+        {
+            "cid": 11,
+            "option_id": 44
+        },
+        {
+            "cid": 11,
+            "option_id": 45
+        },
+        {
+            "cid": 11,
+            "option_id": 46
+        },
+        {
+            "cid": 11,
+            "option_id": 47
+        },
+        {
+            "cid": 11,
+            "option_id": 48
+        },
+        {
+            "cid": 13,
+            "option_id": 49
+        },
+        {
+            "cid": 13,
+            "option_id": 50
+        },
+        {
+            "cid": 13,
+            "option_id": 51
+        },
+        {
+            "cid": 13,
+            "option_id": 52
+        },
+        {
+            "cid": 13,
+            "option_id": 53
+        },
+        {
+            "cid": 13,
+            "option_id": 54
+        },
+        {
+            "cid": 13,
+            "option_id": 55
+        },
+        {
+            "cid": 13,
+            "option_id": 56
+        },
+        {
+            "cid": 15,
+            "option_id": 57
+        },
+        {
+            "cid": 15,
+            "option_id": 58
+        },
+        {
+            "cid": 15,
+            "option_id": 59
+        },
+        {
+            "cid": 15,
+            "option_id": 60
+        },
+        {
+            "cid": 15,
+            "option_id": 61
+        },
+        {
+            "cid": 15,
+            "option_id": 62
+        },
+        {
+            "cid": 16,
+            "option_id": 63
+        },
+        {
+            "cid": 16,
+            "option_id": 64
+        },
+        {
+            "cid": 16,
+            "option_id": 65
+        },
+        {
+            "cid": 16,
+            "option_id": 66
+        },
+        {
+            "cid": 16,
+            "option_id": 67
+        },
+        {
+            "cid": 19,
+            "option_id": 1
+        },
+        {
+            "cid": 19,
+            "option_id": 68
+        },
+        {
+            "cid": 19,
+            "option_id": 69
+        },
+        {
+            "cid": 19,
+            "option_id": 70
+        },
+        {
+            "cid": 19,
+            "option_id": 71
+        },
+        {
+            "cid": 20,
+            "option_id": 72
+        },
+        {
+            "cid": 20,
+            "option_id": 73
+        },
+        {
+            "cid": 20,
+            "option_id": 74
+        },
+        {
+            "cid": 20,
+            "option_id": 75
+        },
+        {
+            "cid": 20,
+            "option_id": 76
+        },
+        {
+            "cid": 20,
+            "option_id": 77
+        },
+        {
+            "cid": 20,
+            "option_id": 78
+        },
+        {
+            "cid": 20,
+            "option_id": 79
+        },
+        {
+            "cid": 22,
+            "option_id": 80
+        },
+        {
+            "cid": 22,
+            "option_id": 81
+        },
+        {
+            "cid": 22,
+            "option_id": 82
+        },
+        {
+            "cid": 22,
+            "option_id": 83
+        },
+        {
+            "cid": 22,
+            "option_id": 84
+        },
+        {
+            "cid": 24,
+            "option_id": 85
+        },
+        {
+            "cid": 24,
+            "option_id": 86
+        },
+        {
+            "cid": 24,
+            "option_id": 87
+        },
+        {
+            "cid": 24,
+            "option_id": 88
+        },
+        {
+            "cid": 24,
+            "option_id": 89
+        }
+    ],
+    "equipped_options": [
+        {
+            "cid": 2,
+            "option_id": 2
+        },
+        {
+            "cid": 2,
+            "option_id": 6
+        },
+        {
+            "cid": 2,
+            "option_id": 90
+        },
+        {
+            "cid": 2,
+            "option_id": 10
+        },
+        {
+            "cid": 4,
+            "option_id": 13
+        },
+        {
+            "cid": 4,
+            "option_id": 16
+        },
+        {
+            "cid": 6,
+            "option_id": 19
+        },
+        {
+            "cid": 6,
+            "option_id": 23
+        },
+        {
+            "cid": 6,
+            "option_id": 24
+        },
+        {
+            "cid": 8,
+            "option_id": 29
+        },
+        {
+            "cid": 8,
+            "option_id": 30
+        },
+        {
+            "cid": 8,
+            "option_id": 91
+        },
+        {
+            "cid": 10,
+            "option_id": 34
+        },
+        {
+            "cid": 10,
+            "option_id": 37
+        },
+        {
+            "cid": 12,
+            "option_id": 43
+        },
+        {
+            "cid": 12,
+            "option_id": 45
+        },
+        {
+            "cid": 12,
+            "option_id": 48
+        },
+        {
+            "cid": 14,
+            "option_id": 58
+        },
+        {
+            "cid": 14,
+            "option_id": 60
+        },
+        {
+            "cid": 17,
+            "option_id": 63
+        },
+        {
+            "cid": 17,
+            "option_id": 66
+        },
+        {
+            "cid": 18,
+            "option_id": 92
+        },
+        {
+            "cid": 18,
+            "option_id": 93
+        },
+        {
+            "cid": 21,
+            "option_id": 74
+        },
+        {
+            "cid": 21,
+            "option_id": 78
+        },
+        {
+            "cid": 21,
+            "option_id": 79
+        },
+        {
+            "cid": 23,
+            "option_id": 94
+        },
+        {
+            "cid": 23,
+            "option_id": 31
+        },
+        {
+            "cid": 23,
+            "option_id": 95
+        },
+        {
+            "cid": 25,
+            "option_id": 96
+        },
+        {
+            "cid": 25,
+            "option_id": 97
+        }
+    ],
+    "configurations": [
+        {
+            "config_id": 1,
+            "cid": 1,
+            "total_price": 79090,
+            "created_at": "2026-05-10T15:30:00.000Z"
+        },
+        {
+            "config_id": 2,
+            "cid": 3,
+            "total_price": 65699,
+            "created_at": "2026-05-11T15:30:00.000Z"
+        },
+        {
+            "config_id": 3,
+            "cid": 5,
+            "total_price": 67595,
+            "created_at": "2026-05-12T15:30:00.000Z"
+        }
+    ],
+    "config_options": [
+        {
+            "config_id": 1,
+            "option_id": 4
+        },
+        {
+            "config_id": 1,
+            "option_id": 6
+        },
+        {
+            "config_id": 1,
+            "option_id": 8
+        },
+        {
+            "config_id": 1,
+            "option_id": 9
+        },
+        {
+            "config_id": 1,
+            "option_id": 10
+        },
+        {
+            "config_id": 2,
+            "option_id": 12
+        },
+        {
+            "config_id": 2,
+            "option_id": 15
+        },
+        {
+            "config_id": 2,
+            "option_id": 17
+        },
+        {
+            "config_id": 3,
+            "option_id": 20
+        },
+        {
+            "config_id": 3,
+            "option_id": 23
+        },
+        {
+            "config_id": 3,
+            "option_id": 24
+        },
+        {
+            "config_id": 3,
+            "option_id": 25
+        }
+    ],
+    "promos": [
+        {
+            "promo_id": 1,
+            "name": "hot_deal",
+            "description": "Hot deal pricing on selected vehicles.",
+            "is_active": true
+        },
+        {
+            "promo_id": 2,
+            "name": "seasonal",
+            "description": "Seasonal pricing across the lineup.",
+            "is_active": true
+        },
+        {
+            "promo_id": 3,
+            "name": "clearance",
+            "description": "Clearing previous model-year and discontinued inventory.",
+            "is_active": true
+        },
+        {
+            "promo_id": 4,
+            "name": "featured",
+            "description": "Hand-picked featured vehicles for the storefront.",
+            "is_active": true
+        }
+    ],
+    "catalog_promos": [
+        {
+            "cid": 1,
+            "promo_id": 2,
+            "discount_amount": 5500
+        },
+        {
+            "cid": 2,
+            "promo_id": 4,
+            "discount_amount": 7100
+        },
+        {
+            "cid": 7,
+            "promo_id": 4,
+            "discount_amount": 4700
+        },
+        {
+            "cid": 9,
+            "promo_id": 2,
+            "discount_amount": 4700
+        },
+        {
+            "cid": 10,
+            "promo_id": 1,
+            "discount_amount": 3200
+        },
+        {
+            "cid": 13,
+            "promo_id": 3,
+            "discount_amount": 8800
+        },
+        {
+            "cid": 16,
+            "promo_id": 3,
+            "discount_amount": 5750
+        },
+        {
+            "cid": 21,
+            "promo_id": 4,
+            "discount_amount": 9000
+        }
+    ],
+    "carts": [
+        {
+            "cart_id": 1,
+            "user_id": 1,
+            "session_token": null,
+            "expires_at": null,
+            "created_at": "2026-07-01T10:00:00.000Z",
+            "updated_at": "2026-07-08T14:00:00.000Z"
+        },
+        {
+            "cart_id": 2,
+            "user_id": 14,
+            "session_token": null,
+            "expires_at": null,
+            "created_at": "2026-07-05T09:00:00.000Z",
+            "updated_at": "2026-07-09T11:00:00.000Z"
+        },
+        {
+            "cart_id": 3,
+            "user_id": null,
+            "session_token": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee3",
+            "expires_at": "2026-07-17T23:59:59.000Z",
+            "created_at": "2026-07-10T08:00:00.000Z",
+            "updated_at": "2026-07-10T08:30:00.000Z"
+        }
+    ],
+    "cart_items": [
+        {
+            "cart_item_id": 1,
+            "cart_id": 1,
+            "cid": 1,
+            "config_id": 1,
+            "quantity": 1,
+            "added_at": "2026-07-08T14:00:00.000Z"
+        },
+        {
+            "cart_item_id": 2,
+            "cart_id": 1,
+            "cid": 9,
+            "config_id": null,
+            "quantity": 1,
+            "added_at": "2026-07-08T14:05:00.000Z"
+        },
+        {
+            "cart_item_id": 3,
+            "cart_id": 2,
+            "cid": 7,
+            "config_id": null,
+            "quantity": 1,
+            "added_at": "2026-07-09T11:00:00.000Z"
+        },
+        {
+            "cart_item_id": 4,
+            "cart_id": 3,
+            "cid": 5,
+            "config_id": null,
+            "quantity": 1,
+            "added_at": "2026-07-10T08:30:00.000Z"
+        }
+    ],
+    "orders": [
+        {
+            "order_id": 1,
+            "user_id": 1,
+            "guest_email": null,
+            "order_status": "confirmed",
+            "payment_status": "paid",
+            "subtotal": 79090,
+            "tax": 10281.7,
+            "total": 89371.7,
+            "created_at": "2026-05-12T16:00:00.000Z"
+        },
+        {
+            "order_id": 2,
+            "user_id": 1,
+            "guest_email": null,
+            "order_status": "pending",
+            "payment_status": "failed",
+            "subtotal": 65699,
+            "tax": 8540.87,
+            "total": 74239.87,
+            "created_at": "2026-06-03T11:20:00.000Z"
+        },
+        {
+            "order_id": 3,
+            "user_id": 1,
+            "guest_email": null,
+            "order_status": "cancelled",
+            "payment_status": "failed",
+            "subtotal": 67595,
+            "tax": 8787.35,
+            "total": 76382.35,
+            "created_at": "2026-06-18T09:10:00.000Z"
+        }
+    ],
+    "order_addresses": [
+        {
+            "order_address_id": 1,
+            "order_id": 1,
+            "address_type": "shipping",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "100 Queen St W",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5H2N2",
+            "created_at": "2026-05-12T16:00:00.000Z"
+        },
+        {
+            "order_address_id": 2,
+            "order_id": 1,
+            "address_type": "billing",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "100 Queen St W",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5H2N2",
+            "created_at": "2026-05-12T16:00:00.000Z"
+        },
+        {
+            "order_address_id": 3,
+            "order_id": 2,
+            "address_type": "shipping",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "55 Metcalfe St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P6L5",
+            "created_at": "2026-06-03T11:20:00.000Z"
+        },
+        {
+            "order_address_id": 4,
+            "order_id": 2,
+            "address_type": "billing",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "55 Metcalfe St",
+            "city": "Ottawa",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "K1P6L5",
+            "created_at": "2026-06-03T11:20:00.000Z"
+        },
+        {
+            "order_address_id": 5,
+            "order_id": 3,
+            "address_type": "shipping",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "200 Granville St",
+            "city": "Vancouver",
+            "province": "BC",
+            "country": "Canada",
+            "postal_code": "V6C1S4",
+            "created_at": "2026-06-18T09:10:00.000Z"
+        },
+        {
+            "order_address_id": 6,
+            "order_id": 3,
+            "address_type": "billing",
+            "full_name": "Maya Singh",
+            "phone_number": "4165551001",
+            "street": "88 King St W",
+            "city": "Toronto",
+            "province": "ON",
+            "country": "Canada",
+            "postal_code": "M5H1J9",
+            "created_at": "2026-06-18T09:10:00.000Z"
+        }
+    ],
+    "order_items": [
+        {
+            "order_item_id": 1,
+            "order_id": 1,
+            "cid": 1,
+            "config_id": 1,
+            "quantity": 1,
+            "unit_price": 79090
+        },
+        {
+            "order_item_id": 2,
+            "order_id": 2,
+            "cid": 3,
+            "config_id": 2,
+            "quantity": 1,
+            "unit_price": 65699
+        },
+        {
+            "order_item_id": 3,
+            "order_id": 3,
+            "cid": 5,
+            "config_id": 3,
+            "quantity": 1,
+            "unit_price": 67595
+        }
+    ],
+    "payment_attempts": [
+        {
+            "attempt_id": 1,
+            "order_id": 1,
+            "user_id": 1,
+            "amount": 89371.7,
+            "payment_method": "credit_card",
+            "status": "success",
+            "attempted_at": "2026-05-12T16:05:00.000Z"
+        },
+        {
+            "attempt_id": 2,
+            "order_id": 2,
+            "user_id": 1,
+            "amount": 74239.87,
+            "payment_method": "credit_card",
+            "status": "failed",
+            "attempted_at": "2026-06-03T11:22:00.000Z"
+        },
+        {
+            "attempt_id": 3,
+            "order_id": 2,
+            "user_id": 1,
+            "amount": 74239.87,
+            "payment_method": "debit_card",
+            "status": "failed",
+            "attempted_at": "2026-06-03T11:25:00.000Z"
+        }
+    ],
+    "reviews": [
+        {
+            "review_id": 1,
+            "cid": 2,
+            "user_id": 1,
+            "title": "Love the range",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 4
+        },
+        {
+            "review_id": 2,
+            "cid": 3,
+            "user_id": 1,
+            "title": "Worth every dollar",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 3,
+            "cid": 3,
+            "user_id": 2,
+            "title": "Decent, some quirks",
+            "body": "Minor cosmetic wear was not mentioned in the listing, otherwise as described.",
+            "rating": 3
+        },
+        {
+            "review_id": 4,
+            "cid": 4,
+            "user_id": 3,
+            "title": "Love the range",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 5
+        },
+        {
+            "review_id": 5,
+            "cid": 4,
+            "user_id": 1,
+            "title": "Love the range",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 6,
+            "cid": 6,
+            "user_id": 1,
+            "title": "Mostly happy",
+            "body": "Minor cosmetic wear was not mentioned in the listing, otherwise as described.",
+            "rating": 4
+        },
+        {
+            "review_id": 7,
+            "cid": 6,
+            "user_id": 4,
+            "title": "Good but a few issues",
+            "body": "Car itself is good, but delivery took longer than the estimate given at checkout.",
+            "rating": 3
+        },
+        {
+            "review_id": 8,
+            "cid": 8,
+            "user_id": 5,
+            "title": "Smooth buying process",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 5
+        },
+        {
+            "review_id": 9,
+            "cid": 8,
+            "user_id": 2,
+            "title": "Love the range",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 5
+        },
+        {
+            "review_id": 10,
+            "cid": 9,
+            "user_id": 5,
+            "title": "Smooth buying process",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 11,
+            "cid": 9,
+            "user_id": 4,
+            "title": "Mostly happy",
+            "body": "Car itself is good, but delivery took longer than the estimate given at checkout.",
+            "rating": 3
+        },
+        {
+            "review_id": 12,
+            "cid": 9,
+            "user_id": 6,
+            "title": "Worth every dollar",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 5
+        },
+        {
+            "review_id": 13,
+            "cid": 10,
+            "user_id": 7,
+            "title": "Decent, some quirks",
+            "body": "Car itself is good, but delivery took longer than the estimate given at checkout.",
+            "rating": 3
+        },
+        {
+            "review_id": 14,
+            "cid": 10,
+            "user_id": 1,
+            "title": "Love the range",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 4
+        },
+        {
+            "review_id": 15,
+            "cid": 10,
+            "user_id": 4,
+            "title": "Worth every dollar",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 16,
+            "cid": 12,
+            "user_id": 8,
+            "title": "Mostly happy",
+            "body": "Car itself is good, but delivery took longer than the estimate given at checkout.",
+            "rating": 3
+        },
+        {
+            "review_id": 17,
+            "cid": 12,
+            "user_id": 7,
+            "title": "Great daily driver",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 18,
+            "cid": 13,
+            "user_id": 1,
+            "title": "Smooth buying process",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 19,
+            "cid": 13,
+            "user_id": 7,
+            "title": "Great daily driver",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 5
+        },
+        {
+            "review_id": 20,
+            "cid": 14,
+            "user_id": 6,
+            "title": "Decent, some quirks",
+            "body": "Minor cosmetic wear was not mentioned in the listing, otherwise as described.",
+            "rating": 4
+        },
+        {
+            "review_id": 21,
+            "cid": 16,
+            "user_id": 1,
+            "title": "Great daily driver",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 5
+        },
+        {
+            "review_id": 22,
+            "cid": 16,
+            "user_id": 9,
+            "title": "Smooth buying process",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 23,
+            "cid": 17,
+            "user_id": 6,
+            "title": "Worth every dollar",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 5
+        },
+        {
+            "review_id": 24,
+            "cid": 18,
+            "user_id": 1,
+            "title": "Smooth buying process",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 25,
+            "cid": 18,
+            "user_id": 2,
+            "title": "Exceeded expectations",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 4
+        },
+        {
+            "review_id": 26,
+            "cid": 19,
+            "user_id": 5,
+            "title": "Solid EV",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 27,
+            "cid": 19,
+            "user_id": 1,
+            "title": "Great daily driver",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 28,
+            "cid": 20,
+            "user_id": 9,
+            "title": "Good but a few issues",
+            "body": "Minor cosmetic wear was not mentioned in the listing, otherwise as described.",
+            "rating": 3
+        },
+        {
+            "review_id": 29,
+            "cid": 20,
+            "user_id": 1,
+            "title": "Good but a few issues",
+            "body": "Car itself is good, but delivery took longer than the estimate given at checkout.",
+            "rating": 3
+        },
+        {
+            "review_id": 30,
+            "cid": 22,
+            "user_id": 5,
+            "title": "Love the range",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 4
+        },
+        {
+            "review_id": 31,
+            "cid": 22,
+            "user_id": 8,
+            "title": "Great daily driver",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        },
+        {
+            "review_id": 32,
+            "cid": 22,
+            "user_id": 1,
+            "title": "Exceeded expectations",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 33,
+            "cid": 23,
+            "user_id": 10,
+            "title": "Great daily driver",
+            "body": "Been driving it a few months now, quiet cabin and the charging speed is better than expected.",
+            "rating": 5
+        },
+        {
+            "review_id": 34,
+            "cid": 23,
+            "user_id": 6,
+            "title": "Worth every dollar",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 35,
+            "cid": 23,
+            "user_id": 1,
+            "title": "Solid EV",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 5
+        },
+        {
+            "review_id": 36,
+            "cid": 25,
+            "user_id": 4,
+            "title": "Smooth buying process",
+            "body": "Delivery was on time and the car matched the listing exactly. Range holds up well in daily use.",
+            "rating": 4
+        },
+        {
+            "review_id": 37,
+            "cid": 25,
+            "user_id": 10,
+            "title": "Smooth buying process",
+            "body": "Smooth pickup, sales team answered every question, no surprises with the paperwork.",
+            "rating": 4
+        }
+    ],
+    "wishlist": [
+        {
+            "user_id": 14,
+            "cid": 7,
+            "added_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "user_id": 14,
+            "cid": 22,
+            "added_at": "2026-06-02T12:00:00.000Z"
+        },
+        {
+            "user_id": 14,
+            "cid": 18,
+            "added_at": "2026-06-03T12:00:00.000Z"
+        },
+        {
+            "user_id": 14,
+            "cid": 12,
+            "added_at": "2026-06-04T12:00:00.000Z"
+        },
+        {
+            "user_id": 15,
+            "cid": 12,
+            "added_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "user_id": 15,
+            "cid": 25,
+            "added_at": "2026-06-02T12:00:00.000Z"
+        },
+        {
+            "user_id": 7,
+            "cid": 17,
+            "added_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "user_id": 7,
+            "cid": 6,
+            "added_at": "2026-06-02T12:00:00.000Z"
+        },
+        {
+            "user_id": 7,
+            "cid": 4,
+            "added_at": "2026-06-03T12:00:00.000Z"
+        },
+        {
+            "user_id": 7,
+            "cid": 1,
+            "added_at": "2026-06-04T12:00:00.000Z"
+        },
+        {
+            "user_id": 23,
+            "cid": 1,
+            "added_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "user_id": 23,
+            "cid": 13,
+            "added_at": "2026-06-02T12:00:00.000Z"
+        },
+        {
+            "user_id": 23,
+            "cid": 16,
+            "added_at": "2026-06-03T12:00:00.000Z"
+        },
+        {
+            "user_id": 17,
+            "cid": 20,
+            "added_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "user_id": 17,
+            "cid": 24,
+            "added_at": "2026-06-02T12:00:00.000Z"
+        },
+        {
+            "user_id": 17,
+            "cid": 14,
+            "added_at": "2026-06-03T12:00:00.000Z"
+        }
+    ],
+    "catalog_images": [
+        {
+            "image_id": 1,
+            "cid": 1,
+            "media_id": 1,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 2,
+            "cid": 1,
+            "media_id": 2,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 3,
+            "cid": 1,
+            "media_id": 3,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 4,
+            "cid": 2,
+            "media_id": 5,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 5,
+            "cid": 2,
+            "media_id": 6,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 6,
+            "cid": 3,
+            "media_id": 8,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 7,
+            "cid": 3,
+            "media_id": 9,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 8,
+            "cid": 4,
+            "media_id": 11,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 9,
+            "cid": 4,
+            "media_id": 12,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 10,
+            "cid": 4,
+            "media_id": 13,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 11,
+            "cid": 5,
+            "media_id": 15,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 12,
+            "cid": 5,
+            "media_id": 16,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 13,
+            "cid": 6,
+            "media_id": 18,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 14,
+            "cid": 6,
+            "media_id": 19,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 15,
+            "cid": 6,
+            "media_id": 20,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 16,
+            "cid": 7,
+            "media_id": 22,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 17,
+            "cid": 7,
+            "media_id": 23,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 18,
+            "cid": 8,
+            "media_id": 25,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 19,
+            "cid": 8,
+            "media_id": 26,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 20,
+            "cid": 8,
+            "media_id": 27,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 21,
+            "cid": 9,
+            "media_id": 29,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 22,
+            "cid": 9,
+            "media_id": 30,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 23,
+            "cid": 9,
+            "media_id": 31,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 24,
+            "cid": 10,
+            "media_id": 33,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 25,
+            "cid": 10,
+            "media_id": 34,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 26,
+            "cid": 11,
+            "media_id": 36,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 27,
+            "cid": 11,
+            "media_id": 37,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 28,
+            "cid": 11,
+            "media_id": 38,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 29,
+            "cid": 12,
+            "media_id": 40,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 30,
+            "cid": 12,
+            "media_id": 41,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 31,
+            "cid": 13,
+            "media_id": 43,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 32,
+            "cid": 13,
+            "media_id": 44,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 33,
+            "cid": 14,
+            "media_id": 46,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 34,
+            "cid": 14,
+            "media_id": 47,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 35,
+            "cid": 14,
+            "media_id": 48,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 36,
+            "cid": 15,
+            "media_id": 50,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 37,
+            "cid": 15,
+            "media_id": 51,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 38,
+            "cid": 16,
+            "media_id": 53,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 39,
+            "cid": 16,
+            "media_id": 54,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 40,
+            "cid": 17,
+            "media_id": 56,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 41,
+            "cid": 17,
+            "media_id": 57,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 42,
+            "cid": 18,
+            "media_id": 59,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 43,
+            "cid": 18,
+            "media_id": 60,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 44,
+            "cid": 18,
+            "media_id": 61,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 45,
+            "cid": 19,
+            "media_id": 63,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 46,
+            "cid": 19,
+            "media_id": 64,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 47,
+            "cid": 20,
+            "media_id": 66,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 48,
+            "cid": 20,
+            "media_id": 67,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 49,
+            "cid": 21,
+            "media_id": 69,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 50,
+            "cid": 21,
+            "media_id": 70,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 51,
+            "cid": 21,
+            "media_id": 71,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 52,
+            "cid": 22,
+            "media_id": 73,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 53,
+            "cid": 22,
+            "media_id": 74,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 54,
+            "cid": 22,
+            "media_id": 75,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 55,
+            "cid": 23,
+            "media_id": 77,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 56,
+            "cid": 23,
+            "media_id": 78,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 57,
+            "cid": 23,
+            "media_id": 79,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 58,
+            "cid": 24,
+            "media_id": 81,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 59,
+            "cid": 24,
+            "media_id": 82,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 60,
+            "cid": 24,
+            "media_id": 83,
+            "display_order": 2,
+            "is_primary": false
+        },
+        {
+            "image_id": 61,
+            "cid": 25,
+            "media_id": 85,
+            "display_order": 0,
+            "is_primary": true
+        },
+        {
+            "image_id": 62,
+            "cid": 25,
+            "media_id": 86,
+            "display_order": 1,
+            "is_primary": false
+        },
+        {
+            "image_id": 63,
+            "cid": 25,
+            "media_id": 87,
+            "display_order": 2,
+            "is_primary": false
+        }
+    ],
+    "event_type": [
+        {
+            "event_type_id": 1,
+            "code": "hot_deals_view",
+            "name": "Hot Deals View",
+            "description": "The user has viewed the hot deals page.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 2,
+            "code": "vehicle_details_view",
+            "name": "Vehicle Details View",
+            "description": "The user has viewed the vehicle details page.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 3,
+            "code": "cart_add",
+            "name": "Cart Add",
+            "description": "The user has added an item to the cart.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 4,
+            "code": "cart_remove",
+            "name": "Cart Remove",
+            "description": "The user has removed an item from the cart.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 5,
+            "code": "purchase",
+            "name": "Purchase",
+            "description": "The user has purchased an item.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 6,
+            "code": "edit_profile",
+            "name": "Edit Profile",
+            "description": "The user has edited their profile.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 7,
+            "code": "delete_account",
+            "name": "Delete Account",
+            "description": "The user has deleted their account.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 8,
+            "code": "publish_review",
+            "name": "Publish Review",
+            "description": "The user has published a review.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 9,
+            "code": "delete_review",
+            "name": "Delete Review",
+            "description": "The user has deleted a review.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 10,
+            "code": "wishlist_add",
+            "name": "Wishlist Add",
+            "description": "The user has added an item to the wishlist.",
+            "is_active": true
+        },
+        {
+            "event_type_id": 11,
+            "code": "wishlist_remove",
+            "name": "Wishlist Remove",
+            "description": "The user has removed an item from the wishlist.",
+            "is_active": true
+        }
+    ],
+    "event_logs": [
+        {
+            "event_id": 1,
+            "event_type_id": 2,
+            "user_id": 1,
+            "cid": 1,
+            "meta": {
+                "source": "web"
+            },
+            "ip_address": "203.0.113.10",
+            "created_at": "2026-05-11T15:00:00.000Z"
+        },
+        {
+            "event_id": 2,
+            "event_type_id": 3,
+            "user_id": 1,
+            "cid": 1,
+            "meta": {
+                "source": "web",
+                "qty": 1,
+                "config_id": 1
+            },
+            "ip_address": "203.0.113.10",
+            "created_at": "2026-05-12T15:50:00.000Z"
+        },
+        {
+            "event_id": 3,
+            "event_type_id": 5,
+            "user_id": 1,
+            "cid": 1,
+            "meta": {
+                "order_id": 1
+            },
+            "ip_address": "203.0.113.10",
+            "created_at": "2026-05-12T16:05:00.000Z"
+        },
+        {
+            "event_id": 4,
+            "event_type_id": 10,
+            "user_id": 14,
+            "cid": 7,
+            "meta": {
+                "source": "web"
+            },
+            "ip_address": "203.0.113.44",
+            "created_at": "2026-06-01T12:00:00.000Z"
+        },
+        {
+            "event_id": 5,
+            "event_type_id": 1,
+            "user_id": 7,
+            "cid": null,
+            "meta": {
+                "source": "web"
+            },
+            "ip_address": "203.0.113.55",
+            "created_at": "2026-06-15T18:00:00.000Z"
+        },
+        {
+            "event_id": 6,
+            "event_type_id": 8,
+            "user_id": 1,
+            "cid": 2,
+            "meta": {
+                "rating": 4
+            },
+            "ip_address": "203.0.113.10",
+            "created_at": "2026-06-20T12:00:00.000Z"
+        },
+        {
+            "event_id": 7,
+            "event_type_id": 4,
+            "user_id": 14,
+            "cid": 22,
+            "meta": {
+                "source": "web"
+            },
+            "ip_address": "203.0.113.44",
+            "created_at": "2026-07-02T10:00:00.000Z"
+        }
+    ]
+}
