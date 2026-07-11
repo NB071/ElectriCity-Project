@@ -39,9 +39,16 @@ class CatalogDetailsHandler {
             throw new NotFoundError("Catalog item subtype");
         }
         const customizations = await this.optionsQuery.getForItem(cid);
+        const equipped_options = await this.optionsQuery.getEquippedForItem(cid);
         const history = await this._fetchHistory(cid);
 
-        return this._assemble({ base, subtype, customizations, history });
+        return this._assemble({
+            base,
+            subtype,
+            customizations,
+            equipped_options,
+            history,
+        });
     }
 
     /**

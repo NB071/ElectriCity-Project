@@ -40,11 +40,18 @@ class VehicleDetailsHandler extends CatalogDetailsHandler {
      * @protected
      * @param {object} base Base catalog item details
      * @param {object} subtype Vehicle subtype details
-     * @param {object[]} customizations Customization options
+     * @param {object[]} customizations Options still available for purchase
+     * @param {object[]} equipped_options Options already installed on the vehicle
      * @param {object} history Vehicle history details
      * @returns {Promise<object>}
      */
-    async _assemble({ base, subtype, customizations, history }) {
+    async _assemble({
+        base,
+        subtype,
+        customizations,
+        equipped_options = [],
+        history,
+    }) {
         let images = [];
         try {
             images = await this.mediaAdapter.getItemImages(base.cid);
@@ -74,6 +81,7 @@ class VehicleDetailsHandler extends CatalogDetailsHandler {
             base,
             subtype,
             customizations,
+            equipped_options,
             history,
             images,
             historyReport,

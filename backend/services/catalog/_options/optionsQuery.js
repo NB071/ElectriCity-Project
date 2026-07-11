@@ -49,4 +49,17 @@ async function getForItem(cid) {
     return groupOptionsByCategory(rows);
 }
 
-export { getForItem, groupOptionsByCategory };
+/**
+ * This function gets options already equipped on a catalog item.
+ * @param {number} cid
+ * @returns {Promise<object[]>}
+ * @throws {ValidationError} If the catalog item ID is invalid
+ * @throws {DatabaseError} On database failures
+ */
+async function getEquippedForItem(cid) {
+    const id = validateCatalogItemId(cid);
+    const rows = await optionsDAO.findEquippedByCatalogItemId(id);
+    return groupOptionsByCategory(rows);
+}
+
+export { getForItem, getEquippedForItem, groupOptionsByCategory };

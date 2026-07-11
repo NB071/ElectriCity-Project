@@ -4,7 +4,8 @@ import { toReviewSummaryDTO } from "../../../review/DTOs/reviewSummaryDTO.js";
  * This function maps the vehicle details to a representable format.
  * @param {object} base Base catalog item details
  * @param {object} subtype Vehicle subtype details
- * @param {object[]} customizations Customization options
+ * @param {object[]} customizations Options still available for purchase
+ * @param {object[]} equipped_options Options already installed on the vehicle
  * @param {object|null} history Vehicle history details
  * @param {object[]} images Images of the vehicle
  * @param {object|null} historyReport Resolved media record for vehicle history report
@@ -16,6 +17,7 @@ function toVehicleDetailsDTO(
     base,
     subtype,
     customizations,
+    equipped_options,
     history,
     images = [],
     historyReport = null,
@@ -49,11 +51,13 @@ function toVehicleDetailsDTO(
             door_count: subtype.door_count,
             drivetrain: subtype.drivetrain,
         },
+        equipped_options,
         customizations,
         promotions,
         history: history
             ? {
                   has_accidents: Boolean(history.has_accidents),
+                  owners_count: Number(history.owners_count ?? 0),
                   report: historyReport
                       ? {
                             media_id: historyReport.media_id,
