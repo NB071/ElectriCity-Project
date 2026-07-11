@@ -1,6 +1,8 @@
 // Queue Service
 // Strategy pattern / queue context
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the context that wraps the queue strategy.
  * @extends QueueStrategy (Strategy pattern)
@@ -26,7 +28,7 @@ class QueueContext {
      */
     add(jobName, payload, options) {
         if (!this.#strategy) {
-            throw new Error("No queue strategy set.");
+            throw new InternalError("No queue strategy set.");
         }
 
         return this.#strategy.add(jobName, payload, options);

@@ -15,6 +15,7 @@ import {
 } from "../../utils/pagination.js";
 import { toWishlistItemDTO } from "./DTOs/wishlistItemDTO.js";
 import { toWishlistEntryDTO } from "./DTOs/wishlistEntryDTO.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function returns paginated wishlist items for a user.
@@ -50,7 +51,7 @@ async function viewWishlist(userId, queryParams = {}) {
             sort,
         };
     } catch (err) {
-        console.error("[Service: Wishlist] viewWishlist failed:", err.message);
+        log.error("Wishlist", "viewWishlist", "viewWishlist failed", err);
         throw err;
     }
 }
@@ -71,7 +72,7 @@ async function isInWishlist(userId, cid) {
         const row = await wishlistDAO.findEntry(valid.userId, valid.cid);
         return toWishlistEntryDTO(row);
     } catch (err) {
-        console.error("[Service: Wishlist] isInWishlist failed:", err.message);
+        log.error("Wishlist", "isInWishlist", "isInWishlist failed", err);
         throw err;
     }
 }

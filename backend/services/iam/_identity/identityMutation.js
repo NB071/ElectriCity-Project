@@ -11,6 +11,7 @@ import {
 import { DEFAULTS, USER_FIELDS } from "./constants.js";
 import { getUserById } from "./identityQuery.js";
 import { ConflictError, UnauthorizedError } from "../../../utils/errors.js";
+import log from "../../../utils/logger.js";
 
 /**
  * This function updates profile fields for the authenticated user.
@@ -101,10 +102,7 @@ async function updateProfile({
         await accountDAO.updateById(valid.userId, updates);
         return getUserById(valid.userId);
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] updateProfile failed:",
-            err.message,
-        );
+        log.error("IAM", "updateProfile", "updateProfile failed", err);
         throw err;
     }
 }
@@ -135,10 +133,7 @@ async function deleteProfile({ userId }) {
 
         return { deleted: true };
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] deleteProfile failed:",
-            err.message,
-        );
+        log.error("IAM", "deleteProfile", "deleteProfile failed", err);
         throw err;
     }
 }

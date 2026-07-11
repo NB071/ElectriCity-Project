@@ -8,6 +8,7 @@ import {
     validateCartItemRef,
     validateUserId,
 } from "./cartValidator.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function adds a catalog item to the user's cart.
@@ -73,7 +74,7 @@ async function addToCart({ userId, cid, configId, quantity }) {
 
         throw new Error("Not implemented");
     } catch (err) {
-        console.error("[Service: Cart] addToCart failed:", err.message);
+        log.error("Cart", "addToCart", "addToCart failed", err);
         throw err;
     }
 }
@@ -106,9 +107,11 @@ async function updateCartItemQuantity({ userId, cartItemId, quantity }) {
 
         throw new Error("Not implemented");
     } catch (err) {
-        console.error(
-            "[Service: Cart] updateCartItemQuantity failed:",
-            err.message,
+        log.error(
+            "Cart",
+            "updateCartItemQuantity",
+            "updateCartItemQuantity failed",
+            err,
         );
         throw err;
     }
@@ -137,7 +140,7 @@ async function removeFromCart({ userId, cartItemId }) {
 
         throw new Error("Not implemented");
     } catch (err) {
-        console.error("[Service: Cart] removeFromCart failed:", err.message);
+        log.error("Cart", "removeFromCart", "removeFromCart failed", err);
         throw err;
     }
 }
@@ -161,7 +164,7 @@ async function clearCart(userId) {
 
         throw new Error("Not implemented");
     } catch (err) {
-        console.error("[Service: Cart] clearCart failed:", err.message);
+        log.error("Cart", "clearCart", "clearCart failed", err);
         throw err;
     }
 }

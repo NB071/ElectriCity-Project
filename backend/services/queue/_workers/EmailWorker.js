@@ -6,6 +6,8 @@ import { Worker } from "bullmq";
 import { redisConfig } from "../../../configs/redis.js";
 import { QUEUES } from "../constants.js";
 import processEmailJob from "./processors/EmailProcessor.js";
+import { runWorkerJob } from "../../../utils/sentryHelpers.js";
+import log from "../../../utils/logger.js";
 
 /** @type {import('bullmq').Worker} */
 let emailWorker = null;
@@ -23,7 +25,11 @@ function startEmailWorker() {
     // Create a new email worker.
     emailWorker = new Worker(
         QUEUES.EMAIL.QUEUE_NAME,
-        async (job) => processEmailJob(job.data),
+        async (job) =>
+            runWorkerJob(
+                { queue: QUEUES.EMAIL.QUEUE_NAME, job },
+                processEmailJob,
+            ),
         {
             connection: { ...redisConfig },
             concurrency: 2,
@@ -33,19 +39,27 @@ function startEmailWorker() {
 
     // Log when a job is completed.
     emailWorker.on("completed", (job) => {
-        console.log(`[${QUEUES.EMAIL.QUEUE_NAME}] job ${job.id} completed`);
-    });
-
-    // Log when a job fails.
-    emailWorker.on("failed", (job, error) => {
-        console.error(
-            `[Service: Queue] ${QUEUES.EMAIL.QUEUE_NAME} job ${job?.id} failed:`,
-            error.message,
+        log.info(
+            "Queue",
+            "EmailWorker",
+            `${QUEUES.EMAIL.QUEUE_NAME} job ${job.id} completed`,
         );
     });
 
-    console.log(
-        `[Queue: Email] worker listening on queue "${QUEUES.EMAIL.QUEUE_NAME}"`,
+    // Log when a job fails (reportable errors already captured in runWorkerJob).
+    emailWorker.on("failed", (job, error) => {
+        log.error(
+            "Queue",
+            "EmailWorker",
+            `${QUEUES.EMAIL.QUEUE_NAME} job ${job?.id} failed`,
+            error,
+        );
+    });
+
+    log.info(
+        "Queue",
+        "EmailWorker",
+        `worker listening on queue "${QUEUES.EMAIL.QUEUE_NAME}"`,
     );
 
     return emailWorker;

@@ -1,6 +1,8 @@
 // Queue Service
 // Strategy pattern / producer context
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the context that wraps the producer strategy.
  * @extends ProducerStrategy (Strategy pattern)
@@ -24,7 +26,7 @@ class ProducerContext {
      */
     async produce(payload) {
         if (!this.#strategy) {
-            throw new Error("No producer strategy set.");
+            throw new InternalError("No producer strategy set.");
         }
 
         return this.#strategy.produce(payload);

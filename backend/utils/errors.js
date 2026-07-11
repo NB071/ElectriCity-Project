@@ -165,6 +165,37 @@ class DatabaseError extends AppError {
     }
 }
 
+/**
+ * Payment gateway / processing failures (reportable 5xx).
+ * Do not put card numbers, tokens, or other PII in message/details.
+ * @class
+ * @extends {AppError}
+ */
+class PaymentError extends AppError {
+    /**
+     * @param {string} [message]
+     * @param {object|null} [details] Safe metadata only (e.g. order_id, attempt status)
+     */
+    constructor(message = "Payment processing failed", details = null) {
+        super(message, { status: 502, code: "PAYMENT_ERROR", details });
+    }
+}
+
+/**
+ * Unexpected internal failures that should always be reported to Sentry.
+ * @class
+ * @extends {AppError}
+ */
+class InternalError extends AppError {
+    /**
+     * @param {string} [message]
+     * @param {object|null} [details]
+     */
+    constructor(message = "Internal server error", details = null) {
+        super(message, { status: 500, code: "INTERNAL_ERROR", details });
+    }
+}
+
 export {
     AppError,
     ValidationError,
@@ -174,4 +205,6 @@ export {
     ConflictError,
     TooManyRequestsError,
     DatabaseError,
+    PaymentError,
+    InternalError,
 };

@@ -5,6 +5,7 @@
 
 import Redis from "ioredis";
 import env from "./env.js";
+import log from "../utils/logger.js";
 
 export const redisConfig = {
     host: env.redis.REDIS_HOST,
@@ -29,11 +30,11 @@ async function getRedisClient() {
 
         await client.ping();
 
-        console.log("Redis client ready");
+        log.info("Redis", "getRedisClient", "Redis client ready");
 
         return client;
     } catch (error) {
-        console.error("[Redis] Error connecting to Redis:", error);
+        log.error("Redis", "getRedisClient", "Error connecting to Redis", error);
         throw error;
     }
 }

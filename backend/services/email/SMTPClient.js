@@ -1,6 +1,7 @@
 // SMTP Client: interaction and usage only. Config lives in configs/mail.js
 // Design Pattern: Singleton
 import configureTransporter, { mailConfig } from "../../configs/mail.js";
+import { InternalError } from "../../utils/errors.js";
 
 /**
  * This class is used to send emails.
@@ -51,7 +52,7 @@ class SMTPClient {
      */
     buildMailOptions(recipient, template) {
         if (!recipient || !template) {
-            throw new Error("Missing required parameters");
+            throw new InternalError("Missing required parameters");
         }
 
         return {
