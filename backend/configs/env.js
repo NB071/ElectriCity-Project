@@ -43,4 +43,21 @@ export default {
             APP_CONSTANTS.REDIS.DEFAULT_PORT,
         REDIS_PASSWORD: process.env.REDIS_PASSWORD,
     },
+    ai: {
+        apiKey: (process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? "")
+            .trim(),
+        model: process.env.GEMINI_MODEL || APP_CONSTANTS.AI.DEFAULT_MODEL,
+        maxToolRounds:
+            parseInt(process.env.GEMINI_MAX_TOOL_ROUNDS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_MAX_TOOL_ROUNDS,
+        maxToolResultChars:
+            parseInt(process.env.GEMINI_MAX_TOOL_RESULT_CHARS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_MAX_TOOL_RESULT_CHARS,
+        retryAttempts:
+            parseInt(process.env.GEMINI_RETRY_ATTEMPTS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_RETRY_ATTEMPTS,
+        retryDelayMs:
+            parseInt(process.env.GEMINI_RETRY_DELAY_MS, 10) ||
+            APP_CONSTANTS.AI.DEFAULT_RETRY_DELAY_MS,
+    },
 };
