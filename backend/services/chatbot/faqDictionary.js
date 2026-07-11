@@ -74,7 +74,7 @@ const STORE_FAQ = {
     [FAQ_TOPICS.VEHICLE_DETAILS]: {
         topic: FAQ_TOPICS.VEHICLE_DETAILS,
         title: "Vehicle details pages",
-        answer: "Click any vehicle in the catalog to open its details page. You will see base price, year, condition, mileage, images, promotions, review summary, and customization categories.",
+        answer: "Click any vehicle in the catalog to open its details page. You will see base price, year, condition, mileage, images, promotions, review summary, options already equipped on the vehicle, and any extra customization options still available for purchase. Used vehicles also show history such as prior owners and accident status.",
         keywords: [
             "details",
             "specs",
@@ -82,6 +82,8 @@ const STORE_FAQ = {
             "photos",
             "images",
             "page",
+            "equipped",
+            "owners",
         ],
     },
 
@@ -89,7 +91,7 @@ const STORE_FAQ = {
     [FAQ_TOPICS.CUSTOMIZATION]: {
         topic: FAQ_TOPICS.CUSTOMIZATION,
         title: "Customization options",
-        answer: "Many vehicles offer add-ons such as exterior color, interior, and wheels. Options appear on the vehicle details page with any price delta. After choosing options, you can save a configuration and add it to your cart. Not every vehicle has every option category.",
+        answer: "Vehicle details show two kinds of options: equipped options already installed on that car (especially used inventory), and customizations still available for purchase such as color, interior, or wheels with any price delta. After choosing available add-ons, you can save a configuration and add it to your cart. Some vehicles have no extra purchase options.",
         keywords: [
             "custom",
             "customization",
@@ -98,6 +100,9 @@ const STORE_FAQ = {
             "wheels",
             "options",
             "configure",
+            "equipped",
+            "add-ons",
+            "already installed",
         ],
     },
 

@@ -52,7 +52,9 @@ const SYSTEM_PROMPTS = {
         "Always use the available tools to fetch real catalog data. Never invent vehicles, prices, stock, or options.",
         "When the user asks for filters (price under $X, new/used, mileage, body type, drivetrain), call browse_vehicles or search_vehicles with the matching filter parameters.",
         "For comparisons, call compare_vehicles with model names (e.g. Model 3, bZ4X) or cids.",
-        "For paint, interior, wheels, or other add-ons, call get_customization_options or get_vehicle_details using model_name when the customer does not know the cid.",
+        "For paint, interior, wheels, or other options, call get_customization_options or get_vehicle_details using model_name when the customer does not know the cid.",
+        "When tool results include equipped_options and customizations, treat equipped_options as already installed on the vehicle and customizations as optional add-ons still available for purchase (which may be empty).",
+        "For used vehicles, also mention history fields such as owners_count and has_accidents when present.",
         "Summarize tool results clearly. Prefer model and brand names in replies; mention cid only when helpful.",
         "If no vehicles match, say so and suggest relaxing filters.",
     ].join(" "),
@@ -60,7 +62,7 @@ const SYSTEM_PROMPTS = {
     [TEMPLATES.CART_ASSIST]: [
         "You help customers with their shopping cart and vehicle selections.",
         "Use get_store_faq for how the cart, checkout, and account flows work on the website.",
-        "Use tools to look up vehicles and customization options when needed.",
+        "Use tools to look up vehicles and options when needed. Equipped options are already on the car; customizations are extra purchase options.",
         "Do not invent cart contents or catalog data.",
     ].join(" "),
 

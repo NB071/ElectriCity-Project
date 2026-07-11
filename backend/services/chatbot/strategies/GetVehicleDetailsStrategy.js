@@ -31,7 +31,7 @@ class GetVehicleDetailsStrategy extends ToolStrategy {
             name: this.name,
 
             description:
-                "Get full details for one vehicle by catalog id (cid) or by model name (e.g. Model 3, bZ4X). Use brand_name, condition, or year if the model matches multiple listings.",
+                "Get full details for one vehicle by catalog id (cid) or by model name (e.g. Model 3, bZ4X). Includes specs, equipped_options (already installed), customizations (extra purchase options, may be empty), promotions, images, and for used cars history such as owners_count and accidents. Use brand_name, condition, or year if the model matches multiple listings.",
 
             parameters: {
                 type: Type.OBJECT,
