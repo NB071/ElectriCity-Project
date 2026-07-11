@@ -20,12 +20,15 @@ import {
     validatePaginationParams,
 } from "../../../utils/pagination.js";
 import { toCatalogListItemDTO } from "./DTOs/catalogListItemDTO.js";
-import { getForItem as getOptionsForItem } from "../_options/optionsQuery.js";
+import { getForItem as getOptionsForItem, getEquippedForItem } from "../_options/optionsQuery.js";
 import { getPromotionsForItems } from "../_promotions/promotionsQuery.js";
 
 const detailsRegistry = new DetailsRegistry({
     productDAO,
-    optionsQuery: { getForItem: getOptionsForItem },
+    optionsQuery: {
+        getForItem: getOptionsForItem,
+        getEquippedForItem,
+    },
     mediaAdapter,
 });
 

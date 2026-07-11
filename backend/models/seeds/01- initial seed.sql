@@ -85,14 +85,21 @@ INSERT INTO vehicles (cid, year, `condition`, mileage) VALUES
   (5, 2025, 'new',  0);
 
 -- history only for used vehicles (cid 2, cid 4)
-INSERT INTO vehicle_history (history_id, cid, has_accidents, media_id) VALUES
-  (1, 2, FALSE, 5),
-  (2, 4, TRUE,  6);
+INSERT INTO vehicle_history (history_id, cid, has_accidents, owners_count, media_id) VALUES
+  (1, 2, FALSE, 1, 5),
+  (2, 4, TRUE,  2, 6);
 
--- which options each item offers
+-- options already installed on the vehicle (as-equipped)
+INSERT INTO equipped_options (cid, option_id) VALUES
+  (2, 1), (2, 3), (2, 5),   -- used Model 3: Pearl White, Black Interior, 18" Aero
+  (4, 2), (4, 3), (4, 6);   -- used Mach-E: Midnight Black, Black Interior, 19" Sport
+
+-- which options each item still offers for purchase (may be empty)
 INSERT INTO catalog_options (cid, option_id) VALUES
   (1, 1), (1, 2), (1, 5), (1, 6),
+  (2, 6),                   -- used Model 3: optional wheel upgrade still available
   (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6);
+  -- cid 4 has no extra purchase options
 
 -- saved configurations (total = base_price + chosen price_deltas)
 INSERT INTO configurations (config_id, cid, total_price) VALUES
