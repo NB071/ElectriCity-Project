@@ -19,7 +19,10 @@ import dashboardRoute from "./routes/api/dashboard/index.js";
 import shopRoute from "./routes/api/shop/index.js";
 
 // Middlewares - import
-import { errorHandlerMiddleware } from "./middlewares/index.js";
+import {
+    errorHandlerMiddleware,
+    helmetMiddleware,
+} from "./middlewares/index.js";
 import {
     authRateLimiter,
     dashboardRateLimiter,
@@ -34,14 +37,14 @@ const app = express();
 const server = http.createServer(app);
 
 // ------- Middlewares -------
+// > Middlewares (security)
+app.disable("x-powered-by");
+app.use(helmetMiddleware);
+app.use(cors());
+
 // > Middlewares (Server)
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
-// > Middlewares (security)
-app.disable("x-powered-by");
-app.use(cors());
-// TODO: Implement more security middlewares [helmet, express-validator]
 
 // ------- Routes -------
 // > Routes (/api)
