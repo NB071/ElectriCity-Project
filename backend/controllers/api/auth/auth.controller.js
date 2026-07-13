@@ -3,6 +3,50 @@ import apiResponse from "../../../utils/apiResponse.js";
 import iamService from "../../../services/iam/iam.service.js";
 import cartService from "../../../services/cart/cart.service.js";
 import log from "../../../utils/logger.js";
+import env from "../../../configs/env.js";
+
+const { AUTH_COOKIES } = iamService.access_management;
+
+/**
+ * This helper sets the access + refresh tokens as httpOnly cookies instead of exposing
+ * them to client-side JS. The refresh cookie is scoped to /api/auth so it is only ever
+ * sent to the endpoints that need it.
+ * @helper_function
+ * @private
+ * @param {import('express').Response} res
+ * @param {object} tokens
+ * @param {string} tokens.accessToken
+ * @param {string} tokens.refreshToken
+ */
+function setAuthCookies(res, { accessToken, refreshToken }) {
+    const secure = env.app.NODE_ENV === "production";
+
+    res.cookie(AUTH_COOKIES.ACCESS_TOKEN, accessToken, {
+        httpOnly: true,
+        secure,
+        sameSite: "lax",
+        path: "/",
+        maxAge: AUTH_COOKIES.ACCESS_TOKEN_MAX_AGE_MS,
+    });
+    res.cookie(AUTH_COOKIES.REFRESH_TOKEN, refreshToken, {
+        httpOnly: true,
+        secure,
+        sameSite: "lax",
+        path: "/api/auth",
+        maxAge: AUTH_COOKIES.REFRESH_TOKEN_MAX_AGE_MS,
+    });
+}
+
+/**
+ * This helper clears both auth cookies on sign-out.
+ * @helper_function
+ * @private
+ * @param {import('express').Response} res
+ */
+function clearAuthCookies(res) {
+    res.clearCookie(AUTH_COOKIES.ACCESS_TOKEN, { path: "/" });
+    res.clearCookie(AUTH_COOKIES.REFRESH_TOKEN, { path: "/api/auth" });
+}
 
 /**
  * This controller registers a new customer account.
@@ -23,27 +67,33 @@ export const register = tryCatch(async (req, res, _) => {
 });
 
 /**
- * This controller authenticates credentials and returns access + refresh tokens.
+ * This controller authenticates credentials, sets the access + refresh tokens as
+ * httpOnly cookies, and returns the user profile (never the raw tokens).
  * @required_role N/A
  * @route POST /api/auth/login
  * @services_used IAM (access_management)
  */
 export const login = tryCatch(async (req, res, _) => {
     const { email, password } = req.body;
-    const responseData = await iamService.access_management.login({
-        email,
-        password,
-        ipAddress: req.ip ?? null,
-        userAgent: req.headers["user-agent"] ?? null,
-    });
+    const { accessToken, refreshToken, user } =
+        await iamService.access_management.login({
+            email,
+            password,
+            ipAddress: req.ip ?? null,
+            userAgent: req.headers["user-agent"] ?? null,
+        });
+
+    setAuthCookies(res, { accessToken, refreshToken });
+
+    const responseData = { user };
 
     // merge the guest cart into the user's cart (if a guest session is present)
     const sessionToken = req.headers[cartService.CART_HEADERS.SESSION] ?? null;
 
-    if (sessionToken && responseData?.user?.user_id != null) {
+    if (sessionToken && user?.user_id != null) {
         try {
             responseData.cart_merge = await cartService.mergeGuestCartIntoUser({
-                userId: responseData.user.user_id,
+                userId: user.user_id,
                 sessionToken,
             });
         } catch (err) {
@@ -70,6 +120,7 @@ export const logout = tryCatch(async (req, res, _) => {
         userId: req.user.user_id,
         sid: req.user.sid,
     });
+    clearAuthCookies(res);
     return apiResponse(res, { loggedOut: true }, 200);
 });
 
@@ -83,6 +134,7 @@ export const logoutAll = tryCatch(async (req, res, _) => {
     await iamService.access_management.logoutAllDevices({
         userId: req.user.user_id,
     });
+    clearAuthCookies(res);
     return apiResponse(res, { loggedOutAllDevices: true }, 200);
 });
 
@@ -93,15 +145,17 @@ export const logoutAll = tryCatch(async (req, res, _) => {
  * @services_used IAM (access_management)
  */
 export const refresh = tryCatch(async (req, res, _) => {
-    const { refresh_token: refreshToken } = req.body;
-    const responseData = await iamService.access_management.refreshTokens(
-        refreshToken,
-        {
+    const refreshToken =
+        req.cookies?.[AUTH_COOKIES.REFRESH_TOKEN] ?? req.body?.refresh_token;
+    const { accessToken, refreshToken: newRefreshToken } =
+        await iamService.access_management.refreshTokens(refreshToken, {
             ipAddress: req.ip ?? null,
             userAgent: req.headers["user-agent"] ?? null,
-        },
-    );
-    return apiResponse(res, responseData, 200);
+        });
+
+    setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
+
+    return apiResponse(res, { refreshed: true }, 200);
 });
 
 /**

@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import getPool, { dbConfig } from "./configs/db.js";
@@ -49,6 +50,7 @@ app.use(
 
 // > Middlewares (Server)
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ------- Routes -------

@@ -69,11 +69,12 @@ class MediaDAO extends BaseDAO {
 
     /**
      * This method finds all media records linked to a catalog item by its file_type.
+     * A catalog item's images are rarely all the same MIME type as every allowed image
+     * type checked by the image strategy, so an empty result here is expected, not an error.
      * @param {number} cid
      * @param {string} file_type
      * @returns {Promise<object[]>} The found media records linked to the catalog item by its file_type
      * @throws {DatabaseError} On database failures
-     * @throws {NotFoundError} If the catalog item does not exist
      */
     async findByCidAndType(cid, file_type) {
         const [rows] = await this._query(
@@ -84,10 +85,7 @@ class MediaDAO extends BaseDAO {
              WHERE ci.cid = ? AND m.file_type = ?
              ORDER BY ci.display_order ASC`,
             [cid, file_type],
-            {
-                notFoundResource:
-                    "Media records linked to catalog item by its file type",
-            },
+            { suppressNotFound: true },
         );
         return rows;
     }

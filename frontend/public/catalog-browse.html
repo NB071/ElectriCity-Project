@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ElectriCity Catalog</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 960px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            h1 {
+                margin-bottom: 0.25rem;
+            }
+            #status {
+                color: #555;
+                margin-top: 0;
+            }
+            .panel {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+            .panel h2 {
+                margin-top: 0;
+                font-size: 1.1rem;
+            }
+            .search-row {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            .search-row input {
+                flex: 1;
+                padding: 0.4rem;
+            }
+            .filters-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 0.75rem;
+            }
+            .filters-grid label {
+                display: block;
+                font-size: 0.85rem;
+            }
+            .filters-grid input,
+            .filters-grid select {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+                margin-top: 0.2rem;
+                padding: 0.35rem;
+            }
+            .filters-actions {
+                margin-top: 0.75rem;
+            }
+            button {
+                padding: 0.45rem 0.9rem;
+                cursor: pointer;
+            }
+            button + button {
+                margin-left: 0.5rem;
+            }
+            .error {
+                color: #c33;
+            }
+            #results {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            .card {
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 0.75rem;
+            }
+            .card img {
+                width: 100%;
+                height: 130px;
+                object-fit: cover;
+                border-radius: 4px;
+                background: #eee;
+            }
+            .card a {
+                text-decoration: none;
+                color: inherit;
+            }
+            .card h3 {
+                font-size: 1rem;
+                margin: 0.5rem 0 0.25rem;
+            }
+            .card .specs {
+                font-size: 0.8rem;
+                color: #555;
+            }
+            .card .price {
+                font-weight: bold;
+                margin-top: 0.25rem;
+            }
+            .card .price .original {
+                text-decoration: line-through;
+                color: #888;
+                font-weight: normal;
+                margin-right: 0.4rem;
+            }
+            .promo-badge {
+                display: inline-block;
+                background: #2a7a2a;
+                color: white;
+                font-size: 0.7rem;
+                border-radius: 3px;
+                padding: 0.1rem 0.4rem;
+                margin: 0.25rem 0.25rem 0 0;
+            }
+            .card .compare-check {
+                margin-top: 0.5rem;
+                font-size: 0.85rem;
+            }
+            .pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+            #compareTable {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            #compareTable th,
+            #compareTable td {
+                border: 1px solid #ddd;
+                padding: 0.4rem 0.6rem;
+                text-align: left;
+                font-size: 0.9rem;
+            }
+            #compareTable td.best {
+                background: #e6f5e6;
+                font-weight: bold;
+            }
+            [hidden] {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>ElectriCity Catalog</h1>
+        <p id="status">Loading vehicles…</p>
+
+        <div class="panel">
+            <div class="search-row">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search by brand or model…"
+                />
+                <button type="button" id="searchBtn">Search</button>
+                <button type="button" id="clearSearchBtn">
+                    Clear Search
+                </button>
+            </div>
+
+            <h2>Filters</h2>
+            <div class="filters-grid">
+                <label
+                    >Condition
+                    <select id="fCondition">
+                        <option value="">Any</option>
+                        <option value="new">New</option>
+                        <option value="used">Used</option>
+                    </select>
+                </label>
+                <label
+                    >Year (min)
+                    <input type="number" id="fYearMin" />
+                </label>
+                <label
+                    >Year (max)
+                    <input type="number" id="fYearMax" />
+                </label>
+                <label
+                    >Price (min)
+                    <input type="number" id="fPriceMin" min="0" />
+                </label>
+                <label
+                    >Price (max)
+                    <input type="number" id="fPriceMax" min="0" />
+                </label>
+                <label
+                    >Mileage (max)
+                    <input type="number" id="fMileageMax" min="0" />
+                </label>
+                <label
+                    >Body shape
+                    <select id="fBodyShape">
+                        <option value="">Any</option>
+                        <option value="Sedan">Sedan</option>
+                        <option value="SUV">SUV</option>
+                        <option value="Hatchback">Hatchback</option>
+                        <option value="Truck">Truck</option>
+                    </select>
+                </label>
+                <label
+                    >Drivetrain
+                    <select id="fDrivetrain">
+                        <option value="">Any</option>
+                        <option value="FWD">FWD</option>
+                        <option value="RWD">RWD</option>
+                        <option value="AWD">AWD</option>
+                    </select>
+                </label>
+                <label
+                    >Promotion
+                    <select id="fPromo">
+                        <option value="">Any</option>
+                        <option value="hot_deal">Hot Deal</option>
+                        <option value="seasonal">Seasonal</option>
+                        <option value="clearance">Clearance</option>
+                        <option value="featured">Featured</option>
+                    </select>
+                </label>
+                <label
+                    >Sort by
+                    <select id="fSort">
+                        <option value="added_desc">Newest</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">
+                            Price: High to Low
+                        </option>
+                        <option value="year_desc">Year: Newest</option>
+                        <option value="year_asc">Year: Oldest</option>
+                        <option value="mileage_asc">
+                            Mileage: Low to High
+                        </option>
+                        <option value="mileage_desc">
+                            Mileage: High to Low
+                        </option>
+                    </select>
+                </label>
+            </div>
+            <div class="filters-actions">
+                <button type="button" id="applyFiltersBtn">
+                    Apply Filters
+                </button>
+                <button type="button" id="clearFiltersBtn">
+                    Clear Filters
+                </button>
+            </div>
+            <p class="error" id="filtersError"></p>
+        </div>
+
+        <div class="panel">
+            <h2>Results</h2>
+            <div id="results"></div>
+            <div class="pagination">
+                <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                <span id="pageIndicator"></span>
+                <button type="button" id="nextPageBtn">Next &raquo;</button>
+            </div>
+            <div>
+                <button type="button" id="compareBtn" disabled>
+                    Compare Selected (0)
+                </button>
+            </div>
+        </div>
+
+        <div class="panel" id="comparePanel" hidden>
+            <h2>Comparison</h2>
+            <table id="compareTable"></table>
+            <p class="error" id="compareError"></p>
+        </div>
+
+        <script>
+            const apiBase = window.location.origin.replace(/\/$/, "");
+
+            const statusEl = document.getElementById("status");
+            const resultsEl = document.getElementById("results");
+            const pageIndicatorEl = document.getElementById("pageIndicator");
+            const compareBtn = document.getElementById("compareBtn");
+            const comparePanelEl = document.getElementById("comparePanel");
+            const compareTableEl = document.getElementById("compareTable");
+            const compareErrorEl = document.getElementById("compareError");
+            const filtersErrorEl = document.getElementById("filtersError");
+
+            let currentPage = 1;
+            let searchTerm = "";
+            const selectedForCompare = new Set();
+
+            async function apiFetch(path) {
+                const res = await fetch(apiBase + path, {
+                    credentials: "same-origin",
+                });
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function readFilters() {
+                const filters = {};
+
+                const condition = document.getElementById("fCondition").value;
+                if (condition) filters.condition = condition;
+
+                const yearMin = document.getElementById("fYearMin").value;
+                if (yearMin) filters.year_min = yearMin;
+
+                const yearMax = document.getElementById("fYearMax").value;
+                if (yearMax) filters.year_max = yearMax;
+
+                const priceMin = document.getElementById("fPriceMin").value;
+                if (priceMin) filters.price_min = priceMin;
+
+                const priceMax = document.getElementById("fPriceMax").value;
+                if (priceMax) filters.price_max = priceMax;
+
+                const mileageMax =
+                    document.getElementById("fMileageMax").value;
+                if (mileageMax) filters.mileage_max = mileageMax;
+
+                const bodyShape = document.getElementById("fBodyShape").value;
+                if (bodyShape) filters.body_shape = bodyShape;
+
+                const drivetrain =
+                    document.getElementById("fDrivetrain").value;
+                if (drivetrain) filters.drivetrain = drivetrain;
+
+                const promo = document.getElementById("fPromo").value;
+                if (promo) filters.promo = promo;
+
+                filters.sort = document.getElementById("fSort").value;
+
+                return filters;
+            }
+
+            function buildQueryString(extra = {}) {
+                const params = new URLSearchParams({
+                    page: String(currentPage),
+                    limit: "12",
+                    ...readFilters(),
+                    ...extra,
+                });
+                return params.toString();
+            }
+
+            function formatMoney(amount) {
+                return (
+                    "$" +
+                    Number(amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+                );
+            }
+
+            function renderPromoBadges(promotions) {
+                if (!promotions || promotions.length === 0) return "";
+                return promotions
+                    .map(
+                        (promo) =>
+                            '<span class="promo-badge">' +
+                            promo.name +
+                            "</span>",
+                    )
+                    .join("");
+            }
+
+            function bestPromoDiscount(promotions) {
+                if (!promotions || promotions.length === 0) return 0;
+                return Math.max(
+                    ...promotions.map((promo) => promo.discount_amount),
+                );
+            }
+
+            function renderResults(items) {
+                resultsEl.innerHTML = "";
+
+                if (items.length === 0) {
+                    resultsEl.innerHTML = "<p>No vehicles match.</p>";
+                    return;
+                }
+
+                for (const item of items) {
+                    const card = document.createElement("div");
+                    card.className = "card";
+
+                    const discount = bestPromoDiscount(item.promotions);
+                    const finalPrice = item.base_price - discount;
+
+                    const vehicle = item.vehicle || {};
+                    const specs = [
+                        vehicle.year,
+                        vehicle.condition,
+                        vehicle.body_shape,
+                        vehicle.drivetrain,
+                        vehicle.mileage != null
+                            ? vehicle.mileage + " mi"
+                            : null,
+                    ]
+                        .filter(Boolean)
+                        .join(" · ");
+
+                    card.innerHTML =
+                        '<a href="/catalog-details.html?cid=' +
+                        item.id +
+                        '">' +
+                        '<img src="' +
+                        (item.primary_image_url || "") +
+                        '" alt="' +
+                        item.name +
+                        '" onerror="this.style.visibility=\'hidden\'" />' +
+                        "<h3>" +
+                        item.name +
+                        "</h3>" +
+                        "</a>" +
+                        '<div class="specs">' +
+                        specs +
+                        "</div>" +
+                        '<div class="price">' +
+                        (discount > 0
+                            ? '<span class="original">' +
+                              formatMoney(item.base_price) +
+                              "</span>"
+                            : "") +
+                        formatMoney(finalPrice) +
+                        "</div>" +
+                        "<div>" +
+                        renderPromoBadges(item.promotions) +
+                        "</div>" +
+                        '<label class="compare-check"><input type="checkbox" class="compareCheckbox" data-cid="' +
+                        item.id +
+                        '" ' +
+                        (selectedForCompare.has(item.id) ? "checked" : "") +
+                        "/> Compare</label>";
+
+                    resultsEl.appendChild(card);
+                }
+
+                resultsEl
+                    .querySelectorAll(".compareCheckbox")
+                    .forEach((checkbox) => {
+                        checkbox.addEventListener("change", (event) => {
+                            const cid = Number(event.target.dataset.cid);
+                            if (event.target.checked) {
+                                if (selectedForCompare.size >= 5) {
+                                    event.target.checked = false;
+                                    filtersErrorEl.textContent =
+                                        "You can compare at most 5 vehicles at once.";
+                                    return;
+                                }
+                                selectedForCompare.add(cid);
+                            } else {
+                                selectedForCompare.delete(cid);
+                            }
+                            updateCompareButton();
+                        });
+                    });
+            }
+
+            function updateCompareButton() {
+                const count = selectedForCompare.size;
+                compareBtn.textContent = "Compare Selected (" + count + ")";
+                compareBtn.disabled = count < 2;
+            }
+
+            async function loadResults() {
+                filtersErrorEl.textContent = "";
+                statusEl.textContent = "Loading vehicles…";
+
+                const query = buildQueryString(
+                    searchTerm ? { q: searchTerm } : {},
+                );
+                const path = searchTerm
+                    ? "/api/shop/catalog/vehicles/search?" + query
+                    : "/api/shop/catalog/vehicles?" + query;
+
+                const { ok, body } = await apiFetch(path);
+
+                if (!ok) {
+                    statusEl.textContent = "";
+                    filtersErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load the catalog.",
+                    );
+                    resultsEl.innerHTML = "";
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                renderResults(items);
+
+                statusEl.textContent =
+                    pagination.total +
+                    " vehicle(s) found" +
+                    (searchTerm ? ' for "' + searchTerm + '"' : "") +
+                    ".";
+                pageIndicatorEl.textContent =
+                    "Page " + pagination.page + " of " + pagination.totalPages;
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            // ------- Search -------
+            document
+                .getElementById("searchBtn")
+                .addEventListener("click", () => {
+                    searchTerm = document
+                        .getElementById("searchInput")
+                        .value.trim();
+                    currentPage = 1;
+                    loadResults();
+                });
+
+            document
+                .getElementById("searchInput")
+                .addEventListener("keydown", (event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        document.getElementById("searchBtn").click();
+                    }
+                });
+
+            document
+                .getElementById("clearSearchBtn")
+                .addEventListener("click", () => {
+                    searchTerm = "";
+                    document.getElementById("searchInput").value = "";
+                    currentPage = 1;
+                    loadResults();
+                });
+
+            // ------- Filters -------
+            document
+                .getElementById("applyFiltersBtn")
+                .addEventListener("click", () => {
+                    currentPage = 1;
+                    loadResults();
+                });
+
+            document
+                .getElementById("clearFiltersBtn")
+                .addEventListener("click", () => {
+                    document.getElementById("fCondition").value = "";
+                    document.getElementById("fYearMin").value = "";
+                    document.getElementById("fYearMax").value = "";
+                    document.getElementById("fPriceMin").value = "";
+                    document.getElementById("fPriceMax").value = "";
+                    document.getElementById("fMileageMax").value = "";
+                    document.getElementById("fBodyShape").value = "";
+                    document.getElementById("fDrivetrain").value = "";
+                    document.getElementById("fPromo").value = "";
+                    document.getElementById("fSort").value = "added_desc";
+                    currentPage = 1;
+                    loadResults();
+                });
+
+            // ------- Pagination -------
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadResults();
+                    }
+                });
+
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadResults();
+                });
+
+            // ------- Compare -------
+            compareBtn.addEventListener("click", async () => {
+                compareErrorEl.textContent = "";
+                const cids = [...selectedForCompare].join(",");
+
+                const { ok, body } = await apiFetch(
+                    "/api/shop/catalog/compare?cids=" +
+                        encodeURIComponent(cids),
+                );
+
+                if (!ok) {
+                    compareErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not compare the selected vehicles.",
+                    );
+                    return;
+                }
+
+                renderCompareTable(body.data);
+                comparePanelEl.hidden = false;
+                comparePanelEl.scrollIntoView({ behavior: "smooth" });
+            });
+
+            function renderCompareTable(matrix) {
+                const { columns, rows } = matrix;
+
+                let html = "<tr><th>Field</th>";
+                for (const column of columns) {
+                    html += "<th>" + column.label + "</th>";
+                }
+                html += "</tr>";
+
+                for (const row of rows) {
+                    html += "<tr><td>" + row.field + "</td>";
+                    for (const cell of row.cells) {
+                        html +=
+                            '<td class="' +
+                            (cell.isBest ? "best" : "") +
+                            '">' +
+                            (cell.value ?? "—") +
+                            "</td>";
+                    }
+                    html += "</tr>";
+                }
+
+                compareTableEl.innerHTML = html;
+            }
+
+            loadResults();
+        </script>
+    </body>
+</html>
