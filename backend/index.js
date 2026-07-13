@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import getPool, { dbConfig } from "./configs/db.js";
@@ -43,12 +44,15 @@ app.disable("x-powered-by");
 app.use(helmetMiddleware);
 app.use(
     cors({
+        origin: true,
+        credentials: true,
         exposedHeaders: [CART_HEADERS.SESSION],
     }),
 );
 
 // > Middlewares (Server)
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ------- Routes -------

@@ -34,4 +34,10 @@ const CART_HEADERS = {
     SESSION: "x-cart-session",
 };
 
-export { CART_KINDS, VALIDATIONS, DEFAULTS, CART_HEADERS };
+const CART_COOKIES = {
+    SESSION: "cart_session",
+    // Keep in sync with DEFAULTS.GUEST_CART_TTL_DAYS.
+    SESSION_MAX_AGE_MS: 30 * 24 * 60 * 60 * 1000,
+};
+
+export { CART_KINDS, VALIDATIONS, DEFAULTS, CART_HEADERS, CART_COOKIES };

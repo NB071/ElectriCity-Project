@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <title>ElectriCity Checkout</title>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
+        <style>
+            body.page-checkout {
+                max-width: 70rem;
+            }
+            .checkout-layout {
+                display: grid;
+                grid-template-columns: 1fr 16rem;
+                gap: 1rem;
+                align-items: start;
+            }
+            .checkout-cart {
+                position: sticky;
+                top: 1rem;
+            }
+            .checkout-cart .cart-line {
+                border-bottom: 1px solid #000;
+                padding: 0.4rem 0;
+                margin: 0;
+            }
+            .checkout-cart .cart-line:last-of-type {
+                border-bottom: none;
+            }
+            @media (max-width: 50rem) {
+                .checkout-layout {
+                    grid-template-columns: 1fr;
+                }
+                .checkout-cart {
+                    position: static;
+                }
+            }
+        </style>
+    </head>
+    <body class="page-checkout">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>ElectriCity Checkout</h1>
+        <p id="status">Checking session...</p>
+
+        <div class="checkout-layout">
+            <div class="checkout-main">
+                <div
+                    class="panel"
+                    id="itemSourcePanel"
+                    hidden
+                >
+                    <h2>Items</h2>
+                    <div
+                        class="radio-row"
+                        id="itemSourceRadios"
+                    >
+                        <label
+                            ><input
+                                type="radio"
+                                name="itemSource"
+                                value="cart"
+                                checked
+                            />
+                            Use my saved guest cart</label
+                        >
+                        <label
+                            ><input
+                                type="radio"
+                                name="itemSource"
+                                value="manual"
+                            />
+                            Enter items manually</label
+                        >
+                    </div>
+
+                    <div
+                        id="manualItemsSection"
+                        hidden
+                    >
+                        <div id="itemRows"></div>
+                        <button
+                            type="button"
+                            id="addItemRowBtn"
+                        >
+                            + Add Item Line
+                        </button>
+                    </div>
+                </div>
+
+                <form id="checkoutForm">
+                    <div
+                        class="panel"
+                        id="guestEmailPanel"
+                        hidden
+                    >
+                        <h2>Contact</h2>
+                        <label class="field"
+                            >Email
+                            <input
+                                type="email"
+                                id="guestEmail"
+                            />
+                        </label>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Shipping Address</h2>
+                        <label class="field"
+                            >Full name
+                            <input
+                                type="text"
+                                id="shipFullName"
+                                required
+                            />
+                        </label>
+                        <label class="field"
+                            >Phone (optional)
+                            <input
+                                type="tel"
+                                id="shipPhone"
+                            />
+                        </label>
+                        <label class="field"
+                            >Street
+                            <input
+                                type="text"
+                                id="shipStreet"
+                                required
+                            />
+                        </label>
+                        <div class="grid-2">
+                            <label class="field"
+                                >City
+                                <input
+                                    type="text"
+                                    id="shipCity"
+                                    required
+                                />
+                            </label>
+                            <label class="field"
+                                >Province/Territory
+                                <select
+                                    id="shipProvince"
+                                    required
+                                >
+                                    <option value="ON">Ontario (ON)</option>
+                                    <option value="BC">
+                                        British Columbia (BC)
+                                    </option>
+                                    <option value="AB">Alberta (AB)</option>
+                                    <option value="MB">Manitoba (MB)</option>
+                                    <option value="NB">
+                                        New Brunswick (NB)
+                                    </option>
+                                    <option value="NL">
+                                        Newfoundland and Labrador (NL)
+                                    </option>
+                                    <option value="NS">Nova Scotia (NS)</option>
+                                    <option value="NT">
+                                        Northwest Territories (NT)
+                                    </option>
+                                    <option value="NU">Nunavut (NU)</option>
+                                    <option value="PE">
+                                        Prince Edward Island (PE)
+                                    </option>
+                                    <option value="QC">Quebec (QC)</option>
+                                    <option value="SK">
+                                        Saskatchewan (SK)
+                                    </option>
+                                    <option value="YT">Yukon (YT)</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="grid-2">
+                            <label class="field"
+                                >Country
+                                <input
+                                    type="text"
+                                    id="shipCountry"
+                                    value="Canada"
+                                    required
+                                />
+                            </label>
+                            <label class="field"
+                                >Postal code
+                                <input
+                                    type="text"
+                                    id="shipPostalCode"
+                                    required
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Billing Address</h2>
+                        <label class="field"
+                            ><input
+                                type="checkbox"
+                                id="billingSameAsShipping"
+                                checked
+                            />
+                            Same as shipping address</label
+                        >
+                        <div
+                            id="billingFields"
+                            hidden
+                        >
+                            <label class="field"
+                                >Full name
+                                <input
+                                    type="text"
+                                    id="billFullName"
+                                />
+                            </label>
+                            <label class="field"
+                                >Phone (optional)
+                                <input
+                                    type="tel"
+                                    id="billPhone"
+                                />
+                            </label>
+                            <label class="field"
+                                >Street
+                                <input
+                                    type="text"
+                                    id="billStreet"
+                                />
+                            </label>
+                            <div class="grid-2">
+                                <label class="field"
+                                    >City
+                                    <input
+                                        type="text"
+                                        id="billCity"
+                                    />
+                                </label>
+                                <label class="field"
+                                    >Province/Territory
+                                    <select id="billProvince">
+                                        <option value="ON">Ontario (ON)</option>
+                                        <option value="BC">
+                                            British Columbia (BC)
+                                        </option>
+                                        <option value="AB">Alberta (AB)</option>
+                                        <option value="MB">
+                                            Manitoba (MB)
+                                        </option>
+                                        <option value="NB">
+                                            New Brunswick (NB)
+                                        </option>
+                                        <option value="NL">
+                                            Newfoundland and Labrador (NL)
+                                        </option>
+                                        <option value="NS">
+                                            Nova Scotia (NS)
+                                        </option>
+                                        <option value="NT">
+                                            Northwest Territories (NT)
+                                        </option>
+                                        <option value="NU">Nunavut (NU)</option>
+                                        <option value="PE">
+                                            Prince Edward Island (PE)
+                                        </option>
+                                        <option value="QC">Quebec (QC)</option>
+                                        <option value="SK">
+                                            Saskatchewan (SK)
+                                        </option>
+                                        <option value="YT">Yukon (YT)</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="grid-2">
+                                <label class="field"
+                                    >Country
+                                    <input
+                                        type="text"
+                                        id="billCountry"
+                                        value="Canada"
+                                    />
+                                </label>
+                                <label class="field"
+                                    >Postal code
+                                    <input
+                                        type="text"
+                                        id="billPostalCode"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Payment</h2>
+                        <label class="field"
+                            >Payment method
+                            <select id="paymentMethod">
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="apple_pay">Apple Pay</option>
+                            </select>
+                        </label>
+
+                        <div id="cardFields">
+                            <label class="field"
+                                >Cardholder name
+                                <input
+                                    type="text"
+                                    id="cardholderName"
+                                />
+                            </label>
+                            <div class="grid-2">
+                                <label class="field"
+                                    >Card number
+                                    <input
+                                        type="text"
+                                        id="cardNumber"
+                                        placeholder="4111111111111111"
+                                    />
+                                </label>
+                                <label class="field"
+                                    >CVV
+                                    <input
+                                        type="text"
+                                        id="cardCvv"
+                                        placeholder="123"
+                                    />
+                                </label>
+                            </div>
+                            <div class="grid-2">
+                                <label class="field"
+                                    >Expiry month
+                                    <input
+                                        type="text"
+                                        id="cardExpiryMonth"
+                                        placeholder="MM"
+                                    />
+                                </label>
+                                <label class="field"
+                                    >Expiry year
+                                    <input
+                                        type="text"
+                                        id="cardExpiryYear"
+                                        placeholder="YYYY"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div
+                            id="applePayFields"
+                            hidden
+                        >
+                            <label class="field"
+                                >Apple Pay token (mock)
+                                <input
+                                    type="text"
+                                    id="applePayToken"
+                                    placeholder="mock-token-anything"
+                                />
+                            </label>
+                        </div>
+
+                        <p class="hint">
+                            This is a mock payment gateway. it deterministically
+                            declines every 3rd attempt for the same
+                            account/order and method; so trying the same method
+                            repeatedly will eventually show a declined result on
+                            purpose.
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="placeOrderBtn"
+                    >
+                        Place Order
+                    </button>
+                    <p
+                        class="error"
+                        id="checkoutError"
+                    ></p>
+                </form>
+            </div>
+
+            <aside
+                class="panel checkout-cart"
+                id="cartSummaryPanel"
+            >
+                <h2>Order cart</h2>
+                <p
+                    id="cartSummaryStatus"
+                    class="hint"
+                >
+                    Loading cart...
+                </p>
+                <div id="cartSummaryList"></div>
+                <p id="cartSummaryTotal"></p>
+                <p>
+                    <a href="/cart.html">Edit cart</a>
+                </p>
+            </aside>
+        </div>
+
+        <div
+            class="panel"
+            id="resultPanel"
+            hidden
+        >
+            <h2 id="resultTitle"></h2>
+            <p id="resultBody"></p>
+        </div>
+
+        <script>
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+
+            let currentUser = null;
+
+            async function apiFetch(path, options = {}) {
+                const headers = {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {}),
+                };
+
+                const opts = {
+                    credentials: fetchCredentials,
+                    ...options,
+                    headers,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (
+                    res.status === 401 &&
+                    path !== "/api/auth/login" &&
+                    path !== "/api/auth/refresh"
+                ) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatMoney(amount) {
+                return (
+                    "$" +
+                    Number(amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+                );
+            }
+
+            function renderCartSummary(items) {
+                const listEl = document.getElementById("cartSummaryList");
+                const statusEl = document.getElementById("cartSummaryStatus");
+                const totalEl = document.getElementById("cartSummaryTotal");
+
+                if (!items || items.length === 0) {
+                    statusEl.textContent = "Your cart is empty.";
+                    listEl.innerHTML = "";
+                    totalEl.textContent = "";
+                    return;
+                }
+
+                statusEl.textContent = items.length + " item(s) in cart";
+                let subtotal = 0;
+                listEl.innerHTML = items
+                    .map((item) => {
+                        subtotal += Number(item.line_total);
+                        const name =
+                            item.catalog_item?.name || "Item #" + item.cid;
+                        const configNote = item.config_id
+                            ? " (config #" + item.config_id + ")"
+                            : "";
+                        return (
+                            '<p class="cart-line"><strong>' +
+                            name +
+                            "</strong>" +
+                            configNote +
+                            "<br />Qty " +
+                            item.quantity +
+                            " × " +
+                            formatMoney(item.unit_price) +
+                            "<br />" +
+                            formatMoney(item.line_total) +
+                            "</p>"
+                        );
+                    })
+                    .join("");
+                totalEl.innerHTML =
+                    "<strong>Subtotal: " + formatMoney(subtotal) + "</strong>";
+            }
+
+            async function loadCartSummary() {
+                const statusEl = document.getElementById("cartSummaryStatus");
+                statusEl.textContent = "Loading cart...";
+
+                const { ok, body } = await apiFetch(
+                    "/api/shop/cart?page=1&limit=50",
+                );
+
+                if (!ok) {
+                    statusEl.textContent = errorMessage(
+                        body,
+                        "Could not load cart.",
+                    );
+                    document.getElementById("cartSummaryList").innerHTML = "";
+                    document.getElementById("cartSummaryTotal").textContent =
+                        "";
+                    return null;
+                }
+
+                const items = body.data?.items || [];
+                renderCartSummary(items);
+                return body.data;
+            }
+
+            // ------- Session / item source setup -------
+            async function checkSession() {
+                const { ok, body } = await apiFetch("/api/auth/me");
+                currentUser = ok ? body.data : null;
+
+                const statusEl = document.getElementById("status");
+                const itemSourcePanel =
+                    document.getElementById("itemSourcePanel");
+                const guestEmailPanel =
+                    document.getElementById("guestEmailPanel");
+
+                const cartData = await loadCartSummary();
+                const hasCart = Boolean(
+                    cartData &&
+                    ((cartData.items && cartData.items.length > 0) ||
+                        cartData.session_token),
+                );
+
+                if (currentUser) {
+                    statusEl.textContent =
+                        "Signed in as " +
+                        currentUser.email +
+                        " * checking out from your account cart.";
+                    itemSourcePanel.hidden = true;
+                    guestEmailPanel.hidden = true;
+                } else {
+                    statusEl.innerHTML =
+                        'Checking out as a guest. <a href="/auth.html">Sign in</a> instead to use your account cart.';
+                    itemSourcePanel.hidden = false;
+                    guestEmailPanel.hidden = false;
+
+                    if (!hasCart) {
+                        document.querySelector(
+                            'input[name="itemSource"][value="manual"]',
+                        ).checked = true;
+                        document.querySelector(
+                            'input[name="itemSource"][value="cart"]',
+                        ).disabled = true;
+                        document.getElementById("manualItemsSection").hidden =
+                            false;
+                        addItemRow();
+                    }
+                }
+            }
+
+            document
+                .querySelectorAll('input[name="itemSource"]')
+                .forEach((radio) => {
+                    radio.addEventListener("change", () => {
+                        const manual =
+                            document.querySelector(
+                                'input[name="itemSource"]:checked',
+                            ).value === "manual";
+                        document.getElementById("manualItemsSection").hidden =
+                            !manual;
+                        if (manual && !document.querySelector(".item-row")) {
+                            addItemRow();
+                        }
+                    });
+                });
+
+            // ------- Manual item rows -------
+            function addItemRow() {
+                const row = document.createElement("div");
+                row.className = "item-row";
+                row.innerHTML =
+                    '<label>Catalog item ID (cid)<input type="number" min="1" class="rowCid" /></label>' +
+                    '<label>Config ID (optional)<input type="number" min="1" class="rowConfigId" /></label>' +
+                    '<label>Quantity<input type="number" min="1" max="99" value="1" class="rowQuantity" /></label>' +
+                    '<button type="button" class="removeRowBtn">Remove</button>';
+                row.querySelector(".removeRowBtn").addEventListener(
+                    "click",
+                    () => row.remove(),
+                );
+                document.getElementById("itemRows").appendChild(row);
+            }
+
+            document
+                .getElementById("addItemRowBtn")
+                .addEventListener("click", addItemRow);
+
+            function collectManualItems() {
+                return [...document.querySelectorAll(".item-row")]
+                    .map((row) => ({
+                        cid: Number(row.querySelector(".rowCid").value),
+                        config_id: row.querySelector(".rowConfigId").value
+                            ? Number(row.querySelector(".rowConfigId").value)
+                            : null,
+                        quantity:
+                            Number(row.querySelector(".rowQuantity").value) ||
+                            1,
+                    }))
+                    .filter((item) => item.cid);
+            }
+
+            // ------- Billing same-as-shipping toggle -------
+            document
+                .getElementById("billingSameAsShipping")
+                .addEventListener("change", (event) => {
+                    document.getElementById("billingFields").hidden =
+                        event.target.checked;
+                });
+
+            // ------- Payment method field toggle -------
+            document
+                .getElementById("paymentMethod")
+                .addEventListener("change", (event) => {
+                    const isApplePay = event.target.value === "apple_pay";
+                    document.getElementById("cardFields").hidden = isApplePay;
+                    document.getElementById("applePayFields").hidden =
+                        !isApplePay;
+                });
+
+            function collectAddress(prefix) {
+                return {
+                    full_name: document.getElementById(prefix + "FullName")
+                        .value,
+                    phone_number:
+                        document.getElementById(prefix + "Phone").value || null,
+                    street: document.getElementById(prefix + "Street").value,
+                    city: document.getElementById(prefix + "City").value,
+                    province: document.getElementById(prefix + "Province")
+                        .value,
+                    country: document.getElementById(prefix + "Country").value,
+                    postal_code: document.getElementById(prefix + "PostalCode")
+                        .value,
+                };
+            }
+
+            function collectPaymentDetails(method) {
+                if (method === "apple_pay") {
+                    return {
+                        token:
+                            document.getElementById("applePayToken").value ||
+                            "mock-token",
+                    };
+                }
+
+                return {
+                    card_number: document.getElementById("cardNumber").value,
+                    expiry_month:
+                        document.getElementById("cardExpiryMonth").value,
+                    expiry_year:
+                        document.getElementById("cardExpiryYear").value,
+                    cvv: document.getElementById("cardCvv").value,
+                    cardholder_name:
+                        document.getElementById("cardholderName").value,
+                };
+            }
+
+            document
+                .getElementById("checkoutForm")
+                .addEventListener("submit", async (event) => {
+                    event.preventDefault();
+
+                    const checkoutErrorEl =
+                        document.getElementById("checkoutError");
+                    const resultPanel = document.getElementById("resultPanel");
+                    checkoutErrorEl.textContent = "";
+                    resultPanel.hidden = true;
+
+                    const paymentMethod =
+                        document.getElementById("paymentMethod").value;
+
+                    const payload = {
+                        shipping_address: collectAddress("ship"),
+                        payment_method: paymentMethod,
+                        payment_details: collectPaymentDetails(paymentMethod),
+                    };
+
+                    if (
+                        !document.getElementById("billingSameAsShipping")
+                            .checked
+                    ) {
+                        payload.billing_address = collectAddress("bill");
+                    }
+
+                    if (!currentUser) {
+                        payload.guest_email =
+                            document.getElementById("guestEmail").value;
+
+                        const useManual =
+                            document.querySelector(
+                                'input[name="itemSource"]:checked',
+                            ).value === "manual";
+
+                        if (useManual) {
+                            const items = collectManualItems();
+                            if (items.length === 0) {
+                                checkoutErrorEl.textContent =
+                                    "Add at least one item line.";
+                                return;
+                            }
+                            payload.items = items;
+                        }
+                    }
+
+                    const placeOrderBtn =
+                        document.getElementById("placeOrderBtn");
+                    placeOrderBtn.disabled = true;
+                    placeOrderBtn.textContent = "Placing order...";
+
+                    const { ok, body } = await apiFetch("/api/shop/checkout", {
+                        method: "POST",
+                        body: JSON.stringify(payload),
+                    });
+
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.textContent = "Place Order";
+
+                    const declinedDetails =
+                        !ok && body?.data?.code === "CONFLICT"
+                            ? body.data.details
+                            : null;
+
+                    if (ok) {
+                        const data = body.data;
+                        resultPanel.hidden = false;
+                        resultPanel.classList.remove("declined");
+                        document.getElementById("resultTitle").textContent =
+                            "Order #" + data.order_id + " confirmed!";
+                        document.getElementById("resultBody").innerHTML =
+                            "Payment status: <strong>" +
+                            data.payment_status +
+                            "</strong><br />Subtotal: " +
+                            formatMoney(data.subtotal) +
+                            " * Tax: " +
+                            formatMoney(data.tax) +
+                            " * Total: <strong>" +
+                            formatMoney(data.total) +
+                            "</strong>";
+                        resultPanel.scrollIntoView({ behavior: "smooth" });
+                        await loadCartSummary();
+                    } else if (declinedDetails?.order_id) {
+                        resultPanel.hidden = false;
+                        resultPanel.classList.add("declined");
+                        document.getElementById("resultTitle").textContent =
+                            "Order #" +
+                            declinedDetails.order_id +
+                            " created, but payment was declined";
+                        document.getElementById("resultBody").innerHTML =
+                            "The order was created with status <strong>pending</strong> and is retryable; submit the form again with different payment details to try again.<br />Total due: " +
+                            formatMoney(declinedDetails.total);
+                        resultPanel.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                        checkoutErrorEl.textContent = errorMessage(
+                            body,
+                            "Checkout failed. Please check your details and try again.",
+                        );
+                    }
+                });
+
+            checkSession();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+        </script>
+    </body>
+</html>

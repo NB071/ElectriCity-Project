@@ -1,7 +1,8 @@
 import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import orderService from "../../../services/order/order.service.js";
-import cartService from "../../../services/cart/cart.service.js";
+import { cartSessionFromRequest } from "../../../services/cart/helpers/attachCartSession.js";
+import { clearCartSessionCookie } from "../../../services/cart/helpers/cartSessionCookie.js";
 
 /**
  * This controller checks out the caller's cart (customer) or guest cart / items (guest).
@@ -25,11 +26,13 @@ export const checkout = tryCatch(async (req, res, _) => {
             ? orderService.CHECKOUT_ACTORS.CUSTOMER
             : orderService.CHECKOUT_ACTORS.GUEST;
 
+    const sessionToken = cartSessionFromRequest(req);
+
     // checkout
     const responseData = await orderService.checkout({
         actor,
         userId,
-        sessionToken: req.headers[cartService.CART_HEADERS.SESSION] ?? null,
+        sessionToken,
         guest_email,
         items,
         shipping_address,
@@ -37,6 +40,10 @@ export const checkout = tryCatch(async (req, res, _) => {
         payment_method,
         payment_details,
     });
+
+    if (actor === orderService.CHECKOUT_ACTORS.GUEST && sessionToken) {
+        clearCartSessionCookie(res);
+    }
 
     return apiResponse(res, responseData, 201);
 });

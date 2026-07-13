@@ -294,8 +294,9 @@ class ProductDAO extends BaseDAO {
              JOIN brands b ON b.brand_id = m.brand_id
              JOIN vehicles v ON v.cid = ci.cid
              JOIN vehicle_models vm ON vm.model_id = m.model_id
-             WHERE ci.cid IN (${placeholders})`,
-            cids,
+             WHERE ci.cid IN (${placeholders})
+             ORDER BY FIELD(ci.cid, ${placeholders})`,
+            [...cids, ...cids],
             { notFoundResource: "Catalog item" },
         );
         return rows;
