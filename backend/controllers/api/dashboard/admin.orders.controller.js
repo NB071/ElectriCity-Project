@@ -28,38 +28,6 @@ export const getOrderDetail = tryCatch(async (req, res, _) => {
 });
 
 /**
- * This controller lets an admin manually place an order for a customer or guest,
- * bypassing any cart (e.g. phone/manual orders).
- * @route POST /api/dashboard/admin/orders
- * @required_role admin
- * @services_used Order
- */
-export const createOrder = tryCatch(async (req, res, _) => {
-    const {
-        user_id,
-        guest_email,
-        items,
-        shipping_address,
-        billing_address,
-        payment_method,
-        payment_details,
-    } = req.body;
-
-    const responseData = await orderService.checkout({
-        actor: orderService.CHECKOUT_ACTORS.ADMIN,
-        userId: user_id ?? null,
-        guest_email,
-        items,
-        shipping_address,
-        billing_address,
-        payment_method,
-        payment_details,
-    });
-
-    return apiResponse(res, responseData, 201);
-});
-
-/**
  * This controller updates an order's order_status.
  * @route PATCH /api/dashboard/admin/orders/:orderId/status
  * @required_role admin

@@ -4,7 +4,7 @@ import orderService from "../../../services/order/order.service.js";
 import cartService from "../../../services/cart/cart.service.js";
 
 /**
- * This controller checks out the caller's own cart when authenticated, or the guest cart / explicit items when a guest.
+ * This controller checks out the caller's cart (customer) or guest cart / items (guest).
  * @route POST /api/shop/checkout
  * @services_used Order, Cart
  */
@@ -18,9 +18,17 @@ export const checkout = tryCatch(async (req, res, _) => {
         payment_details,
     } = req.body;
 
+    // resolve the checkout actor
+    const userId = req.user?.user_id ?? null;
+    const actor =
+        userId != null
+            ? orderService.CHECKOUT_ACTORS.CUSTOMER
+            : orderService.CHECKOUT_ACTORS.GUEST;
+
+    // checkout
     const responseData = await orderService.checkout({
-        actor: orderService.CHECKOUT_ACTORS.CUSTOMER,
-        userId: req.user?.user_id ?? null,
+        actor,
+        userId,
         sessionToken: req.headers[cartService.CART_HEADERS.SESSION] ?? null,
         guest_email,
         items,

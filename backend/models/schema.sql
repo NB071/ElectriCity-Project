@@ -466,7 +466,7 @@ CREATE TABLE orders (
   user_id         BIGINT UNSIGNED DEFAULT NULL,
   guest_email     VARCHAR(255)    DEFAULT NULL,
   order_status    ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')     NOT NULL DEFAULT 'pending',
-  payment_status  ENUM('paid', 'failed')     NOT NULL DEFAULT 'failed',
+  payment_status  ENUM('unpaid', 'paid', 'failed')     NOT NULL DEFAULT 'unpaid',
   subtotal        DECIMAL(12,2)   NOT NULL,
   tax             DECIMAL(12,2)   NOT NULL DEFAULT 0.00,
   total           DECIMAL(12,2)   NOT NULL,
@@ -484,7 +484,7 @@ CREATE TABLE orders (
     FOREIGN KEY (user_id) REFERENCES users (user_id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT chk_orders_payment_status
-    CHECK (payment_status IN ('paid', 'failed')),
+    CHECK (payment_status IN ('unpaid', 'paid', 'failed')),
   CONSTRAINT chk_orders_order_status
     CHECK (order_status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
   CONSTRAINT chk_orders_subtotal

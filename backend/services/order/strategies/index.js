@@ -2,23 +2,23 @@
 // Checkout strategy registry & context
 
 import customerCheckoutStrategy from "./CustomerCheckoutStrategy.js";
-import adminCheckoutStrategy from "./AdminCheckoutStrategy.js";
+import guestCheckoutStrategy from "./GuestCheckoutStrategy.js";
 import CheckoutContext from "./CheckoutContext.js";
 import { CHECKOUT_ACTORS } from "../constants.js";
 import { ValidationError } from "../../../utils/errors.js";
 
 /**
- * Registry of available checkout strategies, keyed by actor.
+ * Registry of available checkout strategies, keyed by actor (customer | guest).
  */
 const strategies = {
     [CHECKOUT_ACTORS.CUSTOMER]: customerCheckoutStrategy,
-    [CHECKOUT_ACTORS.ADMIN]: adminCheckoutStrategy,
+    [CHECKOUT_ACTORS.GUEST]: guestCheckoutStrategy,
 };
 
 /**
- * This looks up a checkout strategy by actor and returns it wrapped in a context.
- * @param {string} actor Checkout actor from CHECKOUT_ACTORS constants
- * @returns {CheckoutContext}
+ * Looks up a checkout strategy by actor and returns it wrapped in a context.
+ * @param {string} actor Checkout actor from CHECKOUT_ACTORS
+ * @returns {CheckoutContext} Checkout context
  * @throws {ValidationError} If no strategy is registered under the given actor
  */
 function getCheckoutStrategy(actor) {

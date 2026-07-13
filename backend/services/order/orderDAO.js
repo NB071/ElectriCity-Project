@@ -1,4 +1,7 @@
 import BaseDAO from "../../utils/BaseDAO.js";
+import { NotFoundError, ValidationError } from "../../utils/errors.js";
+import { VALIDATIONS } from "./constants.js";
+import { computeOrderTotals } from "./helpers/orderTotals.js";
 
 const USER_JOIN = `LEFT JOIN users u ON u.user_id = o.user_id`;
 
@@ -292,31 +295,250 @@ class OrderDAO extends BaseDAO {
     }
 
     /**
-     * This method creates an order along with its line items and addresses in one transaction.
-     * @param {object} input
-     * @param {object} input.order { user_id, guest_email, subtotal, tax, total }
-     * @param {object[]} input.items [{ cid, config_id, quantity, unit_price }]
-     * @param {object[]} input.addresses [{ address_type, full_name, phone_number, street, city, province, country, postal_code }]
-     * @returns {Promise<number>} The inserted order_id
+     * This method cancels an order and optionally restores catalog stock in one transaction.
+     * @param {number} order_id
+     * @param {boolean} restoreStock
+     * @returns {Promise<void>}
+     * @throws {NotFoundError} If the order is not found
      * @throws {DatabaseError} On database failures
      */
-    async createOrderWithItems({ order, items, addresses }) {
-        return this._transaction(async (conn, _queryOptions) => {
+    async cancelOrderWithStockRestore(order_id, restoreStock) {
+        return this._transaction(async (conn) => {
+            // find the order by the order id
+            const [orderRows] = await conn.execute(
+                `SELECT order_id, order_status, payment_status
+                 FROM orders
+                 WHERE order_id = ?
+                 FOR UPDATE`,
+                [order_id],
+            );
+            const order = orderRows[0];
+            if (!order) {
+                throw new NotFoundError("Order");
+            }
+
+            // if the order status is cancelled, return
+            if (order.order_status === VALIDATIONS.ORDER_STATUS.CANCELLED) {
+                return;
+            }
+
+            // if the restore stock is true, restore the stock for the items
+            if (restoreStock) {
+                const [items] = await conn.execute(
+                    `SELECT cid, quantity FROM order_items WHERE order_id = ?`,
+                    [order_id],
+                );
+
+                // create a map of the quantities by cid
+                const qtyByCid = new Map();
+                for (const item of items) {
+                    const cid = Number(item.cid);
+                    qtyByCid.set(
+                        cid,
+                        (qtyByCid.get(cid) ?? 0) + Number(item.quantity),
+                    );
+                }
+
+                // restore the stock for the items
+                for (const [cid, qty] of qtyByCid) {
+                    await conn.execute(
+                        `UPDATE catalog_items
+                         SET quantity = quantity + ?
+                         WHERE cid = ?`,
+                        [qty, cid],
+                    );
+                }
+            }
+
+            // update the order status
+            await conn.execute(
+                `UPDATE orders SET order_status = ? WHERE order_id = ?`,
+                [VALIDATIONS.ORDER_STATUS.CANCELLED, order_id],
+            );
+        });
+    }
+
+    /**
+     * This method creates an order with stock checks/decrements under row locks.
+     * @param {object} input Input object
+     * @param {object} input.order { user_id, guest_email } Order object
+     * @param {object[]} input.addresses Addresses array
+     * @param {number|null} [input.cartId] Cart ID
+     * @param {object[]} [input.items] Items array required when cartId is null [{ cid, config_id, quantity }]
+     * @param {number} input.taxRate Tax rate
+     * @returns {Promise<{ order_id: number, subtotal: number, tax: number, total: number, resolvedItems: object[], cartId: number|null, clearedCartLines: object[]|null }>}
+     * @throws {DatabaseError} On database failures
+     * @throws {NotFoundError} If the cart is not found
+     * @throws {ValidationError} If validation fails
+     */
+    async createOrderWithItems({
+        order,
+        addresses,
+        cartId = null,
+        items = null,
+        taxRate,
+    }) {
+        return this._transaction(async (conn) => {
+            let lines;
+            let clearedCartLines = null;
+
+            // if the cart id is not null, load and lock the cart rows and cart lines
+            if (cartId != null) {
+                const [cartRows] = await conn.execute(
+                    `SELECT cart_id FROM carts WHERE cart_id = ? FOR UPDATE`,
+                    [cartId],
+                );
+                if (!cartRows[0]) {
+                    throw new NotFoundError("Cart");
+                }
+
+                // load and lock the cart lines
+                const [cartLines] = await conn.execute(
+                    `SELECT cid, config_id, quantity
+                     FROM cart_items
+                     WHERE cart_id = ?
+                     ORDER BY added_at ASC, cart_item_id ASC`,
+                    [cartId],
+                );
+                if (cartLines.length === 0) {
+                    throw new ValidationError("Your cart is empty.");
+                }
+
+                // map the cart lines to the lines array
+                lines = cartLines.map((row) => ({
+                    cid: Number(row.cid),
+                    config_id:
+                        row.config_id == null ? null : Number(row.config_id),
+                    quantity: Number(row.quantity),
+                }));
+                clearedCartLines = lines.map((line) => ({ ...line }));
+            } else {
+                if (!items?.length) {
+                    throw new ValidationError(
+                        "items must contain at least one line item.",
+                    );
+                }
+                // map the items to the lines array
+                lines = items.map((item) => ({
+                    cid: Number(item.cid),
+                    config_id:
+                        item.config_id == null ? null : Number(item.config_id),
+                    quantity: Number(item.quantity),
+                }));
+            }
+
+            // create a map of the quantities by cid
+            const qtyByCid = new Map();
+            for (const line of lines) {
+                qtyByCid.set(
+                    line.cid,
+                    (qtyByCid.get(line.cid) ?? 0) + line.quantity,
+                );
+            }
+
+            // create a map of the catalog items by cid
+            const catalogByCid = new Map();
+            for (const cid of qtyByCid.keys()) {
+                // load and lock the catalog item
+                const [rows] = await conn.execute(
+                    `SELECT cid, base_price, quantity, is_active
+                     FROM catalog_items
+                     WHERE cid = ?
+                     FOR UPDATE`,
+                    [cid],
+                );
+
+                const catalog = rows[0];
+                if (!catalog) {
+                    throw new NotFoundError("Catalog item");
+                }
+
+                if (!catalog.is_active) {
+                    throw new ValidationError(
+                        `Catalog item ${cid} is not available.`,
+                    );
+                }
+
+                // check if the needed quantity is greater than the available quantity
+                const needed = qtyByCid.get(cid);
+                if (needed > Number(catalog.quantity)) {
+                    throw new ValidationError(
+                        `Insufficient stock for catalog item ${cid}. Requested ${needed}, available ${catalog.quantity}.`,
+                    );
+                }
+                catalogByCid.set(cid, catalog);
+            }
+
+            // create the resolved items array (order items)
+            const resolvedItems = [];
+            for (const line of lines) {
+                let unit_price;
+                if (line.config_id == null) {
+                    unit_price = Number(catalogByCid.get(line.cid).base_price);
+                } else {
+                    const [cfgRows] = await conn.execute(
+                        `SELECT config_id, cid, total_price
+                         FROM configurations
+                         WHERE config_id = ?`,
+                        [line.config_id],
+                    );
+                    const configuration = cfgRows[0];
+                    if (!configuration) {
+                        throw new NotFoundError("Configuration");
+                    }
+                    if (Number(configuration.cid) !== line.cid) {
+                        throw new ValidationError(
+                            `config_id ${line.config_id} does not belong to cid ${line.cid}.`,
+                        );
+                    }
+                    unit_price = Number(configuration.total_price);
+                }
+
+                // add the resolved item to the resolved items array
+                resolvedItems.push({
+                    cid: line.cid,
+                    config_id: line.config_id,
+                    quantity: line.quantity,
+                    unit_price,
+                });
+            }
+
+            // update the catalog item quantities
+            for (const [cid, totalQty] of qtyByCid) {
+                await conn.execute(
+                    `UPDATE catalog_items
+                     SET quantity = quantity - ?
+                     WHERE cid = ?`,
+                    [totalQty, cid],
+                );
+            }
+
+            // compute the order totals
+            const { subtotal, tax, total } = computeOrderTotals(
+                resolvedItems,
+                taxRate,
+            );
+
+            // insert the order
             const [orderResult] = await conn.execute(
-                `INSERT INTO orders (user_id, guest_email, subtotal, tax, total)
-                 VALUES (?, ?, ?, ?, ?)`,
+                `INSERT INTO orders
+                    (user_id, guest_email, payment_status, subtotal, tax, total)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [
                     order.user_id ?? null,
                     order.guest_email ?? null,
-                    order.subtotal,
-                    order.tax,
-                    order.total,
+                    VALIDATIONS.PAYMENT_STATUS.UNPAID,
+                    subtotal,
+                    tax,
+                    total,
                 ],
             );
 
+            // get the order id
             const order_id = orderResult.insertId;
 
-            for (const item of items) {
+            // insert the order items
+            for (const item of resolvedItems) {
                 await conn.execute(
                     `INSERT INTO order_items (order_id, cid, config_id, quantity, unit_price)
                      VALUES (?, ?, ?, ?, ?)`,
@@ -330,6 +552,7 @@ class OrderDAO extends BaseDAO {
                 );
             }
 
+            // insert the order addresses
             for (const address of addresses) {
                 await conn.execute(
                     `INSERT INTO order_addresses
@@ -349,7 +572,80 @@ class OrderDAO extends BaseDAO {
                 );
             }
 
-            return order_id;
+            // delete the cart items if the cart id is not null
+            if (cartId != null) {
+                await conn.execute(`DELETE FROM cart_items WHERE cart_id = ?`, [
+                    cartId,
+                ]);
+            }
+
+            // return the created order
+            return {
+                order_id,
+                subtotal,
+                tax,
+                total,
+                resolvedItems,
+                cartId: cartId ?? null,
+                clearedCartLines,
+            };
+        });
+    }
+
+    /**
+     * This method restores catalog stock after a failed checkout.
+     * @param {object[]} items [{ cid, quantity }]
+     * @returns {Promise<void>}
+     */
+    async restoreStockForItems(items) {
+        if (!items?.length) {
+            return;
+        }
+
+        // create a map of the quantities by cid
+        const qtyByCid = new Map();
+        for (const item of items) {
+            const cid = Number(item.cid);
+            qtyByCid.set(cid, (qtyByCid.get(cid) ?? 0) + Number(item.quantity));
+        }
+
+        // restore the stock for the items
+        return this._transaction(async (conn) => {
+            // update the catalog item quantities
+            for (const [cid, qty] of qtyByCid) {
+                await conn.execute(
+                    `UPDATE catalog_items
+                     SET quantity = quantity + ?
+                     WHERE cid = ?`,
+                    [qty, cid],
+                );
+            }
+        });
+    }
+
+    /**
+     * This method re-inserts cart lines cleared during checkout when payment fails.
+     * @param {number} cartId
+     * @param {object[]} lines [{ cid, config_id, quantity }]
+     * @returns {Promise<void>}
+     */
+    async restoreCartItems(cartId, lines) {
+        if (!lines?.length) {
+            return;
+        }
+
+        // re-insert the cart lines
+        return this._transaction(async (conn) => {
+            // re-insert the cart lines
+            for (const line of lines) {
+                await conn.execute(
+                    `INSERT INTO cart_items (cart_id, cid, config_id, quantity)
+                     VALUES (?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE
+                       quantity = VALUES(quantity)`,
+                    [cartId, line.cid, line.config_id ?? null, line.quantity],
+                );
+            }
         });
     }
 }

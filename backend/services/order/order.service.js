@@ -13,7 +13,12 @@ import {
     updateOrderStatus,
     checkout,
 } from "./orderMutation.js";
-import { VALIDATIONS, DEFAULTS, CHECKOUT_ACTORS } from "./constants.js";
+import {
+    VALIDATIONS,
+    DEFAULTS,
+    CHECKOUT_ACTORS,
+    TAX_RATES_BY_PROVINCE,
+} from "./constants.js";
 
 const orderService = {
     // Queries
@@ -33,6 +38,7 @@ const orderService = {
     VALIDATIONS,
     DEFAULTS,
     CHECKOUT_ACTORS,
+    TAX_RATES_BY_PROVINCE,
 };
 
 export default orderService;
@@ -55,4 +61,5 @@ export {
     VALIDATIONS,
     DEFAULTS,
     CHECKOUT_ACTORS,
+    TAX_RATES_BY_PROVINCE,
 };

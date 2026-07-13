@@ -101,9 +101,14 @@ async function ensureOrderExists(orderId) {
  */
 async function validateOrderForPayment({ order_id, user_id, amount }) {
     const id = validateOrderId(order_id);
-    const order = await orderDAO.findById(id);
 
-    if (order.user_id == null || order.user_id !== user_id) {
+    // find the order by the order id
+    const order = await orderDAO.findById(id);
+    // if the order is not found, throw a not found error
+    if (!order) {
+        throw new NotFoundError("Order");
+    }
+    if (order.user_id == null || Number(order.user_id) !== Number(user_id)) {
         throw new ForbiddenError("You do not have access to this order.");
     }
 
@@ -174,7 +179,7 @@ async function getOrderDetailsForUser(userId, orderId) {
     const validOrderId = validateOrderId(orderId);
     const order = await orderDAO.findById(validOrderId);
 
-    if (order.user_id == null || order.user_id !== id) {
+    if (order.user_id == null || Number(order.user_id) !== Number(id)) {
         throw new ForbiddenError("You do not have access to this order.");
     }
 

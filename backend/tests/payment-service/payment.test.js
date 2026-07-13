@@ -107,7 +107,7 @@ async function createUnpaidGuestOrder(total = 113.0) {
         [
             `guest-${Date.now()}@example.com`,
             ORDER_VALIDATIONS.ORDER_STATUS.PENDING,
-            ORDER_VALIDATIONS.PAYMENT_STATUS.FAILED,
+            ORDER_VALIDATIONS.PAYMENT_STATUS.UNPAID,
             subtotal,
             tax,
             total,
@@ -128,7 +128,7 @@ async function createUnpaidOrder(userId, total = 113.0) {
         [
             userId,
             ORDER_VALIDATIONS.ORDER_STATUS.PENDING,
-            ORDER_VALIDATIONS.PAYMENT_STATUS.FAILED,
+            ORDER_VALIDATIONS.PAYMENT_STATUS.UNPAID,
             subtotal,
             tax,
             total,

@@ -11,13 +11,6 @@ router.get(
     adminOrdersController.getAllOrders,
 );
 
-router.post(
-    "/orders",
-    authnMiddleware(),
-    authzMiddleware("admin"),
-    adminOrdersController.createOrder,
-);
-
 router.get(
     "/orders/:orderId",
     authnMiddleware(),

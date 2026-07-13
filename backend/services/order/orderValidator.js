@@ -3,10 +3,16 @@
 import { z } from "zod";
 import { ValidationError } from "../../utils/errors.js";
 import { VALIDATIONS } from "./constants.js";
+import {
+    normalizeCanadianProvince,
+    PROVINCE_CODES,
+} from "./helpers/resolveTaxRate.js";
 
 const ALL_PAYMENT_STATUSES = Object.values(VALIDATIONS.PAYMENT_STATUS);
 const ALL_ORDER_STATUSES = Object.values(VALIDATIONS.ORDER_STATUS);
 const ALL_ADDRESS_TYPES = VALIDATIONS.ADDRESS_TYPES;
+
+const PROVINCE_HINT = PROVINCE_CODES.join(", ");
 
 /**
  * @helper_function
@@ -27,19 +33,6 @@ function throwValidationError(zodError) {
 }
 
 // Schema(s)
-
-// ref: https://zod.dev/api?id=preprocess#preprocess
-const optionalUserIdSchema = z.preprocess(
-    (value) =>
-        value === undefined || value === null || value === "" ? null : value,
-    z.union([
-        z.coerce
-            .number()
-            .int("userId must be an integer.")
-            .positive("userId must be a positive integer."),
-        z.null(),
-    ]),
-);
 
 const guestEmailSchema = z
     .string()
@@ -75,11 +68,13 @@ const checkoutItemSchema = z.object({
 });
 
 const addressSchema = z.object({
-    address_type: z.enum(ALL_ADDRESS_TYPES, {
-        error: () => ({
-            message: `address_type must be one of: ${ALL_ADDRESS_TYPES.join(", ")}`,
-        }),
-    }),
+    address_type: z
+        .enum(ALL_ADDRESS_TYPES, {
+            error: () => ({
+                message: `address_type must be one of: ${ALL_ADDRESS_TYPES.join(", ")}`,
+            }),
+        })
+        .optional(),
     full_name: z
         .string({ required_error: "full_name is required." })
         .trim()
@@ -120,7 +115,18 @@ const addressSchema = z.object({
         .max(
             VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH,
             `province must be at most ${VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH} characters.`,
-        ),
+        )
+        .transform((value, ctx) => {
+            const code = normalizeCanadianProvince(value);
+            if (code == null) {
+                ctx.addIssue({
+                    code: "custom",
+                    message: `province must be a Canadian province or territory code or name (e.g. ${PROVINCE_HINT}).`,
+                });
+                return z.NEVER;
+            }
+            return code;
+        }),
     country: z
         .string({ required_error: "country is required." })
         .trim()
@@ -148,75 +154,44 @@ const paymentInputSchema = z.object({
     payment_details: z.object({}).passthrough().optional(),
 });
 
+const optionalSessionTokenSchema = z.preprocess(
+    (value) =>
+        value === undefined || value === null || value === "" ? null : value,
+    z.union([
+        z.string().uuid("sessionToken must be a valid UUID.").length(36),
+        z.null(),
+    ]),
+);
+
 const customerCheckoutSchema = z
     .object({
-        userId: optionalUserIdSchema,
-        sessionToken: z.preprocess(
-            (value) =>
-                value === undefined || value === null || value === ""
-                    ? null
-                    : value,
-            z.union([
-                z
-                    .string()
-                    .uuid("sessionToken must be a valid UUID.")
-                    .length(36),
-                z.null(),
-            ]),
-        ).optional(),
-        guest_email: guestEmailSchema.optional(),
+        userId: z.coerce
+            .number({ required_error: "userId is required." })
+            .int("userId must be an integer.")
+            .positive("userId must be a positive integer."),
+        shipping_address: addressSchema,
+        billing_address: addressSchema.optional(),
+    })
+    .merge(paymentInputSchema);
+
+const guestCheckoutSchema = z
+    .object({
+        sessionToken: optionalSessionTokenSchema.optional(),
+        guest_email: guestEmailSchema,
         items: z.array(checkoutItemSchema).min(1).optional(),
         shipping_address: addressSchema,
         billing_address: addressSchema.optional(),
     })
     .merge(paymentInputSchema)
     .superRefine((data, ctx) => {
-        if (data.userId == null) {
-            if (!data.guest_email) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: "guest_email is required for guest checkout.",
-                    path: ["guest_email"],
-                });
-            }
-            const hasItems = data.items && data.items.length > 0;
-            const hasSession = data.sessionToken != null;
-            if (!hasItems && !hasSession) {
-                ctx.addIssue({
-                    code: "custom",
-                    message:
-                        "Guest checkout requires items or an X-Cart-Session cart.",
-                    path: ["items"],
-                });
-            }
-        }
-    });
-
-const adminCheckoutSchema = z
-    .object({
-        userId: optionalUserIdSchema,
-        guest_email: guestEmailSchema.optional(),
-        items: z
-            .array(checkoutItemSchema)
-            .min(1, "items must contain at least one line item."),
-        shipping_address: addressSchema,
-        billing_address: addressSchema.optional(),
-    })
-    .merge(paymentInputSchema)
-    .superRefine((data, ctx) => {
-        if (data.userId == null && !data.guest_email) {
-            ctx.addIssue({
-                code: "custom",
-                message: "Either userId or guest_email is required.",
-                path: ["userId"],
-            });
-        }
-        if (data.userId != null && data.guest_email) {
+        const hasItems = data.items && data.items.length > 0;
+        const hasSession = data.sessionToken != null;
+        if (!hasItems && !hasSession) {
             ctx.addIssue({
                 code: "custom",
                 message:
-                    "Provide only one of userId or guest_email, not both.",
-                path: ["guest_email"],
+                    "Guest checkout requires items or an X-Cart-Session cart.",
+                path: ["items"],
             });
         }
     });
@@ -307,8 +282,8 @@ function validateOrderStatus(orderStatus) {
 }
 
 /**
- * This function validates checkout input for the customer/guest strategy.
- * userId must come from req.user.user_id (or null for guests), not the request body.
+ * This function validates checkout input for the authenticated customer strategy.
+ * userId must come from req.user.user_id, not the request body.
  * @param {object} data
  * @returns {object} Validated checkout input
  * @throws {ValidationError} If the checkout data is invalid
@@ -324,19 +299,22 @@ function validateCustomerCheckoutInput(data) {
 }
 
 /**
- * This function validates checkout input for the admin manual-order strategy.
+ * This function validates checkout input for the guest strategy.
  * @param {object} data
  * @returns {object} Validated checkout input
  * @throws {ValidationError} If the checkout data is invalid
  */
-function validateAdminCheckoutInput(data) {
-    const parsed = adminCheckoutSchema.safeParse(data);
+function validateGuestCheckoutInput(data) {
+    const parsed = guestCheckoutSchema.safeParse(data);
 
     if (!parsed.success) {
         throwValidationError(parsed.error);
     }
 
-    return parsed.data;
+    return {
+        ...parsed.data,
+        sessionToken: parsed.data.sessionToken ?? null,
+    };
 }
 
 export {
@@ -345,5 +323,5 @@ export {
     validateUserId,
     validateOrderStatus,
     validateCustomerCheckoutInput,
-    validateAdminCheckoutInput,
+    validateGuestCheckoutInput,
 };
