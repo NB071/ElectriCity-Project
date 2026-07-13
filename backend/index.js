@@ -44,6 +44,8 @@ app.disable("x-powered-by");
 app.use(helmetMiddleware);
 app.use(
     cors({
+        origin: true,
+        credentials: true,
         exposedHeaders: [CART_HEADERS.SESSION],
     }),
 );

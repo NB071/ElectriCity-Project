@@ -1,8 +1,9 @@
 import iamService from "../services/iam/iam.service.js";
 
 /**
- * This middleware verifies the access token (from the httpOnly cookie, falling back to a
- * Bearer Authorization header for API tools) and sets req.user.
+ * This middleware verifies the access token
+ * Cookies are httpOnly and only sent to the server.
+ * Authorization header is for API tools.
  * We treat a missing token (and 'optional' is true) as a guest. Otherwise, it fails with 401 'Unauthorized'.
  * @middleware
  * @param {object} [options] the options

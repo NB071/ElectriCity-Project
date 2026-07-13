@@ -37,15 +37,16 @@ async function viewWishlist(userId, queryParams = {}) {
         const { sort } = validateSortParams(queryParams);
         const pagination = parsePaginationQuery(queryParams);
         const total = await wishlistDAO.countByUserId(id);
-        const rows =
-            total === 0
-                ? []
-                : await wishlistDAO.findByUserId(
-                      id,
-                      pagination.limit,
-                      pagination.offset,
-                      sort,
-                  );
+
+        let rows = [];
+        if (total > 0) {
+            rows = await wishlistDAO.findByUserId(
+                id,
+                pagination.limit,
+                pagination.offset,
+                sort,
+            );
+        }
 
         return {
             items: rows.map(toWishlistItemDTO),

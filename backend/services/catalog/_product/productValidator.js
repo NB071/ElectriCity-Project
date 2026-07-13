@@ -26,19 +26,30 @@ function throwValidationError(zodError) {
 
 const positiveInt = z.coerce.number().int().positive();
 
-const browseFiltersSchema = z.looseObject({
-    brand_id: positiveInt.optional(),
-    model_id: positiveInt.optional(),
-    condition: z.enum(VALIDATIONS.VEHICLE_CONDITIONS).optional(),
-    year_min: z.coerce.number().int().optional(),
-    year_max: z.coerce.number().int().optional(),
-    price_min: z.coerce.number().min(0).optional(),
-    price_max: z.coerce.number().min(0).optional(),
-    mileage_max: z.coerce.number().int().min(0).optional(),
-    body_shape: z.string().min(1).optional(),
-    drivetrain: z.string().min(1).optional(),
-    promo: optionalPromoTypeSchema,
-});
+const browseFiltersSchema = z
+    .looseObject({
+        brand_id: positiveInt.optional(),
+        model_id: positiveInt.optional(),
+        condition: z.enum(VALIDATIONS.VEHICLE_CONDITIONS).optional(),
+        year_min: z.coerce.number().int().min(0).optional(),
+        year_max: z.coerce.number().int().min(0).optional(),
+        price_min: z.coerce.number().min(0).optional(),
+        price_max: z.coerce.number().min(0).optional(),
+        mileage_max: z.coerce.number().int().min(0).optional(),
+        body_shape: z.string().min(1).optional(),
+        drivetrain: z.string().min(1).optional(),
+        promo: optionalPromoTypeSchema,
+    })
+    .refine(
+        (data) =>
+            data.year_min == null ||
+            data.year_max == null ||
+            data.year_min <= data.year_max,
+        {
+            message: "year_min must be less than or equal to year_max.",
+            path: ["year_min"],
+        },
+    );
 
 const sortSchema = z.object({
     sort: z

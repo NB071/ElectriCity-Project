@@ -2,94 +2,47 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Admin - Media</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 760px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            .panel .hint {
-                font-size: 0.8rem;
-                color: #777;
-                margin-top: 0;
-            }
-            label.field {
-                display: block;
-                margin: 0.5rem 0;
-                font-size: 0.9rem;
-            }
-            .grid-2 {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 0 1rem;
-            }
-            input,
-            select {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0.4rem;
-                margin-top: 0.25rem;
-            }
-            label.checkbox {
-                font-weight: normal;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.3rem;
-            }
-            label.checkbox input {
-                width: auto;
-                display: inline;
-                margin: 0;
-            }
-            button {
-                padding: 0.45rem 0.9rem;
-                cursor: pointer;
-                margin-top: 0.5rem;
-            }
-            .error {
-                color: #c33;
-                white-space: pre-wrap;
-            }
-            .success {
-                color: #2a7a2a;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>Admin - Catalog Media Management</h1>
-        <p id="status">Checking session…</p>
+        <p id="status">Checking session...</p>
 
-        <div id="adminView" hidden>
+        <div
+            id="adminView"
+            hidden
+        >
             <p class="hint">
-                Note: this backend does not accept real file uploads — there's
-                no multipart handling anywhere. "Recording" media just
-                registers a URL (something already reachable, e.g. a file
-                already placed under <code>/media/...</code>) as a database
-                row. Think of it as a media <em>registry</em>, not an upload
-                form.
+                Note: Our backend does not accept real file uploads. "Recording"
+                media just registers a URL (something already reachable, like a
+                file already placed under <i>/media/...</i>) as a database row.
+                Upload features will be added in D3 as an extra feature to our
+                project.
             </p>
 
             <div class="panel">
@@ -121,13 +74,20 @@
                     </label>
                     <label class="field"
                         >Alt text (optional)
-                        <input type="text" id="newAltText" />
+                        <input
+                            type="text"
+                            id="newAltText"
+                        />
                     </label>
                 </div>
                 <div class="grid-2">
                     <label class="field"
-                        >Catalog item ID (optional — links immediately)
-                        <input type="number" id="newCid" min="1" />
+                        >Catalog item ID (optional; links immediately)
+                        <input
+                            type="number"
+                            id="newCid"
+                            min="1"
+                        />
                     </label>
                     <label class="field"
                         >Display order
@@ -141,15 +101,27 @@
                     </label>
                 </div>
                 <label class="checkbox"
-                    ><input type="checkbox" id="newIsPrimary" /> Set as primary
-                    image (image types only, requires cid)</label
+                    ><input
+                        type="checkbox"
+                        id="newIsPrimary"
+                    />
+                    Set as primary image (image types only, requires cid)</label
                 >
                 <br />
-                <button type="button" id="recordMediaBtn">
+                <button
+                    type="button"
+                    id="recordMediaBtn"
+                >
                     Record Media
                 </button>
-                <p class="success" id="recordSuccess"></p>
-                <p class="error" id="recordError"></p>
+                <p
+                    class="success"
+                    id="recordSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="recordError"
+                ></p>
             </div>
 
             <div class="panel">
@@ -157,11 +129,19 @@
                 <div class="grid-2">
                     <label class="field"
                         >Catalog item ID (cid)
-                        <input type="number" id="linkCid" min="1" />
+                        <input
+                            type="number"
+                            id="linkCid"
+                            min="1"
+                        />
                     </label>
                     <label class="field"
                         >Media ID
-                        <input type="number" id="linkMediaId" min="1" />
+                        <input
+                            type="number"
+                            id="linkMediaId"
+                            min="1"
+                        />
                     </label>
                 </div>
                 <div class="grid-2">
@@ -178,14 +158,28 @@
                     <label class="field"
                         >&nbsp;
                         <label class="checkbox"
-                            ><input type="checkbox" id="linkIsPrimary" /> Set
-                            as primary</label
+                            ><input
+                                type="checkbox"
+                                id="linkIsPrimary"
+                            />
+                            Set as primary</label
                         >
                     </label>
                 </div>
-                <button type="button" id="linkMediaBtn">Link to Item</button>
-                <p class="success" id="linkSuccess"></p>
-                <p class="error" id="linkError"></p>
+                <button
+                    type="button"
+                    id="linkMediaBtn"
+                >
+                    Link to Item
+                </button>
+                <p
+                    class="success"
+                    id="linkSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="linkError"
+                ></p>
             </div>
 
             <div class="panel">
@@ -193,65 +187,121 @@
                 <div class="grid-2">
                     <label class="field"
                         >Catalog item ID (cid)
-                        <input type="number" id="primaryCid" min="1" />
+                        <input
+                            type="number"
+                            id="primaryCid"
+                            min="1"
+                        />
                     </label>
                     <label class="field"
                         >Media ID
-                        <input type="number" id="primaryMediaId" min="1" />
+                        <input
+                            type="number"
+                            id="primaryMediaId"
+                            min="1"
+                        />
                     </label>
                 </div>
-                <button type="button" id="setPrimaryBtn">
+                <button
+                    type="button"
+                    id="setPrimaryBtn"
+                >
                     Set as Primary
                 </button>
-                <p class="success" id="primarySuccess"></p>
-                <p class="error" id="primaryError"></p>
+                <p
+                    class="success"
+                    id="primarySuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="primaryError"
+                ></p>
             </div>
 
             <div class="panel">
                 <h2>4. Unlink Media from a Catalog Item</h2>
                 <p class="hint">
-                    Removes the link only — the media record itself still
-                    exists and can be relinked or deleted separately.
+                    Removes the link only; the media record itself still exists
+                    and can be relinked or deleted separately.
                 </p>
                 <div class="grid-2">
                     <label class="field"
                         >Catalog item ID (cid)
-                        <input type="number" id="unlinkCid" min="1" />
+                        <input
+                            type="number"
+                            id="unlinkCid"
+                            min="1"
+                        />
                     </label>
                     <label class="field"
                         >Media ID
-                        <input type="number" id="unlinkMediaId" min="1" />
+                        <input
+                            type="number"
+                            id="unlinkMediaId"
+                            min="1"
+                        />
                     </label>
                 </div>
-                <button type="button" id="unlinkBtn">Unlink</button>
-                <p class="success" id="unlinkSuccess"></p>
-                <p class="error" id="unlinkError"></p>
+                <button
+                    type="button"
+                    id="unlinkBtn"
+                >
+                    Unlink
+                </button>
+                <p
+                    class="success"
+                    id="unlinkSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="unlinkError"
+                ></p>
             </div>
 
             <div class="panel">
                 <h2>5. Delete Media Record</h2>
                 <p class="hint">
-                    Hard-deletes the media row entirely (not just one link) —
-                    it disappears from every catalog item it was linked to.
+                    Hard-deletes the media row entirely (not just one link); it
+                    disappears from every catalog item it was linked to.
                 </p>
                 <label class="field"
                     >Media ID
-                    <input type="number" id="deleteMediaId" min="1" />
+                    <input
+                        type="number"
+                        id="deleteMediaId"
+                        min="1"
+                    />
                 </label>
-                <button type="button" id="deleteMediaBtn">
+                <button
+                    type="button"
+                    id="deleteMediaBtn"
+                >
                     Delete Media
                 </button>
-                <p class="success" id="deleteSuccess"></p>
-                <p class="error" id="deleteError"></p>
+                <p
+                    class="success"
+                    id="deleteSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="deleteError"
+                ></p>
             </div>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
 
             async function apiFetch(path, options = {}) {
                 const opts = {
-                    credentials: "same-origin",
+                    credentials: fetchCredentials,
                     headers: {
                         "Content-Type": "application/json",
                         ...(options.headers || {}),
@@ -264,7 +314,7 @@
                 if (res.status === 401) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -300,8 +350,7 @@
                         url,
                         file_type: document.getElementById("newFileType").value,
                         alt_text:
-                            document.getElementById("newAltText").value ||
-                            null,
+                            document.getElementById("newAltText").value || null,
                         cid: cid ? Number(cid) : null,
                         display_order: Number(
                             document.getElementById("newDisplayOrder").value ||
@@ -358,9 +407,8 @@
                             body: JSON.stringify({
                                 media_id: Number(mediaId),
                                 display_order: Number(
-                                    document.getElementById(
-                                        "linkDisplayOrder",
-                                    ).value || 0,
+                                    document.getElementById("linkDisplayOrder")
+                                        .value || 0,
                                 ),
                                 is_primary:
                                     document.getElementById("linkIsPrimary")
@@ -531,6 +579,34 @@
             }
 
             init();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

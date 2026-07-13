@@ -2,163 +2,54 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Catalog</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 960px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-                margin-top: 0;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            .search-row {
-                display: flex;
-                gap: 0.5rem;
-                margin-bottom: 1rem;
-            }
-            .search-row input {
-                flex: 1;
-                padding: 0.4rem;
-            }
-            .filters-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 0.75rem;
-            }
-            .filters-grid label {
-                display: block;
-                font-size: 0.85rem;
-            }
-            .filters-grid input,
-            .filters-grid select {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-                margin-top: 0.2rem;
-                padding: 0.35rem;
-            }
-            .filters-actions {
-                margin-top: 0.75rem;
-            }
-            button {
-                padding: 0.45rem 0.9rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.5rem;
-            }
-            .error {
-                color: #c33;
-            }
-            #results {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                gap: 1rem;
-                margin-bottom: 1rem;
-            }
-            .card {
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                padding: 0.75rem;
-            }
-            .card img {
-                width: 100%;
-                height: 130px;
-                object-fit: cover;
-                border-radius: 4px;
-                background: #eee;
-            }
-            .card a {
-                text-decoration: none;
-                color: inherit;
-            }
-            .card h3 {
-                font-size: 1rem;
-                margin: 0.5rem 0 0.25rem;
-            }
-            .card .specs {
-                font-size: 0.8rem;
-                color: #555;
-            }
-            .card .price {
-                font-weight: bold;
-                margin-top: 0.25rem;
-            }
-            .card .price .original {
-                text-decoration: line-through;
-                color: #888;
-                font-weight: normal;
-                margin-right: 0.4rem;
-            }
-            .promo-badge {
-                display: inline-block;
-                background: #2a7a2a;
-                color: white;
-                font-size: 0.7rem;
-                border-radius: 3px;
-                padding: 0.1rem 0.4rem;
-                margin: 0.25rem 0.25rem 0 0;
-            }
-            .card .compare-check {
-                margin-top: 0.5rem;
-                font-size: 0.85rem;
-            }
-            .pagination {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-bottom: 1.5rem;
-            }
-            #compareTable {
-                border-collapse: collapse;
-                width: 100%;
-            }
-            #compareTable th,
-            #compareTable td {
-                border: 1px solid #ddd;
-                padding: 0.4rem 0.6rem;
-                text-align: left;
-                font-size: 0.9rem;
-            }
-            #compareTable td.best {
-                background: #e6f5e6;
-                font-weight: bold;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-wide">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>ElectriCity Catalog</h1>
-        <p id="status">Loading vehicles…</p>
+        <p id="status">Loading vehicles...</p>
 
         <div class="panel">
             <div class="search-row">
                 <input
                     type="text"
                     id="searchInput"
-                    placeholder="Search by brand or model…"
+                    placeholder="Search by brand or model..."
                 />
-                <button type="button" id="searchBtn">Search</button>
-                <button type="button" id="clearSearchBtn">
+                <button
+                    type="button"
+                    id="searchBtn"
+                >
+                    Search
+                </button>
+                <button
+                    type="button"
+                    id="clearSearchBtn"
+                >
                     Clear Search
                 </button>
             </div>
@@ -175,23 +66,43 @@
                 </label>
                 <label
                     >Year (min)
-                    <input type="number" id="fYearMin" />
+                    <input
+                        type="number"
+                        id="fYearMin"
+                        min="0"
+                    />
                 </label>
                 <label
                     >Year (max)
-                    <input type="number" id="fYearMax" />
+                    <input
+                        type="number"
+                        id="fYearMax"
+                        min="0"
+                    />
                 </label>
                 <label
                     >Price (min)
-                    <input type="number" id="fPriceMin" min="0" />
+                    <input
+                        type="number"
+                        id="fPriceMin"
+                        min="0"
+                    />
                 </label>
                 <label
                     >Price (max)
-                    <input type="number" id="fPriceMax" min="0" />
+                    <input
+                        type="number"
+                        id="fPriceMax"
+                        min="0"
+                    />
                 </label>
                 <label
                     >Mileage (max)
-                    <input type="number" id="fMileageMax" min="0" />
+                    <input
+                        type="number"
+                        id="fMileageMax"
+                        min="0"
+                    />
                 </label>
                 <label
                     >Body shape
@@ -227,9 +138,7 @@
                     <select id="fSort">
                         <option value="added_desc">Newest</option>
                         <option value="price_asc">Price: Low to High</option>
-                        <option value="price_desc">
-                            Price: High to Low
-                        </option>
+                        <option value="price_desc">Price: High to Low</option>
                         <option value="year_desc">Year: Newest</option>
                         <option value="year_asc">Year: Oldest</option>
                         <option value="mileage_asc">
@@ -242,39 +151,83 @@
                 </label>
             </div>
             <div class="filters-actions">
-                <button type="button" id="applyFiltersBtn">
+                <button
+                    type="button"
+                    id="applyFiltersBtn"
+                >
                     Apply Filters
                 </button>
-                <button type="button" id="clearFiltersBtn">
+                <button
+                    type="button"
+                    id="clearFiltersBtn"
+                >
                     Clear Filters
                 </button>
             </div>
-            <p class="error" id="filtersError"></p>
+            <p
+                class="error"
+                id="filtersError"
+            ></p>
+            <p
+                class="success"
+                id="cartSuccess"
+            ></p>
+            <p
+                class="error"
+                id="cartError"
+            ></p>
         </div>
 
         <div class="panel">
             <h2>Results</h2>
             <div id="results"></div>
             <div class="pagination">
-                <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                <button
+                    type="button"
+                    id="prevPageBtn"
+                >
+                    &laquo; Prev
+                </button>
                 <span id="pageIndicator"></span>
-                <button type="button" id="nextPageBtn">Next &raquo;</button>
+                <button
+                    type="button"
+                    id="nextPageBtn"
+                >
+                    Next &raquo;
+                </button>
             </div>
             <div>
-                <button type="button" id="compareBtn" disabled>
+                <button
+                    type="button"
+                    id="compareBtn"
+                    disabled
+                >
                     Compare Selected (0)
                 </button>
             </div>
         </div>
 
-        <div class="panel" id="comparePanel" hidden>
+        <div
+            class="panel"
+            id="comparePanel"
+            hidden
+        >
             <h2>Comparison</h2>
             <table id="compareTable"></table>
-            <p class="error" id="compareError"></p>
+            <p
+                class="error"
+                id="compareError"
+            ></p>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
 
             const statusEl = document.getElementById("status");
             const resultsEl = document.getElementById("results");
@@ -284,17 +237,55 @@
             const compareTableEl = document.getElementById("compareTable");
             const compareErrorEl = document.getElementById("compareError");
             const filtersErrorEl = document.getElementById("filtersError");
+            const cartSuccessEl = document.getElementById("cartSuccess");
+            const cartErrorEl = document.getElementById("cartError");
 
             let currentPage = 1;
             let searchTerm = "";
             const selectedForCompare = new Set();
 
-            async function apiFetch(path) {
-                const res = await fetch(apiBase + path, {
-                    credentials: "same-origin",
-                });
+            async function apiFetch(path, options = {}) {
+                const headers = {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {}),
+                };
+
+                const opts = {
+                    credentials: fetchCredentials,
+                    ...options,
+                    headers,
+                };
+
+                let res = await fetch(apiBase + path, opts);
                 const body = await res.json().catch(() => null);
                 return { ok: res.ok, status: res.status, body };
+            }
+
+            async function addToCart(cid) {
+                cartErrorEl.textContent = "";
+                cartSuccessEl.textContent = "";
+
+                const { ok, body } = await apiFetch("/api/shop/cart/items", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        cid: Number(cid),
+                        config_id: null,
+                        quantity: 1,
+                    }),
+                });
+
+                if (!ok) {
+                    cartErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not add that vehicle to your cart.",
+                    );
+                    return;
+                }
+
+                cartSuccessEl.innerHTML =
+                    "Added vehicle #" +
+                    cid +
+                    ' to cart. <a href="/cart.html">Open cart</a>';
             }
 
             function errorMessage(body, fallback) {
@@ -319,15 +310,13 @@
                 const priceMax = document.getElementById("fPriceMax").value;
                 if (priceMax) filters.price_max = priceMax;
 
-                const mileageMax =
-                    document.getElementById("fMileageMax").value;
+                const mileageMax = document.getElementById("fMileageMax").value;
                 if (mileageMax) filters.mileage_max = mileageMax;
 
                 const bodyShape = document.getElementById("fBodyShape").value;
                 if (bodyShape) filters.body_shape = bodyShape;
 
-                const drivetrain =
-                    document.getElementById("fDrivetrain").value;
+                const drivetrain = document.getElementById("fDrivetrain").value;
                 if (drivetrain) filters.drivetrain = drivetrain;
 
                 const promo = document.getElementById("fPromo").value;
@@ -403,7 +392,7 @@
                             : null,
                     ]
                         .filter(Boolean)
-                        .join(" · ");
+                        .join(" * ");
 
                     card.innerHTML =
                         '<a href="/catalog-details.html?cid=' +
@@ -436,7 +425,10 @@
                         item.id +
                         '" ' +
                         (selectedForCompare.has(item.id) ? "checked" : "") +
-                        "/> Compare</label>";
+                        "/> Compare</label>" +
+                        '<div><button type="button" class="addCartBtn" data-cid="' +
+                        item.id +
+                        '">Add to cart</button></div>';
 
                     resultsEl.appendChild(card);
                 }
@@ -460,6 +452,12 @@
                             updateCompareButton();
                         });
                     });
+
+                resultsEl.querySelectorAll(".addCartBtn").forEach((button) => {
+                    button.addEventListener("click", () => {
+                        addToCart(button.dataset.cid);
+                    });
+                });
             }
 
             function updateCompareButton() {
@@ -470,7 +468,7 @@
 
             async function loadResults() {
                 filtersErrorEl.textContent = "";
-                statusEl.textContent = "Loading vehicles…";
+                statusEl.textContent = "Loading vehicles...";
 
                 const query = buildQueryString(
                     searchTerm ? { q: searchTerm } : {},
@@ -613,11 +611,18 @@
                 for (const row of rows) {
                     html += "<tr><td>" + row.field + "</td>";
                     for (const cell of row.cells) {
+                        const cellClass = cell.isBest
+                            ? "best"
+                            : cell.isTied
+                              ? "tied"
+                              : cell.isWorse
+                                ? "worse"
+                                : "";
                         html +=
                             '<td class="' +
-                            (cell.isBest ? "best" : "") +
+                            cellClass +
                             '">' +
-                            (cell.value ?? "—") +
+                            (cell.value ?? "*") +
                             "</td>";
                     }
                     html += "</tr>";
@@ -627,6 +632,34 @@
             }
 
             loadResults();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

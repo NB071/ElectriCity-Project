@@ -2,128 +2,41 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Admin - Orders</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 900px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th,
-            td {
-                text-align: left;
-                padding: 0.4rem 0.6rem;
-                border-bottom: 1px solid #eee;
-                font-size: 0.9rem;
-            }
-            th {
-                border-bottom: 2px solid #ccc;
-            }
-            tr.orderRow {
-                cursor: pointer;
-            }
-            tr.orderRow:hover {
-                background: #f7f7f7;
-            }
-            .badge {
-                display: inline-block;
-                font-size: 0.7rem;
-                border-radius: 3px;
-                padding: 0.1rem 0.4rem;
-                color: white;
-            }
-            .badge.pending {
-                background: #a15c00;
-            }
-            .badge.confirmed {
-                background: #2a6ea1;
-            }
-            .badge.shipped {
-                background: #6a2a9c;
-            }
-            .badge.delivered {
-                background: #2a7a2a;
-            }
-            .badge.cancelled {
-                background: #c33;
-            }
-            .badge.paid {
-                background: #2a7a2a;
-            }
-            .badge.unpaid {
-                background: #a15c00;
-            }
-            .badge.failed {
-                background: #c33;
-            }
-            button {
-                padding: 0.4rem 0.8rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.4rem;
-            }
-            select {
-                padding: 0.35rem;
-            }
-            .error {
-                color: #c33;
-            }
-            .success {
-                color: #2a7a2a;
-            }
-            .pagination {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-top: 0.75rem;
-            }
-            .addr-cols {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 1rem;
-            }
-            .addr-cols div {
-                font-size: 0.9rem;
-            }
-            .status-form {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                margin-top: 0.75rem;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-wide">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>Admin - Order Oversight &amp; Status Management</h1>
-        <p id="status">Checking session…</p>
+        <p id="status">Checking session...</p>
 
-        <div id="adminView" hidden>
+        <div
+            id="adminView"
+            hidden
+        >
             <div class="panel">
                 <h2>All Orders</h2>
                 <table>
@@ -136,26 +49,50 @@
                             <th>Order Status</th>
                             <th>Payment</th>
                             <th>Placed</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
                 <div class="pagination">
-                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
                     <span id="pageIndicator"></span>
-                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
                 </div>
-                <p class="error" id="listError"></p>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
             </div>
 
-            <div class="panel" id="detailPanel" hidden>
+            <div
+                class="panel"
+                id="detailPanel"
+                hidden
+            >
                 <h2 id="detailTitle"></h2>
                 <p id="detailOwner"></p>
                 <p>
                     Status:
-                    <span class="badge" id="detailOrderStatusBadge"></span>
+                    <span
+                        class="badge"
+                        id="detailOrderStatusBadge"
+                    ></span>
                     &nbsp;Payment:
-                    <span class="badge" id="detailPaymentStatusBadge"></span>
+                    <span
+                        class="badge"
+                        id="detailPaymentStatusBadge"
+                    ></span>
                 </p>
                 <p id="detailTotals"></p>
 
@@ -173,7 +110,10 @@
                 </table>
 
                 <h3>Addresses</h3>
-                <div class="addr-cols" id="detailAddresses"></div>
+                <div
+                    class="addr-cols"
+                    id="detailAddresses"
+                ></div>
 
                 <h3>Payment Attempts</h3>
                 <table>
@@ -192,17 +132,32 @@
                 <h3>Update Order Status</h3>
                 <div class="status-form">
                     <select id="statusSelect"></select>
-                    <button type="button" id="updateStatusBtn">
+                    <button
+                        type="button"
+                        id="updateStatusBtn"
+                    >
                         Update Status
                     </button>
                 </div>
-                <p class="success" id="statusSuccess"></p>
-                <p class="error" id="statusError"></p>
+                <p
+                    class="success"
+                    id="statusSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="statusError"
+                ></p>
             </div>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
             let currentPage = 1;
             let currentOrderId = null;
 
@@ -216,7 +171,7 @@
 
             async function apiFetch(path, options = {}) {
                 const opts = {
-                    credentials: "same-origin",
+                    credentials: fetchCredentials,
                     headers: {
                         "Content-Type": "application/json",
                         ...(options.headers || {}),
@@ -229,7 +184,7 @@
                 if (res.status === 401) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -255,7 +210,7 @@
             }
 
             function formatDate(value) {
-                return value ? new Date(value).toLocaleString() : "—";
+                return value ? new Date(value).toLocaleString() : "*";
             }
 
             function ownerLabel(row) {
@@ -297,11 +252,10 @@
 
                 if (items.length === 0) {
                     tbody.innerHTML =
-                        "<tr><td colspan='7'>No orders yet.</td></tr>";
+                        "<tr><td colspan='8'>No orders yet.</td></tr>";
                 } else {
                     for (const order of items) {
                         const tr = document.createElement("tr");
-                        tr.className = "orderRow";
                         tr.dataset.orderId = order.order_id;
                         tr.innerHTML =
                             "<td>#" +
@@ -322,12 +276,17 @@
                             order.payment_status +
                             "</span></td><td>" +
                             formatDate(order.created_at) +
-                            "</td>";
-                        tr.addEventListener("click", () =>
-                            loadOrderDetail(order.order_id),
-                        );
+                            "</td><td><button type='button' class='viewDetailsBtn' data-order-id='" +
+                            order.order_id +
+                            "'>View details</button></td>";
                         tbody.appendChild(tr);
                     }
+
+                    tbody.querySelectorAll(".viewDetailsBtn").forEach((btn) => {
+                        btn.addEventListener("click", () =>
+                            loadOrderDetail(Number(btn.dataset.orderId)),
+                        );
+                    });
                 }
 
                 document.getElementById("pageIndicator").textContent =
@@ -344,22 +303,27 @@
                     !pagination.hasNext;
             }
 
-            document.getElementById("prevPageBtn").addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage -= 1;
-                    loadOrders();
-                }
-            });
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadOrders();
+                    }
+                });
 
-            document.getElementById("nextPageBtn").addEventListener("click", () => {
-                currentPage += 1;
-                loadOrders();
-            });
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadOrders();
+                });
 
             // ------- Order detail -------
             function renderStatusSelect(currentStatus) {
                 const select = document.getElementById("statusSelect");
-                const nextOptions = ORDER_STATUS_TRANSITIONS[currentStatus] || [];
+                const nextOptions =
+                    ORDER_STATUS_TRANSITIONS[currentStatus] || [];
 
                 if (nextOptions.length === 0) {
                     select.innerHTML =
@@ -412,15 +376,12 @@
                 document.getElementById("detailOwner").textContent =
                     "Owner: " + ownerLabel(data);
 
-                document.getElementById(
-                    "detailOrderStatusBadge",
-                ).className = "badge " + data.order_status;
-                document.getElementById(
-                    "detailOrderStatusBadge",
-                ).textContent = data.order_status;
-                document.getElementById(
-                    "detailPaymentStatusBadge",
-                ).className = "badge " + data.payment_status;
+                document.getElementById("detailOrderStatusBadge").className =
+                    "badge " + data.order_status;
+                document.getElementById("detailOrderStatusBadge").textContent =
+                    data.order_status;
+                document.getElementById("detailPaymentStatusBadge").className =
+                    "badge " + data.payment_status;
                 document.getElementById(
                     "detailPaymentStatusBadge",
                 ).textContent = data.payment_status;
@@ -428,56 +389,58 @@
                 document.getElementById("detailTotals").textContent =
                     "Subtotal " +
                     formatMoney(data.subtotal) +
-                    " · Tax " +
+                    " * Tax " +
                     formatMoney(data.tax) +
-                    " · Total " +
+                    " * Total " +
                     formatMoney(data.total) +
-                    " · Placed " +
+                    " * Placed " +
                     formatDate(data.created_at);
 
-                document.getElementById("detailItemsBody").innerHTML = data.items
-                    .map(
-                        (item) =>
-                            "<tr><td>" +
-                            item.catalog_item.name +
-                            (item.configuration
-                                ? " (configured #" +
-                                  item.configuration.config_id +
-                                  ")"
-                                : "") +
-                            "</td><td>" +
-                            item.quantity +
-                            "</td><td>" +
-                            formatMoney(item.unit_price) +
-                            "</td><td>" +
-                            formatMoney(item.line_total) +
-                            "</td></tr>",
-                    )
-                    .join("");
+                document.getElementById("detailItemsBody").innerHTML =
+                    data.items
+                        .map(
+                            (item) =>
+                                "<tr><td>" +
+                                item.catalog_item.name +
+                                (item.configuration
+                                    ? " (configured #" +
+                                      item.configuration.config_id +
+                                      ")"
+                                    : "") +
+                                "</td><td>" +
+                                item.quantity +
+                                "</td><td>" +
+                                formatMoney(item.unit_price) +
+                                "</td><td>" +
+                                formatMoney(item.line_total) +
+                                "</td></tr>",
+                        )
+                        .join("");
 
-                document.getElementById("detailAddresses").innerHTML = data.addresses
-                    .map(
-                        (addr) =>
-                            "<div><strong>" +
-                            addr.address_type +
-                            "</strong><br />" +
-                            addr.full_name +
-                            "<br />" +
-                            addr.street +
-                            "<br />" +
-                            addr.city +
-                            ", " +
-                            addr.province +
-                            " " +
-                            addr.postal_code +
-                            "<br />" +
-                            addr.country +
-                            (addr.phone_number
-                                ? "<br />" + addr.phone_number
-                                : "") +
-                            "</div>",
-                    )
-                    .join("");
+                document.getElementById("detailAddresses").innerHTML =
+                    data.addresses
+                        .map(
+                            (addr) =>
+                                "<div><strong>" +
+                                addr.address_type +
+                                "</strong><br />" +
+                                addr.full_name +
+                                "<br />" +
+                                addr.street +
+                                "<br />" +
+                                addr.city +
+                                ", " +
+                                addr.province +
+                                " " +
+                                addr.postal_code +
+                                "<br />" +
+                                addr.country +
+                                (addr.phone_number
+                                    ? "<br />" + addr.phone_number
+                                    : "") +
+                                "</div>",
+                        )
+                        .join("");
 
                 document.getElementById("detailPaymentsBody").innerHTML =
                     data.payment_attempts
@@ -511,12 +474,13 @@
                 .addEventListener("click", async () => {
                     const statusSuccessEl =
                         document.getElementById("statusSuccess");
-                    const statusErrorEl = document.getElementById("statusError");
+                    const statusErrorEl =
+                        document.getElementById("statusError");
                     statusSuccessEl.textContent = "";
                     statusErrorEl.textContent = "";
 
-                    const newStatus = document.getElementById("statusSelect")
-                        .value;
+                    const newStatus =
+                        document.getElementById("statusSelect").value;
                     if (!newStatus) return;
 
                     const { ok, body } = await apiFetch(
@@ -559,6 +523,34 @@
             }
 
             init();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

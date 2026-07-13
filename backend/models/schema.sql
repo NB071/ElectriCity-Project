@@ -452,9 +452,6 @@ CREATE TABLE cart_items (
     FOREIGN KEY (cid) REFERENCES catalog_items (cid)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_cart_items_configuration
-    -- InnoDB rejects any referential action (CASCADE/SET NULL) on ON UPDATE or ON DELETE
-    -- for a column that a generated column (config_key) depends on; RESTRICT on both is
-    -- also correct here since no code ever updates/deletes a configuration's primary key.
     FOREIGN KEY (config_id) REFERENCES configurations (config_id)
     ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT chk_cart_items_quantity

@@ -2,188 +2,163 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Vehicle Details</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 860px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            a.back {
-                font-size: 0.9rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            .gallery {
-                display: flex;
-                gap: 0.5rem;
-                overflow-x: auto;
-                margin-bottom: 1rem;
-            }
-            .gallery img {
-                height: 180px;
-                border-radius: 4px;
-                background: #eee;
-                flex-shrink: 0;
-            }
-            .price-row {
-                font-size: 1.3rem;
-                font-weight: bold;
-                margin: 0.5rem 0;
-            }
-            .price-row .original {
-                text-decoration: line-through;
-                color: #888;
-                font-weight: normal;
-                font-size: 1rem;
-                margin-right: 0.5rem;
-            }
-            .promo-badge {
-                display: inline-block;
-                background: #2a7a2a;
-                color: white;
-                font-size: 0.75rem;
-                border-radius: 3px;
-                padding: 0.15rem 0.5rem;
-                margin-right: 0.3rem;
-            }
-            .spec-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 0.5rem;
-                font-size: 0.9rem;
-                margin: 0.75rem 0;
-            }
-            .spec-grid div span {
-                display: block;
-                color: #777;
-                font-size: 0.75rem;
-            }
-            .category {
-                margin-bottom: 0.75rem;
-            }
-            .category h3 {
-                font-size: 0.95rem;
-                margin: 0 0 0.35rem;
-            }
-            .category label {
-                display: block;
-                font-size: 0.9rem;
-                margin: 0.15rem 0;
-            }
-            .equipped-list {
-                font-size: 0.9rem;
-                color: #444;
-            }
-            button {
-                padding: 0.45rem 0.9rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.5rem;
-            }
-            .error {
-                color: #c33;
-                white-space: pre-wrap;
-            }
-            .success {
-                color: #2a7a2a;
-            }
-            .review {
-                border-bottom: 1px solid #eee;
-                padding: 0.6rem 0;
-            }
-            .review:last-child {
-                border-bottom: none;
-            }
-            .review .meta {
-                font-size: 0.8rem;
-                color: #777;
-            }
-            .stars {
-                color: #e8a400;
-            }
-            textarea,
-            select,
-            input[type="text"] {
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0.4rem;
-                margin-top: 0.25rem;
-            }
-            label.field {
-                display: block;
-                margin: 0.5rem 0;
-                font-size: 0.9rem;
-            }
-            .lookup-row {
-                display: flex;
-                gap: 0.5rem;
-                align-items: center;
-                margin-top: 0.75rem;
-            }
-            .lookup-row input {
-                width: 120px;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
-        <p class="back"><a href="/catalog-browse.html">&laquo; Back to catalog</a></p>
-        <h1 id="vehicleName">Loading…</h1>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1 id="vehicleName">Loading...</h1>
         <p id="status"></p>
 
-        <div class="panel" id="detailsPanel" hidden>
-            <div class="gallery" id="gallery"></div>
-            <div class="price-row" id="priceRow"></div>
-            <div id="promoBadges"></div>
+        <div
+            class="panel"
+            id="detailsPanel"
+            hidden
+        >
+            <h2>Photos</h2>
+            <div
+                class="gallery"
+                id="gallery"
+            ></div>
+            <h2>Price</h2>
+            <p id="priceRow"></p>
+            <p id="promoBadges"></p>
+            <h2>Description</h2>
             <p id="description"></p>
-            <div class="spec-grid" id="specGrid"></div>
+            <h2>Specs</h2>
+            <table id="specGrid"></table>
+            <h2>History</h2>
             <p id="historyInfo"></p>
         </div>
 
-        <div class="panel" id="optionsPanel" hidden>
+        <div
+            class="panel"
+            id="optionsPanel"
+            hidden
+        >
             <h2>Customization Options</h2>
             <div id="customizationCategories"></div>
-            <div id="equippedSection" hidden>
+            <div
+                id="equippedSection"
+                hidden
+            >
                 <h3>Equipped / Included Options</h3>
-                <div class="equipped-list" id="equippedList"></div>
+                <div
+                    class="equipped-list"
+                    id="equippedList"
+                ></div>
             </div>
-            <button type="button" id="buildConfigBtn">
+            <button
+                type="button"
+                id="buildConfigBtn"
+            >
                 Build Configuration
             </button>
-            <p class="success" id="configSuccess"></p>
-            <p class="error" id="configError"></p>
+            <p
+                class="success"
+                id="configSuccess"
+            ></p>
+            <p
+                class="error"
+                id="configError"
+            ></p>
 
             <div class="lookup-row">
-                <label for="configIdInput">Look up a saved configuration:</label>
-                <input type="text" id="configIdInput" placeholder="config ID" />
-                <button type="button" id="lookupConfigBtn">Look up</button>
+                <label for="configIdInput"
+                    >Look up a saved configuration? enter the ID here to use
+                    it:</label
+                >
+                <input
+                    type="text"
+                    id="configIdInput"
+                    placeholder="config ID"
+                />
+                <button
+                    type="button"
+                    id="lookupConfigBtn"
+                >
+                    Look up
+                </button>
             </div>
-            <p class="error" id="lookupError"></p>
+            <p
+                class="error"
+                id="lookupError"
+            ></p>
+        </div>
+
+        <div class="panel">
+            <h2>Cart</h2>
+            <label class="field"
+                >Quantity
+                <input
+                    type="number"
+                    id="cartQuantity"
+                    min="1"
+                    value="1"
+                />
+            </label>
+            <button
+                type="button"
+                id="addBaseCartBtn"
+            >
+                Add base vehicle to cart
+            </button>
+            <button
+                type="button"
+                id="addConfigCartBtn"
+                disabled
+            >
+                Add configured vehicle to cart
+            </button>
+            <p
+                class="muted"
+                id="cartConfigHint"
+            >
+                Build or look up a configuration first to add a configured
+                vehicle.
+            </p>
+            <p
+                class="success"
+                id="cartSuccess"
+            ></p>
+            <p
+                class="error"
+                id="cartError"
+            ></p>
+            <p>
+                <a href="/cart.html">Open cart</a>
+            </p>
         </div>
 
         <div class="panel">
             <h2>Wishlist</h2>
-            <p id="wishlistStatus">Checking…</p>
+            <p id="wishlistStatus">Checking...</p>
+            <p>
+                <a href="/customer-wishlist.html">Open saved vehicles list</a>
+            </p>
         </div>
 
         <div class="panel">
@@ -191,15 +166,31 @@
             <p id="reviewSummary"></p>
             <div id="reviewsList"></div>
             <div class="lookup-row">
-                <button type="button" id="prevReviewsBtn">&laquo; Prev</button>
+                <button
+                    type="button"
+                    id="prevReviewsBtn"
+                >
+                    &laquo; Prev
+                </button>
                 <span id="reviewsPageIndicator"></span>
-                <button type="button" id="nextReviewsBtn">Next &raquo;</button>
+                <button
+                    type="button"
+                    id="nextReviewsBtn"
+                >
+                    Next &raquo;
+                </button>
             </div>
         </div>
 
-        <div class="panel" id="writeReviewPanel">
+        <div
+            class="panel"
+            id="writeReviewPanel"
+        >
             <h2>Write a Review</h2>
-            <div id="reviewFormWrapper" hidden>
+            <div
+                id="reviewFormWrapper"
+                hidden
+            >
                 <form id="reviewForm">
                     <label class="field"
                         >Rating
@@ -213,7 +204,11 @@
                     </label>
                     <label class="field"
                         >Title (optional)
-                        <input type="text" id="reviewTitle" maxlength="150" />
+                        <input
+                            type="text"
+                            id="reviewTitle"
+                            maxlength="150"
+                        />
                     </label>
                     <label class="field"
                         >Review
@@ -226,8 +221,14 @@
                     </label>
                     <button type="submit">Publish Review</button>
                 </form>
-                <p class="success" id="reviewSuccess"></p>
-                <p class="error" id="reviewError"></p>
+                <p
+                    class="success"
+                    id="reviewSuccess"
+                ></p>
+                <p
+                    class="error"
+                    id="reviewError"
+                ></p>
             </div>
             <p id="reviewSignInPrompt">
                 <a href="/auth.html">Sign in as a customer</a> to write a
@@ -236,21 +237,30 @@
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
             const cid = new URLSearchParams(window.location.search).get("cid");
 
             let currentUser = null;
             let reviewsPage = 1;
             let customizationCategories = [];
+            let lastConfigId = null;
 
             async function apiFetch(path, options = {}) {
+                const headers = {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {}),
+                };
+
                 const opts = {
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(options.headers || {}),
-                    },
+                    credentials: fetchCredentials,
                     ...options,
+                    headers,
                 };
 
                 let res = await fetch(apiBase + path, opts);
@@ -262,7 +272,7 @@
                 ) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -271,6 +281,55 @@
 
                 const body = await res.json().catch(() => null);
                 return { ok: res.ok, status: res.status, body };
+            }
+
+            function setLastConfigId(configId) {
+                lastConfigId = configId != null ? Number(configId) : null;
+                const addConfigBtn =
+                    document.getElementById("addConfigCartBtn");
+                const hintEl = document.getElementById("cartConfigHint");
+                if (lastConfigId) {
+                    addConfigBtn.disabled = false;
+                    hintEl.textContent =
+                        "Ready to add configuration #" + lastConfigId + ".";
+                } else {
+                    addConfigBtn.disabled = true;
+                    hintEl.textContent =
+                        "Build or look up a configuration first to add a configured vehicle.";
+                }
+            }
+
+            async function addToCart(configId) {
+                const cartErrorEl = document.getElementById("cartError");
+                const cartSuccessEl = document.getElementById("cartSuccess");
+                cartErrorEl.textContent = "";
+                cartSuccessEl.textContent = "";
+
+                const quantity = Number(
+                    document.getElementById("cartQuantity").value || 1,
+                );
+
+                const { ok, body } = await apiFetch("/api/shop/cart/items", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        cid: Number(cid),
+                        config_id: configId,
+                        quantity,
+                    }),
+                });
+
+                if (!ok) {
+                    cartErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not add that item to your cart.",
+                    );
+                    return;
+                }
+
+                cartSuccessEl.textContent =
+                    configId == null
+                        ? "Base vehicle added to cart."
+                        : "Configuration #" + configId + " added to cart.";
             }
 
             function errorMessage(body, fallback) {
@@ -311,21 +370,20 @@
                 const { ok, body } = await apiFetch("/api/auth/me");
                 currentUser = ok ? body.data : null;
 
-                const isCustomer = currentUser && currentUser.role === "customer";
-                document.getElementById("reviewFormWrapper").hidden = !isCustomer;
-                document.getElementById("reviewSignInPrompt").hidden = isCustomer;
+                const isCustomer =
+                    currentUser && currentUser.role === "customer";
+                document.getElementById("reviewFormWrapper").hidden =
+                    !isCustomer;
+                document.getElementById("reviewSignInPrompt").hidden =
+                    isCustomer;
             }
 
             function renderPromoBadges(promotions) {
                 if (!promotions || promotions.length === 0) return "";
-                return promotions
-                    .map(
-                        (promo) =>
-                            '<span class="promo-badge">' +
-                            promo.name +
-                            "</span>",
-                    )
-                    .join("");
+                return (
+                    "Promotions: " +
+                    promotions.map((promo) => promo.name).join(", ")
+                );
             }
 
             function bestPromoDiscount(promotions) {
@@ -350,7 +408,7 @@
 
                 for (const category of categories) {
                     const div = document.createElement("div");
-                    div.className = "category";
+                    div.className = "panel";
                     const inputType =
                         category.select_type === "MULTI" ? "checkbox" : "radio";
 
@@ -402,10 +460,8 @@
                 );
 
                 if (!ok) {
-                    document.getElementById("status").textContent = errorMessage(
-                        body,
-                        "Could not load this vehicle.",
-                    );
+                    document.getElementById("status").textContent =
+                        errorMessage(body, "Could not load this vehicle.");
                     document.getElementById("vehicleName").textContent =
                         "Not found";
                     return;
@@ -422,47 +478,56 @@
                 gallery.innerHTML = (data.images || [])
                     .map(
                         (image) =>
-                            '<img src="' +
+                            '<p><img src="' +
                             image.url +
                             '" alt="' +
                             (image.alt_text || data.name) +
-                            '" onerror="this.style.visibility=\'hidden\'" />',
+                            '" onerror="this.style.visibility=\'hidden\'" /></p>',
                     )
                     .join("");
 
                 const discount = bestPromoDiscount(data.promotions);
                 const finalPrice = data.base_price - discount;
-                document.getElementById("priceRow").innerHTML =
-                    (discount > 0
-                        ? '<span class="original">' +
+                document.getElementById("priceRow").textContent =
+                    discount > 0
+                        ? "Was " +
                           formatMoney(data.base_price) +
-                          "</span>"
-                        : "") + formatMoney(finalPrice);
-                document.getElementById("promoBadges").innerHTML =
+                          " * Now " +
+                          formatMoney(finalPrice)
+                        : formatMoney(finalPrice);
+                document.getElementById("promoBadges").textContent =
                     renderPromoBadges(data.promotions);
 
                 document.getElementById("description").textContent =
-                    data.description || "";
+                    data.description || "No description.";
 
                 const vehicle = data.vehicle || {};
-                document.getElementById("specGrid").innerHTML = [
+                const specRows = [
                     ["Year", vehicle.year],
                     ["Condition", vehicle.condition],
-                    ["Mileage", vehicle.mileage + " mi"],
+                    [
+                        "Mileage",
+                        vehicle.mileage != null
+                            ? vehicle.mileage + " mi"
+                            : null,
+                    ],
                     ["Body shape", vehicle.body_shape],
                     ["Doors", vehicle.door_count],
                     ["Drivetrain", vehicle.drivetrain],
                     ["Stock", data.stock],
-                ]
-                    .map(
-                        ([label, value]) =>
-                            "<div>" +
-                            (value ?? "—") +
-                            "<span>" +
-                            label +
-                            "</span></div>",
-                    )
-                    .join("");
+                ];
+                document.getElementById("specGrid").innerHTML =
+                    "<tr><th>Spec</th><th>Value</th></tr>" +
+                    specRows
+                        .map(
+                            ([label, value]) =>
+                                "<tr><td>" +
+                                label +
+                                "</td><td>" +
+                                (value ?? "-") +
+                                "</td></tr>",
+                        )
+                        .join("");
 
                 if (data.history) {
                     const parts = [];
@@ -496,7 +561,9 @@
                     data.review_count +
                     " review(s)" +
                     (data.avg_rating != null
-                        ? ", average rating " + data.avg_rating.toFixed(1) + "/5"
+                        ? ", average rating " +
+                          data.avg_rating.toFixed(1) +
+                          "/5.0"
                         : "");
             }
 
@@ -504,7 +571,8 @@
             document
                 .getElementById("buildConfigBtn")
                 .addEventListener("click", async () => {
-                    const configErrorEl = document.getElementById("configError");
+                    const configErrorEl =
+                        document.getElementById("configError");
                     const configSuccessEl =
                         document.getElementById("configSuccess");
                     configErrorEl.textContent = "";
@@ -538,19 +606,33 @@
                     configSuccessEl.textContent =
                         "Configuration #" +
                         body.data.config_id +
-                        " created — total price " +
+                        " created; total price " +
                         formatMoney(body.data.total_price) +
                         ".";
+                    setLastConfigId(body.data.config_id);
+                });
+
+            document
+                .getElementById("addBaseCartBtn")
+                .addEventListener("click", () => addToCart(null));
+
+            document
+                .getElementById("addConfigCartBtn")
+                .addEventListener("click", () => {
+                    if (lastConfigId == null) return;
+                    addToCart(lastConfigId);
                 });
 
             document
                 .getElementById("lookupConfigBtn")
                 .addEventListener("click", async () => {
-                    const lookupErrorEl = document.getElementById("lookupError");
+                    const lookupErrorEl =
+                        document.getElementById("lookupError");
                     lookupErrorEl.textContent = "";
 
-                    const configId =
-                        document.getElementById("configIdInput").value.trim();
+                    const configId = document
+                        .getElementById("configIdInput")
+                        .value.trim();
                     if (!configId) {
                         lookupErrorEl.textContent = "Enter a configuration ID.";
                         return;
@@ -564,27 +646,26 @@
                     if (!ok) {
                         lookupErrorEl.textContent = errorMessage(
                             body,
-                            "Configuration not found.",
+                            "Could not find that configuration.",
                         );
                         return;
                     }
 
+                    setLastConfigId(body.data.config_id);
+
                     const optionNames = body.data.options
-                        .flatMap((category) =>
+                        ?.flatMap((category) =>
                             category.options.map((o) => o.name),
                         )
                         .join(", ");
-                    lookupErrorEl.textContent = "";
-                    alert(
-                        "Configuration #" +
-                            body.data.config_id +
-                            " for catalog item " +
-                            body.data.catalog_item_id +
-                            "\nTotal price: " +
-                            formatMoney(body.data.total_price) +
-                            "\nOptions: " +
-                            (optionNames || "none"),
-                    );
+
+                    document.getElementById("configSuccess").textContent =
+                        "Loaded configuration #" +
+                        body.data.config_id +
+                        " (" +
+                        formatMoney(body.data.total_price) +
+                        "): " +
+                        (optionNames || "none");
                 });
 
             // ------- Wishlist status (read-only on this page) -------
@@ -600,12 +681,14 @@
                 }
 
                 const { ok, status, body } = await apiFetch(
-                    "/api/shop/catalog/" + encodeURIComponent(cid) + "/wishlist",
+                    "/api/shop/catalog/" +
+                        encodeURIComponent(cid) +
+                        "/wishlist",
                 );
 
                 if (ok) {
                     statusEl.textContent =
-                        "♥ This vehicle is in your wishlist (added " +
+                        ">> This vehicle is in your wishlist (added " +
                         new Date(body.data.added_at).toLocaleDateString() +
                         ").";
                 } else if (status === 404) {
@@ -647,27 +730,30 @@
                     listEl.innerHTML = items
                         .map(
                             (review) =>
-                                '<div class="review"><span class="stars">' +
+                                '<div class="review"><p><strong>' +
                                 starString(review.rating) +
-                                "</span> " +
-                                (review.title
-                                    ? "<strong>" + review.title + "</strong>"
-                                    : "") +
-                                "<p>" +
+                                "</strong>" +
+                                (review.title ? " - " + review.title : "") +
+                                "</p><p>" +
                                 review.body +
-                                '</p><div class="meta">' +
+                                "</p><p>" +
                                 review.author.first_name +
                                 " " +
                                 review.author.last_name +
-                                " — " +
-                                new Date(review.created_at).toLocaleDateString() +
-                                "</div></div>",
+                                " - " +
+                                new Date(
+                                    review.created_at,
+                                ).toLocaleDateString() +
+                                "</p></div>",
                         )
                         .join("");
                 }
 
                 document.getElementById("reviewsPageIndicator").textContent =
-                    "Page " + pagination.page + " of " + (pagination.totalPages || 1);
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1);
                 document.getElementById("prevReviewsBtn").disabled =
                     !pagination.hasPrev;
                 document.getElementById("nextReviewsBtn").disabled =
@@ -694,7 +780,8 @@
                 .getElementById("reviewForm")
                 .addEventListener("submit", async (event) => {
                     event.preventDefault();
-                    const reviewErrorEl = document.getElementById("reviewError");
+                    const reviewErrorEl =
+                        document.getElementById("reviewError");
                     const reviewSuccessEl =
                         document.getElementById("reviewSuccess");
                     reviewErrorEl.textContent = "";
@@ -730,6 +817,34 @@
                     reviewsPage = 1;
                     await loadReviews();
                 });
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

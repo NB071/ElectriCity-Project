@@ -1,52 +1,16 @@
 import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import iamService from "../../../services/iam/iam.service.js";
+import {
+    setAuthCookies,
+    clearAuthCookies,
+} from "../../../services/iam/_access/helpers/authCookies.js";
 import cartService from "../../../services/cart/cart.service.js";
+import { cartSessionFromRequest } from "../../../services/cart/helpers/attachCartSession.js";
+import { clearCartSessionCookie } from "../../../services/cart/helpers/cartSessionCookie.js";
 import log from "../../../utils/logger.js";
-import env from "../../../configs/env.js";
 
 const { AUTH_COOKIES } = iamService.access_management;
-
-/**
- * This helper sets the access + refresh tokens as httpOnly cookies instead of exposing
- * them to client-side JS. The refresh cookie is scoped to /api/auth so it is only ever
- * sent to the endpoints that need it.
- * @helper_function
- * @private
- * @param {import('express').Response} res
- * @param {object} tokens
- * @param {string} tokens.accessToken
- * @param {string} tokens.refreshToken
- */
-function setAuthCookies(res, { accessToken, refreshToken }) {
-    const secure = env.app.NODE_ENV === "production";
-
-    res.cookie(AUTH_COOKIES.ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
-        secure,
-        sameSite: "lax",
-        path: "/",
-        maxAge: AUTH_COOKIES.ACCESS_TOKEN_MAX_AGE_MS,
-    });
-    res.cookie(AUTH_COOKIES.REFRESH_TOKEN, refreshToken, {
-        httpOnly: true,
-        secure,
-        sameSite: "lax",
-        path: "/api/auth",
-        maxAge: AUTH_COOKIES.REFRESH_TOKEN_MAX_AGE_MS,
-    });
-}
-
-/**
- * This helper clears both auth cookies on sign-out.
- * @helper_function
- * @private
- * @param {import('express').Response} res
- */
-function clearAuthCookies(res) {
-    res.clearCookie(AUTH_COOKIES.ACCESS_TOKEN, { path: "/" });
-    res.clearCookie(AUTH_COOKIES.REFRESH_TOKEN, { path: "/api/auth" });
-}
 
 /**
  * This controller registers a new customer account.
@@ -87,8 +51,8 @@ export const login = tryCatch(async (req, res, _) => {
 
     const responseData = { user };
 
-    // merge the guest cart into the user's cart (if a guest session is present)
-    const sessionToken = req.headers[cartService.CART_HEADERS.SESSION] ?? null;
+    // merge the guest cart into the user's cart (if a guest session cookie/header is present)
+    const sessionToken = cartSessionFromRequest(req);
 
     if (sessionToken && user?.user_id != null) {
         try {
@@ -96,6 +60,7 @@ export const login = tryCatch(async (req, res, _) => {
                 userId: user.user_id,
                 sessionToken,
             });
+            clearCartSessionCookie(res);
         } catch (err) {
             log.error("Auth", "login", "guest cart merge failed", err);
             responseData.cart_merge = {

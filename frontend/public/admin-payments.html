@@ -2,107 +2,41 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Admin - Payments</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 900px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th,
-            td {
-                text-align: left;
-                padding: 0.4rem 0.6rem;
-                border-bottom: 1px solid #eee;
-                font-size: 0.9rem;
-            }
-            th {
-                border-bottom: 2px solid #ccc;
-            }
-            .badge {
-                display: inline-block;
-                font-size: 0.7rem;
-                border-radius: 3px;
-                padding: 0.1rem 0.4rem;
-                color: white;
-            }
-            .badge.success,
-            .badge.paid {
-                background: #2a7a2a;
-            }
-            .badge.failed {
-                background: #c33;
-            }
-            .badge.unpaid {
-                background: #a15c00;
-            }
-            .lookup-row {
-                display: flex;
-                gap: 0.5rem;
-                align-items: flex-end;
-                margin-bottom: 0.75rem;
-            }
-            .lookup-row label {
-                font-size: 0.85rem;
-            }
-            .lookup-row input,
-            .lookup-row select {
-                display: block;
-                width: 140px;
-                padding: 0.35rem;
-                margin-top: 0.2rem;
-            }
-            button {
-                padding: 0.4rem 0.8rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.4rem;
-            }
-            .error {
-                color: #c33;
-            }
-            .success {
-                color: #2a7a2a;
-            }
-            .pagination {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-top: 0.75rem;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-wide">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>Admin - Payment Oversight</h1>
-        <p id="status">Checking session…</p>
+        <p id="status">Checking session...</p>
 
-        <div id="adminView" hidden>
+        <div
+            id="adminView"
+            hidden
+        >
             <div class="panel">
                 <h2>All Payment Attempts</h2>
                 <table>
@@ -121,11 +55,24 @@
                     <tbody id="allPaymentsBody"></tbody>
                 </table>
                 <div class="pagination">
-                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
                     <span id="pageIndicator"></span>
-                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
                 </div>
-                <p class="error" id="listError"></p>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
             </div>
 
             <div class="panel">
@@ -140,13 +87,23 @@
                 <div class="lookup-row">
                     <label
                         >Order ID
-                        <input type="number" id="orderIdInput" min="1" />
+                        <input
+                            type="number"
+                            id="orderIdInput"
+                            min="1"
+                        />
                     </label>
-                    <button type="button" id="lookupOrderBtn">
+                    <button
+                        type="button"
+                        id="lookupOrderBtn"
+                    >
                         Look Up Payments
                     </button>
                 </div>
-                <table id="orderPaymentsTable" hidden>
+                <table
+                    id="orderPaymentsTable"
+                    hidden
+                >
                     <thead>
                         <tr>
                             <th>Attempt</th>
@@ -158,9 +115,15 @@
                     </thead>
                     <tbody id="orderPaymentsBody"></tbody>
                 </table>
-                <p class="error" id="orderLookupError"></p>
+                <p
+                    class="error"
+                    id="orderLookupError"
+                ></p>
 
-                <div id="paymentStatusForm" hidden>
+                <div
+                    id="paymentStatusForm"
+                    hidden
+                >
                     <h3>Manually Correct Payment Status</h3>
                     <div class="lookup-row">
                         <label
@@ -171,24 +134,39 @@
                                 <option value="failed">failed</option>
                             </select>
                         </label>
-                        <button type="button" id="updatePaymentStatusBtn">
+                        <button
+                            type="button"
+                            id="updatePaymentStatusBtn"
+                        >
                             Update Status
                         </button>
                     </div>
-                    <p class="success" id="paymentStatusSuccess"></p>
-                    <p class="error" id="paymentStatusError"></p>
+                    <p
+                        class="success"
+                        id="paymentStatusSuccess"
+                    ></p>
+                    <p
+                        class="error"
+                        id="paymentStatusError"
+                    ></p>
                 </div>
             </div>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
             let currentPage = 1;
             let lookedUpOrderId = null;
 
             async function apiFetch(path, options = {}) {
                 const opts = {
-                    credentials: "same-origin",
+                    credentials: fetchCredentials,
                     headers: {
                         "Content-Type": "application/json",
                         ...(options.headers || {}),
@@ -201,7 +179,7 @@
                 if (res.status === 401) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -227,7 +205,7 @@
             }
 
             function formatDate(value) {
-                return value ? new Date(value).toLocaleString() : "—";
+                return value ? new Date(value).toLocaleString() : "*";
             }
 
             function payerLabel(attempt) {
@@ -319,22 +297,26 @@
                     !pagination.hasNext;
             }
 
-            document.getElementById("prevPageBtn").addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage -= 1;
-                    loadAllPayments();
-                }
-            });
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadAllPayments();
+                    }
+                });
 
-            document.getElementById("nextPageBtn").addEventListener("click", () => {
-                currentPage += 1;
-                loadAllPayments();
-            });
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadAllPayments();
+                });
 
             // ------- Attempt detail -------
             async function loadAttemptDetail(attemptId) {
                 const detailEl = document.getElementById("attemptDetailBody");
-                detailEl.textContent = "Loading…";
+                detailEl.textContent = "Loading...";
 
                 const { ok, body } = await apiFetch(
                     "/api/dashboard/admin/payments/" + attemptId,
@@ -365,8 +347,7 @@
                     "'>" +
                     attempt.status +
                     "</span><br />Attempted: " +
-                    formatDate(attempt.attempted_at) +
-                    "<br /><em>No raw card numbers or CVVs are stored anywhere — only the payment method type and outcome status.</em>";
+                    formatDate(attempt.attempted_at);
             }
 
             // ------- Order payment lookup + status update -------
@@ -385,9 +366,7 @@
                     }
 
                     const { ok, body } = await apiFetch(
-                        "/api/dashboard/admin/orders/" +
-                            orderId +
-                            "/payments",
+                        "/api/dashboard/admin/orders/" + orderId + "/payments",
                     );
 
                     if (!ok) {
@@ -395,12 +374,10 @@
                             body,
                             "Could not load payments for that order.",
                         );
-                        document.getElementById(
-                            "orderPaymentsTable",
-                        ).hidden = true;
-                        document.getElementById(
-                            "paymentStatusForm",
-                        ).hidden = true;
+                        document.getElementById("orderPaymentsTable").hidden =
+                            true;
+                        document.getElementById("paymentStatusForm").hidden =
+                            true;
                         return;
                     }
 
@@ -430,10 +407,12 @@
                                   )
                                   .join("");
 
-                    document.getElementById("orderPaymentsTable").hidden = false;
+                    document.getElementById("orderPaymentsTable").hidden =
+                        false;
                     document.getElementById("paymentStatusForm").hidden = false;
-                    document.getElementById("paymentStatusSuccess").textContent =
-                        "";
+                    document.getElementById(
+                        "paymentStatusSuccess",
+                    ).textContent = "";
                     document.getElementById("paymentStatusError").textContent =
                         "";
                 });
@@ -495,6 +474,34 @@
             }
 
             init();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

@@ -2,151 +2,48 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Cart</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 760px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            code {
-                background: #f3f3f3;
-                padding: 0.1rem 0.35rem;
-                border-radius: 3px;
-                font-size: 0.85rem;
-                word-break: break-all;
-            }
-            .add-form {
-                display: flex;
-                gap: 0.5rem;
-                flex-wrap: wrap;
-                align-items: flex-end;
-            }
-            .add-form label {
-                font-size: 0.85rem;
-            }
-            .add-form input {
-                display: block;
-                width: 100px;
-                padding: 0.35rem;
-                margin-top: 0.2rem;
-            }
-            button {
-                padding: 0.4rem 0.8rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.4rem;
-            }
-            .error {
-                color: #c33;
-                white-space: pre-wrap;
-            }
-            .success {
-                color: #2a7a2a;
-            }
-            .line {
-                display: flex;
-                gap: 0.75rem;
-                align-items: center;
-                border-bottom: 1px solid #eee;
-                padding: 0.6rem 0;
-            }
-            .line:last-child {
-                border-bottom: none;
-            }
-            .line img {
-                width: 70px;
-                height: 50px;
-                object-fit: cover;
-                border-radius: 4px;
-                background: #eee;
-                flex-shrink: 0;
-            }
-            .line .info {
-                flex: 1;
-            }
-            .line .info h3 {
-                margin: 0 0 0.15rem;
-                font-size: 0.95rem;
-            }
-            .line .info .meta {
-                font-size: 0.8rem;
-                color: #777;
-            }
-            .promo-badge {
-                display: inline-block;
-                background: #2a7a2a;
-                color: white;
-                font-size: 0.7rem;
-                border-radius: 3px;
-                padding: 0.1rem 0.4rem;
-                margin-right: 0.25rem;
-            }
-            .line .qty-control {
-                display: flex;
-                align-items: center;
-                gap: 0.3rem;
-            }
-            .line .qty-control input {
-                width: 55px;
-                padding: 0.3rem;
-            }
-            .line .price-col {
-                width: 90px;
-                text-align: right;
-                font-weight: bold;
-            }
-            .summary-row {
-                display: flex;
-                justify-content: space-between;
-                font-weight: bold;
-                margin-top: 0.75rem;
-                border-top: 1px solid #ccc;
-                padding-top: 0.5rem;
-            }
-            .pagination {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-top: 0.75rem;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>ElectriCity Cart</h1>
-        <p id="status">Loading…</p>
+        <p id="status">Loading...</p>
 
-        <div class="panel" id="guestSessionPanel" hidden>
+        <div
+            class="panel"
+            id="guestSessionPanel"
+            hidden
+        >
             <h2>Guest Session</h2>
             <p>
-                X-Cart-Session token:
-                <code id="sessionTokenDisplay">none yet</code>
+                Your guest cart is tracked with a secure httpOnly cookie set by
+                the API. It is not readable from JavaScript. Sign in to merge it
+                into your account cart.
             </p>
-            <button type="button" id="forgetSessionBtn">
-                Forget Guest Session
-            </button>
         </div>
 
         <div class="panel">
@@ -154,65 +51,98 @@
             <div class="add-form">
                 <label
                     >Catalog item ID (cid)
-                    <input type="number" id="addCid" min="1" />
+                    <input
+                        type="number"
+                        id="addCid"
+                        min="1"
+                    />
                 </label>
                 <label
                     >Configuration ID (optional)
-                    <input type="number" id="addConfigId" min="1" />
+                    <input
+                        type="number"
+                        id="addConfigId"
+                        min="1"
+                    />
                 </label>
                 <label
                     >Quantity
-                    <input type="number" id="addQuantity" min="1" max="99" value="1" />
+                    <input
+                        type="number"
+                        id="addQuantity"
+                        min="1"
+                        max="99"
+                        value="1"
+                    />
                 </label>
-                <button type="button" id="addItemBtn">Add to Cart</button>
+                <button
+                    type="button"
+                    id="addItemBtn"
+                >
+                    Add to Cart
+                </button>
             </div>
-            <p style="font-size: 0.85rem; color: #777">
+            <p class="hint">
                 Don't know a catalog ID? Browse the
-                <a href="/catalog-browse.html">catalog</a> first — each
+                <a href="/catalog-browse.html">catalog</a> first * each
                 vehicle's ID is shown on its
                 <a href="/catalog-details.html?cid=1">details page</a>.
             </p>
-            <p class="error" id="addError"></p>
+            <p
+                class="error"
+                id="addError"
+            ></p>
         </div>
 
         <div class="panel">
             <h2>Your Cart</h2>
             <div id="cartLines"></div>
-            <div class="summary-row" id="summaryRow" hidden>
+            <div
+                class="summary-row"
+                id="summaryRow"
+                hidden
+            >
                 <span id="itemCountLabel"></span>
                 <span id="subtotalLabel"></span>
             </div>
             <div class="pagination">
-                <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                <button
+                    type="button"
+                    id="prevPageBtn"
+                >
+                    &laquo; Prev
+                </button>
                 <span id="pageIndicator"></span>
-                <button type="button" id="nextPageBtn">Next &raquo;</button>
-                <button type="button" id="clearCartBtn" style="margin-left: auto">
+                <button
+                    type="button"
+                    id="nextPageBtn"
+                >
+                    Next &raquo;
+                </button>
+                <button
+                    type="button"
+                    id="clearCartBtn"
+                >
                     Clear Cart
                 </button>
             </div>
-            <p class="error" id="cartError"></p>
+            <p
+                class="error"
+                id="cartError"
+            ></p>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
-            const SESSION_STORAGE_KEY = "electricity_cart_session";
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
 
             let currentUser = null;
             let currentPage = 1;
-
-            function getStoredSessionToken() {
-                return localStorage.getItem(SESSION_STORAGE_KEY);
-            }
-
-            function storeSessionToken(token) {
-                if (token) {
-                    localStorage.setItem(SESSION_STORAGE_KEY, token);
-                }
-            }
-
-            function forgetSessionToken() {
-                localStorage.removeItem(SESSION_STORAGE_KEY);
-            }
 
             async function apiFetch(path, options = {}) {
                 const headers = {
@@ -220,13 +150,8 @@
                     ...(options.headers || {}),
                 };
 
-                const sessionToken = getStoredSessionToken();
-                if (sessionToken) {
-                    headers["X-Cart-Session"] = sessionToken;
-                }
-
                 const opts = {
-                    credentials: "same-origin",
+                    credentials: fetchCredentials,
                     ...options,
                     headers,
                 };
@@ -240,7 +165,7 @@
                 ) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -248,10 +173,6 @@
                 }
 
                 const body = await res.json().catch(() => null);
-
-                if (body?.data?.session_token) {
-                    storeSessionToken(body.data.session_token);
-                }
 
                 return { ok: res.ok, status: res.status, body };
             }
@@ -281,28 +202,14 @@
                     statusEl.textContent =
                         "Signed in as " +
                         currentUser.email +
-                        " — this cart is tied to your account.";
+                        " * this cart is tied to your account.";
                     guestPanel.hidden = true;
                 } else {
-                    statusEl.textContent =
-                        "Browsing as a guest — sign in on the ";
                     statusEl.innerHTML =
-                        'Browsing as a guest — <a href="/auth.html">sign in</a> to keep your cart tied to your account instead of this browser.';
+                        'Browsing as a guest; <a href="/auth.html">sign in</a> to keep your cart tied to your account instead of this browser.';
                     guestPanel.hidden = false;
-                    document.getElementById("sessionTokenDisplay").textContent =
-                        getStoredSessionToken() || "none yet — add an item to start one";
                 }
             }
-
-            document
-                .getElementById("forgetSessionBtn")
-                .addEventListener("click", () => {
-                    forgetSessionToken();
-                    document.getElementById("sessionTokenDisplay").textContent =
-                        "none yet — add an item to start one";
-                    currentPage = 1;
-                    loadCart();
-                });
 
             function renderPromoBadges(promotions) {
                 if (!promotions || promotions.length === 0) return "";
@@ -349,7 +256,7 @@
                         "</h3>" +
                         '<div class="meta">' +
                         configLabel +
-                        " · " +
+                        " * " +
                         formatMoney(item.unit_price) +
                         " each</div>" +
                         "<div>" +
@@ -413,54 +320,59 @@
                 renderCart(items);
 
                 document.getElementById("pageIndicator").textContent =
-                    "Page " + pagination.page + " of " + (pagination.totalPages || 1);
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1);
                 document.getElementById("prevPageBtn").disabled =
                     !pagination.hasPrev;
                 document.getElementById("nextPageBtn").disabled =
                     !pagination.hasNext;
-
-                if (!currentUser) {
-                    document.getElementById("sessionTokenDisplay").textContent =
-                        getStoredSessionToken() || "none yet — add an item to start one";
-                }
             }
 
-            document.getElementById("addItemBtn").addEventListener("click", async () => {
-                const addErrorEl = document.getElementById("addError");
-                addErrorEl.textContent = "";
+            document
+                .getElementById("addItemBtn")
+                .addEventListener("click", async () => {
+                    const addErrorEl = document.getElementById("addError");
+                    addErrorEl.textContent = "";
 
-                const cid = document.getElementById("addCid").value;
-                const configId = document.getElementById("addConfigId").value;
-                const quantity = document.getElementById("addQuantity").value || 1;
+                    const cid = document.getElementById("addCid").value;
+                    const configId =
+                        document.getElementById("addConfigId").value;
+                    const quantity =
+                        document.getElementById("addQuantity").value || 1;
 
-                if (!cid) {
-                    addErrorEl.textContent = "Enter a catalog item ID.";
-                    return;
-                }
+                    if (!cid) {
+                        addErrorEl.textContent = "Enter a catalog item ID.";
+                        return;
+                    }
 
-                const { ok, body } = await apiFetch("/api/shop/cart/items", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        cid: Number(cid),
-                        config_id: configId ? Number(configId) : null,
-                        quantity: Number(quantity),
-                    }),
-                });
-
-                if (!ok) {
-                    addErrorEl.textContent = errorMessage(
-                        body,
-                        "Could not add that item to your cart.",
+                    const { ok, body } = await apiFetch(
+                        "/api/shop/cart/items",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                                cid: Number(cid),
+                                config_id: configId ? Number(configId) : null,
+                                quantity: Number(quantity),
+                            }),
+                        },
                     );
-                    return;
-                }
 
-                document.getElementById("addCid").value = "";
-                document.getElementById("addConfigId").value = "";
-                document.getElementById("addQuantity").value = "1";
-                currentPage = 1;
-                await loadCart();
-            });
+                    if (!ok) {
+                        addErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not add that item to your cart.",
+                        );
+                        return;
+                    }
+
+                    document.getElementById("addCid").value = "";
+                    document.getElementById("addConfigId").value = "";
+                    document.getElementById("addQuantity").value = "1";
+                    currentPage = 1;
+                    await loadCart();
+                });
 
             async function updateQuantity(cartItemId) {
                 const cartErrorEl = document.getElementById("cartError");
@@ -531,21 +443,53 @@
                     await loadCart();
                 });
 
-            document.getElementById("prevPageBtn").addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage -= 1;
-                    loadCart();
-                }
-            });
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadCart();
+                    }
+                });
 
-            document.getElementById("nextPageBtn").addEventListener("click", () => {
-                currentPage += 1;
-                loadCart();
-            });
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadCart();
+                });
 
             (async function init() {
                 await checkSession();
                 await loadCart();
+            })();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
             })();
         </script>
     </body>

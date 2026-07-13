@@ -13,6 +13,7 @@ import {
     VALIDATIONS,
     DEFAULTS,
     CART_HEADERS,
+    CART_COOKIES,
 } from "./constants.js";
 
 const cartService = {
@@ -26,6 +27,7 @@ const cartService = {
     VALIDATIONS,
     DEFAULTS,
     CART_HEADERS,
+    CART_COOKIES,
 };
 
 export default cartService;
@@ -41,4 +43,5 @@ export {
     VALIDATIONS,
     DEFAULTS,
     CART_HEADERS,
+    CART_COOKIES,
 };

@@ -2,123 +2,70 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Admin - Users</title>
-        <style>
-            body {
-                font-family: sans-serif;
-                max-width: 860px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-            h1 {
-                margin-bottom: 0.25rem;
-            }
-            #status {
-                color: #555;
-            }
-            .panel {
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                padding: 1rem 1.25rem;
-                margin-bottom: 1.25rem;
-            }
-            .panel h2 {
-                margin-top: 0;
-                font-size: 1.1rem;
-            }
-            .search-row {
-                display: flex;
-                gap: 0.5rem;
-                margin-bottom: 0.5rem;
-            }
-            .search-row input {
-                flex: 1;
-                padding: 0.4rem;
-            }
-            .hint {
-                font-size: 0.8rem;
-                color: #777;
-                margin: 0 0 0.75rem;
-            }
-            button {
-                padding: 0.4rem 0.8rem;
-                cursor: pointer;
-            }
-            button + button {
-                margin-left: 0.4rem;
-            }
-            .error {
-                color: #c33;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th,
-            td {
-                text-align: left;
-                padding: 0.4rem 0.6rem;
-                border-bottom: 1px solid #eee;
-                font-size: 0.9rem;
-            }
-            th {
-                border-bottom: 2px solid #ccc;
-            }
-            .badge {
-                display: inline-block;
-                font-size: 0.7rem;
-                border-radius: 3px;
-                padding: 0.1rem 0.4rem;
-            }
-            .badge.active {
-                background: #e6f5e6;
-                color: #2a7a2a;
-            }
-            .badge.deleted {
-                background: #fbe6e6;
-                color: #c33;
-            }
-            .pagination {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-top: 0.75rem;
-            }
-            [hidden] {
-                display: none !important;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
         <h1>Admin - User Search &amp; Management</h1>
-        <p id="status">Checking session…</p>
+        <p id="status">Checking session...</p>
 
-        <div id="adminView" hidden>
+        <div
+            id="adminView"
+            hidden
+        >
             <div class="panel">
                 <h2>Search Users</h2>
                 <div class="search-row">
                     <input
                         type="text"
                         id="searchInput"
-                        placeholder="Search by name, email, or phone…"
+                        placeholder="Search by name, email, or phone..."
                     />
-                    <button type="button" id="searchBtn">Search</button>
-                    <button type="button" id="clearSearchBtn">
+                    <button
+                        type="button"
+                        id="searchBtn"
+                    >
+                        Search
+                    </button>
+                    <button
+                        type="button"
+                        id="clearSearchBtn"
+                    >
                         Show All
                     </button>
                 </div>
                 <p class="hint">
-                    This is a read-only oversight screen — admins cannot edit
-                    another user's profile here. Tip: search for
-                    <code>deleted</code> (or <code>true</code>/<code
-                        >yes</code
-                    >/<code>1</code>) to list only deleted accounts, or
-                    <code>active</code> (or <code>false</code>/<code>no</code
-                    >/<code>0</code>) to list only active ones — anything
-                    else matches name/email/phone.
+                    This is a read-only oversight screen for admins to see all
+                    users.
                 </p>
-                <p class="error" id="searchError"></p>
+                <p
+                    class="error"
+                    id="searchError"
+                ></p>
             </div>
 
             <div class="panel">
@@ -138,26 +85,42 @@
                     <tbody id="usersTableBody"></tbody>
                 </table>
                 <div class="pagination">
-                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
                     <span id="pageIndicator"></span>
-                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
                 </div>
             </div>
         </div>
 
         <script>
-            const apiBase = window.location.origin.replace(/\/$/, "");
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
             let currentPage = 1;
             let searchTerm = "";
 
             async function apiFetch(path) {
-                const opts = { credentials: "same-origin" };
+                const opts = { credentials: fetchCredentials };
                 let res = await fetch(apiBase + path, opts);
 
                 if (res.status === 401) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
-                        { method: "POST", credentials: "same-origin" },
+                        { method: "POST", credentials: fetchCredentials },
                     );
                     if (refreshRes.ok) {
                         res = await fetch(apiBase + path, opts);
@@ -173,7 +136,7 @@
             }
 
             function formatDate(value) {
-                return value ? new Date(value).toLocaleDateString() : "—";
+                return value ? new Date(value).toLocaleDateString() : "*";
             }
 
             function renderUsers(items) {
@@ -196,7 +159,7 @@
                         "</td><td>" +
                         user.email +
                         "</td><td>" +
-                        (user.phone_number || "—") +
+                        (user.phone_number || "-") +
                         "</td><td>" +
                         user.role +
                         "</td><td>" +
@@ -252,11 +215,15 @@
                     !pagination.hasNext;
             }
 
-            document.getElementById("searchBtn").addEventListener("click", () => {
-                searchTerm = document.getElementById("searchInput").value.trim();
-                currentPage = 1;
-                loadUsers();
-            });
+            document
+                .getElementById("searchBtn")
+                .addEventListener("click", () => {
+                    searchTerm = document
+                        .getElementById("searchInput")
+                        .value.trim();
+                    currentPage = 1;
+                    loadUsers();
+                });
 
             document
                 .getElementById("searchInput")
@@ -276,17 +243,21 @@
                     loadUsers();
                 });
 
-            document.getElementById("prevPageBtn").addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage -= 1;
-                    loadUsers();
-                }
-            });
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadUsers();
+                    }
+                });
 
-            document.getElementById("nextPageBtn").addEventListener("click", () => {
-                currentPage += 1;
-                loadUsers();
-            });
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadUsers();
+                });
 
             async function init() {
                 const statusEl = document.getElementById("status");
@@ -304,6 +275,34 @@
             }
 
             init();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
         </script>
     </body>
 </html>

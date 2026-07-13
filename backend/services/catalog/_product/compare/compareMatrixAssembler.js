@@ -27,14 +27,20 @@ class CompareMatrixAssembler {
                 (s) => s.fields[field] ?? { value: null, direction: "none" },
             );
 
-            // Pick the best cell for each field.
-            const bestIndex = this._pickBest(cells);
+            const { winnerIndexes, tied } = this._pickBest(cells);
+            const winners = new Set(winnerIndexes);
+            const ranked = winnerIndexes.length > 0;
 
             // Create a row for each field.
-            rows[field] = cells.map((cell, i) => ({
-                value: cell.value,
-                isBest: i === bestIndex,
-            }));
+            rows[field] = cells.map((cell, i) => {
+                const isWinner = winners.has(i);
+                return {
+                    value: cell.value,
+                    isBest: isWinner && !tied,
+                    isTied: isWinner && tied,
+                    isWorse: ranked && !isWinner,
+                };
+            });
         }
 
         // Create columns for each item.
@@ -43,9 +49,9 @@ class CompareMatrixAssembler {
     }
 
     /**
-     * This method is used to pick the best cell for a given field.
+     * This method is used to pick the best cell(s) for a given field.
      * @param {object[]} cells
-     * @returns {number}
+     * @returns {{ winnerIndexes: number[], tied: boolean }}
      */
     _pickBest(cells) {
         // Find the direction of the best cell.
@@ -53,29 +59,57 @@ class CompareMatrixAssembler {
             (c) => c.direction && c.direction !== "none",
         )?.direction;
 
-        if (!direction) return -1;
+        if (!direction) return { winnerIndexes: [], tied: false };
 
-        // Find the best cell for the given field.
-        let bestIndex = -1;
+        // Find the best value for the given field.
         let bestValue = null;
-        // Iterate through the cells and find the best cell.
-        cells.forEach((cell, i) => {
-            if (cell.value === null || cell.value === undefined) return;
+        for (const cell of cells) {
+            const value = this._comparableValue(cell.value);
+            if (value === null) continue;
             if (bestValue === null) {
-                bestIndex = i;
-                bestValue = cell.value;
-                return;
+                bestValue = value;
+                continue;
             }
             const better =
-                direction === "lower"
-                    ? cell.value < bestValue
-                    : cell.value > bestValue;
-            if (better) {
-                bestIndex = i;
-                bestValue = cell.value;
+                direction === "lower" ? value < bestValue : value > bestValue;
+            if (better) bestValue = value;
+        }
+
+        if (bestValue === null) return { winnerIndexes: [], tied: false };
+
+        const winnerIndexes = [];
+        cells.forEach((cell, i) => {
+            const value = this._comparableValue(cell.value);
+            if (value !== null && value === bestValue) {
+                winnerIndexes.push(i);
             }
         });
-        return bestIndex;
+
+        return {
+            winnerIndexes,
+            tied: winnerIndexes.length > 1,
+        };
+    }
+
+    /**
+     * Coerce numeric-looking values so year/mileage/price compare by magnitude,
+     * not lexicographic string order (which breaks once digit lengths differ).
+     * @param {unknown} value
+     * @returns {number|string|null}
+     */
+    _comparableValue(value) {
+        if (value === null || value === undefined) return null;
+        if (typeof value === "number") {
+            return Number.isFinite(value) ? value : null;
+        }
+        if (typeof value === "bigint") {
+            return Number(value);
+        }
+        if (typeof value === "string" && value.trim() !== "") {
+            const asNumber = Number(value);
+            if (Number.isFinite(asNumber)) return asNumber;
+        }
+        return value;
     }
 }
 
