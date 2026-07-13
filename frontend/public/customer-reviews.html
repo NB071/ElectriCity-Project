@@ -12,7 +12,8 @@
             href="/site.css"
         />
     </head>
-    <nav
+    <body class="page-mid">
+        <nav
             class="history-nav"
             aria-label="Browser history"
         >
@@ -29,8 +30,8 @@
                 &gt; Forward
             </button>
         </nav>
-        <h1>Customer - Reviews</h1>
-        
+        <h1>ElectriCity Reviews</h1>
+        <p id="status">Checking session...</p>
 
         <section
             id="guestView"
@@ -38,33 +39,35 @@
         >
             <div class="panel">
                 <p>
-                    <a href="/auth.html">Sign in as a customer</a> to see your reviews.
+                    <a href="/auth.html">Sign in as a customer</a> to see your
+                    reviews.
                 </p>
             </div>
         </section>
+
         <section
             id="customerView"
-            
+            hidden
         >
             <div class="panel">
+                <h2>Your Reviews</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
+                            <th>Vehicle</th>
+                            <th>Title</th>
+                            <th>Review</th>
+                            <th>Rating</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
-                    <!-- Give the tbody an ID so JS can find it easily -->
-                    <tbody id="table-body">
-                        <tr><td colspan="3">Loading data...</td></tr>
+                    <tbody id="reviewsBody">
+                        <tr>
+                            <td colspan="6">Loading reviews...</td>
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="panel">
-                <h2>Saved Vehicles</h2>
-                <div id="wishlistItems"></div>
                 <div class="pagination">
                     <button
                         type="button"
@@ -85,18 +88,20 @@
                     id="listError"
                 ></p>
             </div>
-            <script>    
-                const isProduction =
+        </section>
+
+        <script>
+            const isProduction =
                 window.location.hostname === "project-electricity.app" ||
                 window.location.hostname === "www.project-electricity.app";
-                const apiBase = isProduction
+            const apiBase = isProduction
                 ? "https://api.project-electricity.app"
                 : window.location.origin.replace(/\/$/, "");
-                const fetchCredentials = isProduction ? "include" : "same-origin";
-                let currentPage = 1;
-                let lookedUpOrderId = null;
-                
-                async function apiFetch(path, options = {}) {
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+
+            let currentPage = 1;
+
+            async function apiFetch(path, options = {}) {
                 const opts = {
                     credentials: fetchCredentials,
                     headers: {
@@ -108,7 +113,11 @@
 
                 let res = await fetch(apiBase + path, opts);
 
-                if (res.status === 401) {
+                if (
+                    res.status === 401 &&
+                    path !== "/api/auth/login" &&
+                    path !== "/api/auth/refresh"
+                ) {
                     const refreshRes = await fetch(
                         apiBase + "/api/auth/refresh",
                         { method: "POST", credentials: fetchCredentials },
@@ -122,39 +131,183 @@
                 return { ok: res.ok, status: res.status, body };
             }
 
-                async function loadUserReviews(){
-                    tbody = document.getElementById("table-body");
-                    const { ok, body } = await apiFetch(
-                        "/api/dashboard/customer/reviews"
-                        );
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
 
-                    if (!ok) {
-                        tbody.innerHTML = "Could not load reviews.";np
-                        return;
-                    }
+            function escapeHtml(value) {
+                return String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
 
-                    const { items, pagination } = body.data;
-                    const tbody = document.getElementById("table-body");
-                    tbody.innerHTML = "";
-                    if (reviews.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="3">You have no reviews yet.</td></tr>';
-                        return;
-                    }
-                    reviews.forEac(review => {
-                        const row = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>${review.review_id}</td>
-                            <td>${review.cid}</td>
-                            <td>${review.title}</td>
-                            <td>${review.body}</td>
-                            <td>${review.rating}</td>
-                        `;
-                        tableBody.appendChild(row);
-                    })
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString() : "—";
+            }
+
+            function showGuestView() {
+                document.getElementById("status").textContent =
+                    "Not signed in.";
+                document.getElementById("guestView").hidden = false;
+                document.getElementById("customerView").hidden = true;
+            }
+
+            function showCustomerView(user) {
+                document.getElementById("status").textContent =
+                    "Signed in as " + user.email;
+                document.getElementById("guestView").hidden = true;
+                document.getElementById("customerView").hidden = false;
+            }
+
+            function renderReviews(items) {
+                const tbody = document.getElementById("reviewsBody");
+                tbody.innerHTML = "";
+
+                if (!items || items.length === 0) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6">You have no reviews yet.</td></tr>';
+                    return;
                 }
-                document.addEventListener('DOMContentLoaded', loadUserReviews);
-            </script>
 
-        </section>
-    <body></body>
+                for (const review of items) {
+                    const vehicle = review.catalog_item || {};
+                    const vehicleLabel =
+                        vehicle.name ||
+                        (vehicle.cid != null ? "Catalog #" + vehicle.cid : "—");
+                    const row = document.createElement("tr");
+                    row.innerHTML =
+                        "<td>" +
+                        escapeHtml(review.review_id) +
+                        "</td>" +
+                        "<td>" +
+                        (vehicle.cid != null
+                            ? '<a href="/catalog-details.html?cid=' +
+                              encodeURIComponent(vehicle.cid) +
+                              '">' +
+                              escapeHtml(vehicleLabel) +
+                              "</a>"
+                            : escapeHtml(vehicleLabel)) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.title || "—") +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.body || "—") +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.rating) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(formatDate(review.created_at)) +
+                        "</td>";
+                    tbody.appendChild(row);
+                }
+            }
+
+            async function loadUserReviews() {
+                const tbody = document.getElementById("reviewsBody");
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/customer/reviews?page=" +
+                        currentPage +
+                        "&limit=10",
+                );
+
+                if (!ok) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6">Could not load reviews.</td></tr>';
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load reviews.",
+                    );
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                renderReviews(items);
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1);
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            async function checkSession() {
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok) {
+                    showGuestView();
+                    return;
+                }
+
+                const user = body.data;
+
+                if (user.role !== "customer") {
+                    document.getElementById("status").textContent =
+                        "Reviews are for customer accounts only.";
+                    document.getElementById("guestView").hidden = false;
+                    document.getElementById("customerView").hidden = true;
+                    document.getElementById("guestView").innerHTML =
+                        '<div class="panel"><p>Your reviews page is for customer accounts. You are signed in as an admin.</p></div>';
+                    return;
+                }
+
+                showCustomerView(user);
+                await loadUserReviews();
+            }
+
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadUserReviews();
+                    }
+                });
+
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadUserReviews();
+                });
+
+            checkSession();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+        </script>
+    </body>
 </html>
