@@ -305,6 +305,25 @@ CREATE TABLE catalog_options (
 );
 
 
+-- Fixed/pre-installed features on used vehicles (not selectable, unlike catalog_options)
+CREATE TABLE equipped_options (
+  cid        BIGINT UNSIGNED NOT NULL,
+  option_id  INT UNSIGNED    NOT NULL,
+
+  -- Constraints, Keys, and Indexes
+  PRIMARY KEY (cid, option_id),
+
+  KEY idx_equipped_options_option_id (option_id),
+
+  CONSTRAINT fk_equipped_options_catalog_item
+    FOREIGN KEY (cid) REFERENCES catalog_items (cid)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_equipped_options_option_value
+    FOREIGN KEY (option_id) REFERENCES option_values (option_id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
 CREATE TABLE configurations (
   config_id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   cid          BIGINT UNSIGNED NOT NULL,
