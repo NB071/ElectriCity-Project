@@ -25,7 +25,6 @@ import log from "../../utils/logger.js";
  * @returns {Promise<{ items: object[], pagination: object, sort: string }>}
  * @throws {ValidationError} If the pagination or sort parameters are invalid
  * @throws {DatabaseError} On database failures
- * @throws {NotFoundError} If the user has no wishlist items
  */
 async function viewWishlist(userId, queryParams = {}) {
     try {
@@ -38,12 +37,16 @@ async function viewWishlist(userId, queryParams = {}) {
         const { sort } = validateSortParams(queryParams);
         const pagination = parsePaginationQuery(queryParams);
         const total = await wishlistDAO.countByUserId(id);
-        const rows = await wishlistDAO.findByUserId(
-            id,
-            pagination.limit,
-            pagination.offset,
-            sort,
-        );
+
+        let rows = [];
+        if (total > 0) {
+            rows = await wishlistDAO.findByUserId(
+                id,
+                pagination.limit,
+                pagination.offset,
+                sort,
+            );
+        }
 
         return {
             items: rows.map(toWishlistItemDTO),

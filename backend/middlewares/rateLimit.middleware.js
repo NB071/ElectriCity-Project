@@ -32,28 +32,28 @@ function constructRateLimiter({ windowMs, max, msg }) {
 // > Auth Routes
 const authRateLimiter = constructRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // 10 requests per 15 minutes
+    max: 300, // 300 requests per 15 minutes
     msg: "Too many login attempts, please try again later.",
 });
 
 // > Dashboard Routes
 const dashboardRateLimiter = constructRateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    max: 10, // 10 requests per minute
+    max: 300, // 300 requests per minute
     msg: "Too many dashboard requests, please try again later.",
 });
 
 // > Shop Routes
 const shopRateLimiter = constructRateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    max: 200, // 200 requests per minute
+    max: 600, // 600 requests per minute
     msg: "Too many shop requests, please try again later.",
 });
 
 // > Chatbot (Gemini calls are expensive)
 const chatbotRateLimiter = constructRateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    max: 20, // 20 messages per minute
+    max: 60, // 60 messages per minute
     msg: "Too many chatbot messages, please try again later.",
 });
 

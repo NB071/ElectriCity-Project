@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <title>ElectriCity Cart</title>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
+    </head>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>ElectriCity Cart</h1>
+        <p id="status">Loading...</p>
+
+        <div
+            class="panel"
+            id="guestSessionPanel"
+            hidden
+        >
+            <h2>Guest Session</h2>
+            <p>
+                Your guest cart is tracked with a secure httpOnly cookie set by
+                the API. It is not readable from JavaScript. Sign in to merge it
+                into your account cart.
+            </p>
+        </div>
+
+        <div class="panel">
+            <h2>Add Item to Cart</h2>
+            <div class="add-form">
+                <label
+                    >Catalog item ID (cid)
+                    <input
+                        type="number"
+                        id="addCid"
+                        min="1"
+                    />
+                </label>
+                <label
+                    >Configuration ID (optional)
+                    <input
+                        type="number"
+                        id="addConfigId"
+                        min="1"
+                    />
+                </label>
+                <label
+                    >Quantity
+                    <input
+                        type="number"
+                        id="addQuantity"
+                        min="1"
+                        max="99"
+                        value="1"
+                    />
+                </label>
+                <button
+                    type="button"
+                    id="addItemBtn"
+                >
+                    Add to Cart
+                </button>
+            </div>
+            <p class="hint">
+                Don't know a catalog ID? Browse the
+                <a href="/catalog-browse.html">catalog</a> first * each
+                vehicle's ID is shown on its
+                <a href="/catalog-details.html?cid=1">details page</a>.
+            </p>
+            <p
+                class="error"
+                id="addError"
+            ></p>
+        </div>
+
+        <div class="panel">
+            <h2>Your Cart</h2>
+            <div id="cartLines"></div>
+            <div
+                class="summary-row"
+                id="summaryRow"
+                hidden
+            >
+                <span id="itemCountLabel"></span>
+                <span id="subtotalLabel"></span>
+            </div>
+            <div class="pagination">
+                <button
+                    type="button"
+                    id="prevPageBtn"
+                >
+                    &laquo; Prev
+                </button>
+                <span id="pageIndicator"></span>
+                <button
+                    type="button"
+                    id="nextPageBtn"
+                >
+                    Next &raquo;
+                </button>
+                <button
+                    type="button"
+                    id="clearCartBtn"
+                >
+                    Clear Cart
+                </button>
+            </div>
+            <p
+                class="error"
+                id="cartError"
+            ></p>
+        </div>
+
+        <script>
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+
+            let currentUser = null;
+            let currentPage = 1;
+
+            async function apiFetch(path, options = {}) {
+                const headers = {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {}),
+                };
+
+                const opts = {
+                    credentials: fetchCredentials,
+                    ...options,
+                    headers,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (
+                    res.status === 401 &&
+                    path !== "/api/auth/login" &&
+                    path !== "/api/auth/refresh"
+                ) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatMoney(amount) {
+                return (
+                    "$" +
+                    Number(amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+                );
+            }
+
+            async function checkSession() {
+                const { ok, body } = await apiFetch("/api/auth/me");
+                currentUser = ok ? body.data : null;
+
+                const statusEl = document.getElementById("status");
+                const guestPanel = document.getElementById("guestSessionPanel");
+
+                if (currentUser) {
+                    statusEl.textContent =
+                        "Signed in as " +
+                        currentUser.email +
+                        " * this cart is tied to your account.";
+                    guestPanel.hidden = true;
+                } else {
+                    statusEl.innerHTML =
+                        'Browsing as a guest; <a href="/auth.html">sign in</a> to keep your cart tied to your account instead of this browser.';
+                    guestPanel.hidden = false;
+                }
+            }
+
+            function renderPromoBadges(promotions) {
+                if (!promotions || promotions.length === 0) return "";
+                return promotions
+                    .map(
+                        (promo) =>
+                            '<span class="promo-badge">' +
+                            promo.name +
+                            "</span>",
+                    )
+                    .join("");
+            }
+
+            function renderCart(items) {
+                const linesEl = document.getElementById("cartLines");
+                linesEl.innerHTML = "";
+
+                if (items.length === 0) {
+                    linesEl.innerHTML = "<p>Your cart is empty.</p>";
+                    document.getElementById("summaryRow").hidden = true;
+                    return;
+                }
+
+                let subtotal = 0;
+
+                for (const item of items) {
+                    subtotal += item.line_total;
+                    const catalogItem = item.catalog_item;
+                    const configLabel = item.configuration
+                        ? "Configured (#" + item.configuration.config_id + ")"
+                        : "Base version";
+
+                    const line = document.createElement("div");
+                    line.className = "line";
+                    line.innerHTML =
+                        '<img src="' +
+                        (catalogItem.primary_image_url || "") +
+                        '" alt="' +
+                        catalogItem.name +
+                        '" onerror="this.style.visibility=\'hidden\'" />' +
+                        '<div class="info">' +
+                        "<h3>" +
+                        catalogItem.name +
+                        "</h3>" +
+                        '<div class="meta">' +
+                        configLabel +
+                        " * " +
+                        formatMoney(item.unit_price) +
+                        " each</div>" +
+                        "<div>" +
+                        renderPromoBadges(catalogItem.promotions) +
+                        "</div>" +
+                        "</div>" +
+                        '<div class="qty-control">' +
+                        '<input type="number" min="1" max="99" value="' +
+                        item.quantity +
+                        '" data-cart-item-id="' +
+                        item.cart_item_id +
+                        '" class="qtyInput" />' +
+                        '<button type="button" class="updateQtyBtn" data-cart-item-id="' +
+                        item.cart_item_id +
+                        '">Update</button>' +
+                        "</div>" +
+                        '<div class="price-col">' +
+                        formatMoney(item.line_total) +
+                        "</div>" +
+                        '<button type="button" class="removeBtn" data-cart-item-id="' +
+                        item.cart_item_id +
+                        '">Remove</button>';
+                    linesEl.appendChild(line);
+                }
+
+                document.getElementById("summaryRow").hidden = false;
+                document.getElementById("itemCountLabel").textContent =
+                    items.length + " item(s)";
+                document.getElementById("subtotalLabel").textContent =
+                    "Subtotal: " + formatMoney(subtotal);
+
+                linesEl.querySelectorAll(".updateQtyBtn").forEach((btn) => {
+                    btn.addEventListener("click", () =>
+                        updateQuantity(btn.dataset.cartItemId),
+                    );
+                });
+                linesEl.querySelectorAll(".removeBtn").forEach((btn) => {
+                    btn.addEventListener("click", () =>
+                        removeItem(btn.dataset.cartItemId),
+                    );
+                });
+            }
+
+            async function loadCart() {
+                const cartErrorEl = document.getElementById("cartError");
+                cartErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/shop/cart?page=" + currentPage + "&limit=10",
+                );
+
+                if (!ok) {
+                    cartErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load your cart.",
+                    );
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                renderCart(items);
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1);
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            document
+                .getElementById("addItemBtn")
+                .addEventListener("click", async () => {
+                    const addErrorEl = document.getElementById("addError");
+                    addErrorEl.textContent = "";
+
+                    const cid = document.getElementById("addCid").value;
+                    const configId =
+                        document.getElementById("addConfigId").value;
+                    const quantity =
+                        document.getElementById("addQuantity").value || 1;
+
+                    if (!cid) {
+                        addErrorEl.textContent = "Enter a catalog item ID.";
+                        return;
+                    }
+
+                    const { ok, body } = await apiFetch(
+                        "/api/shop/cart/items",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                                cid: Number(cid),
+                                config_id: configId ? Number(configId) : null,
+                                quantity: Number(quantity),
+                            }),
+                        },
+                    );
+
+                    if (!ok) {
+                        addErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not add that item to your cart.",
+                        );
+                        return;
+                    }
+
+                    document.getElementById("addCid").value = "";
+                    document.getElementById("addConfigId").value = "";
+                    document.getElementById("addQuantity").value = "1";
+                    currentPage = 1;
+                    await loadCart();
+                });
+
+            async function updateQuantity(cartItemId) {
+                const cartErrorEl = document.getElementById("cartError");
+                cartErrorEl.textContent = "";
+
+                const input = document.querySelector(
+                    '.qtyInput[data-cart-item-id="' + cartItemId + '"]',
+                );
+                const quantity = Number(input.value);
+
+                const { ok, body } = await apiFetch(
+                    "/api/shop/cart/items/" + cartItemId,
+                    { method: "PATCH", body: JSON.stringify({ quantity }) },
+                );
+
+                if (!ok) {
+                    cartErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not update that item's quantity.",
+                    );
+                    return;
+                }
+
+                await loadCart();
+            }
+
+            async function removeItem(cartItemId) {
+                const cartErrorEl = document.getElementById("cartError");
+                cartErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/shop/cart/items/" + cartItemId,
+                    { method: "DELETE" },
+                );
+
+                if (!ok) {
+                    cartErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not remove that item.",
+                    );
+                    return;
+                }
+
+                await loadCart();
+            }
+
+            document
+                .getElementById("clearCartBtn")
+                .addEventListener("click", async () => {
+                    if (!confirm("Clear your entire cart?")) return;
+
+                    const cartErrorEl = document.getElementById("cartError");
+                    cartErrorEl.textContent = "";
+
+                    const { ok, body } = await apiFetch("/api/shop/cart", {
+                        method: "DELETE",
+                    });
+
+                    if (!ok) {
+                        cartErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not clear your cart.",
+                        );
+                        return;
+                    }
+
+                    currentPage = 1;
+                    await loadCart();
+                });
+
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadCart();
+                    }
+                });
+
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadCart();
+                });
+
+            (async function init() {
+                await checkSession();
+                await loadCart();
+            })();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+        </script>
+    </body>
+</html>

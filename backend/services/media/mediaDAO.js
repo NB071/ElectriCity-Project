@@ -3,6 +3,8 @@ import { ConflictError, NotFoundError } from "../../utils/errors.js";
 
 /**
  * This class is used to interact with the media database.
+ * @class
+ * @extends BaseDAO
  */
 class MediaDAO extends BaseDAO {
     // #########################
@@ -10,7 +12,7 @@ class MediaDAO extends BaseDAO {
     // #########################
     /**
      * This method finds a media record by its media ID.
-     * @param {number} media_id
+     * @param {number} media_id media record ID
      * @returns {Promise<object>} The found media record
      * @throws {DatabaseError} On database failures
      * @throws {NotFoundError} If the media record is not found
@@ -28,7 +30,7 @@ class MediaDAO extends BaseDAO {
 
     /**
      * This method finds all media records linked to a catalog item.
-     * @param {number} cid
+     * @param {number} cid catalog item ID
      * @returns {Promise<object[]>} The found media records linked to the catalog item
      * @throws {DatabaseError} On database failures
      * @throws {NotFoundError} If the catalog item does not exist
@@ -69,11 +71,10 @@ class MediaDAO extends BaseDAO {
 
     /**
      * This method finds all media records linked to a catalog item by its file_type.
-     * @param {number} cid
-     * @param {string} file_type
+     * @param {number} cid catalog item ID
+     * @param {string} file_type file type of the media record
      * @returns {Promise<object[]>} The found media records linked to the catalog item by its file_type
      * @throws {DatabaseError} On database failures
-     * @throws {NotFoundError} If the catalog item does not exist
      */
     async findByCidAndType(cid, file_type) {
         const [rows] = await this._query(
@@ -84,10 +85,7 @@ class MediaDAO extends BaseDAO {
              WHERE ci.cid = ? AND m.file_type = ?
              ORDER BY ci.display_order ASC`,
             [cid, file_type],
-            {
-                notFoundResource:
-                    "Media records linked to catalog item by its file type",
-            },
+            { suppressNotFound: true },
         );
         return rows;
     }
@@ -164,7 +162,6 @@ class MediaDAO extends BaseDAO {
      * @throws {ConflictError} If the media record is already the primary media record for the catalog item
      */
     async setPrimaryCatalogImage(cid, media_id) {
-        // conn is passed from the transaction method in BaseDAO
         await this._transaction(async (conn) => {
             await conn.execute(
                 `UPDATE catalog_images SET is_primary = FALSE WHERE cid = ?`,

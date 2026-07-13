@@ -1,8 +1,16 @@
 import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import iamService from "../../../services/iam/iam.service.js";
+import {
+    setAuthCookies,
+    clearAuthCookies,
+} from "../../../services/iam/_access/helpers/authCookies.js";
 import cartService from "../../../services/cart/cart.service.js";
+import { cartSessionFromRequest } from "../../../services/cart/helpers/attachCartSession.js";
+import { clearCartSessionCookie } from "../../../services/cart/helpers/cartSessionCookie.js";
 import log from "../../../utils/logger.js";
+
+const { AUTH_COOKIES } = iamService.access_management;
 
 /**
  * This controller registers a new customer account.
@@ -23,29 +31,36 @@ export const register = tryCatch(async (req, res, _) => {
 });
 
 /**
- * This controller authenticates credentials and returns access + refresh tokens.
+ * This controller authenticates credentials, sets the access + refresh tokens as
+ * httpOnly cookies, and returns the user profile (never the raw tokens).
  * @required_role N/A
  * @route POST /api/auth/login
  * @services_used IAM (access_management)
  */
 export const login = tryCatch(async (req, res, _) => {
     const { email, password } = req.body;
-    const responseData = await iamService.access_management.login({
-        email,
-        password,
-        ipAddress: req.ip ?? null,
-        userAgent: req.headers["user-agent"] ?? null,
-    });
+    const { accessToken, refreshToken, user } =
+        await iamService.access_management.login({
+            email,
+            password,
+            ipAddress: req.ip ?? null,
+            userAgent: req.headers["user-agent"] ?? null,
+        });
 
-    // merge the guest cart into the user's cart (if a guest session is present)
-    const sessionToken = req.headers[cartService.CART_HEADERS.SESSION] ?? null;
+    setAuthCookies(res, { accessToken, refreshToken });
 
-    if (sessionToken && responseData?.user?.user_id != null) {
+    const responseData = { user };
+
+    // merge the guest cart into the user's cart (if a guest session cookie/header is present)
+    const sessionToken = cartSessionFromRequest(req);
+
+    if (sessionToken && user?.user_id != null) {
         try {
             responseData.cart_merge = await cartService.mergeGuestCartIntoUser({
-                userId: responseData.user.user_id,
+                userId: user.user_id,
                 sessionToken,
             });
+            clearCartSessionCookie(res);
         } catch (err) {
             log.error("Auth", "login", "guest cart merge failed", err);
             responseData.cart_merge = {
@@ -70,6 +85,7 @@ export const logout = tryCatch(async (req, res, _) => {
         userId: req.user.user_id,
         sid: req.user.sid,
     });
+    clearAuthCookies(res);
     return apiResponse(res, { loggedOut: true }, 200);
 });
 
@@ -83,6 +99,7 @@ export const logoutAll = tryCatch(async (req, res, _) => {
     await iamService.access_management.logoutAllDevices({
         userId: req.user.user_id,
     });
+    clearAuthCookies(res);
     return apiResponse(res, { loggedOutAllDevices: true }, 200);
 });
 
@@ -93,15 +110,17 @@ export const logoutAll = tryCatch(async (req, res, _) => {
  * @services_used IAM (access_management)
  */
 export const refresh = tryCatch(async (req, res, _) => {
-    const { refresh_token: refreshToken } = req.body;
-    const responseData = await iamService.access_management.refreshTokens(
-        refreshToken,
-        {
+    const refreshToken =
+        req.cookies?.[AUTH_COOKIES.REFRESH_TOKEN] ?? req.body?.refresh_token;
+    const { accessToken, refreshToken: newRefreshToken } =
+        await iamService.access_management.refreshTokens(refreshToken, {
             ipAddress: req.ip ?? null,
             userAgent: req.headers["user-agent"] ?? null,
-        },
-    );
-    return apiResponse(res, responseData, 200);
+        });
+
+    setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
+
+    return apiResponse(res, { refreshed: true }, 200);
 });
 
 /**

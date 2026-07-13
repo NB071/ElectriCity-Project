@@ -17,9 +17,19 @@ class VehicleCompareHandler extends CatalogCompareHandler {
      */
     _comparableFields(item) {
         return {
-            price: { value: parseFloat(item.base_price), direction: "lower" },
-            year: { value: item.year, direction: "higher" },
-            mileage: { value: item.mileage, direction: "lower" },
+            price: {
+                value:
+                    item.base_price != null ? Number(item.base_price) : null,
+                direction: "lower",
+            },
+            year: {
+                value: item.year != null ? Number(item.year) : null,
+                direction: "higher",
+            },
+            mileage: {
+                value: item.mileage != null ? Number(item.mileage) : null,
+                direction: "lower",
+            },
             condition: { value: item.condition, direction: "none" },
         };
     }

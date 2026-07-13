@@ -453,7 +453,7 @@ CREATE TABLE cart_items (
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_cart_items_configuration
     FOREIGN KEY (config_id) REFERENCES configurations (config_id)
-    ON UPDATE CASCADE ON DELETE SET NULL,
+    ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT chk_cart_items_quantity
     CHECK (quantity > 0)
 );

@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <title>ElectriCity Admin - Reviews</title>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
+    </head>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>Admin - Review Moderation</h1>
+        <p id="status">Checking session...</p>
+
+        <div
+            id="adminView"
+            hidden
+        >
+            <div class="panel">
+                <h2>Filter by Vehicle</h2>
+                <div class="filter-row">
+                    <label
+                        >Catalog item ID (cid)
+                        <input
+                            type="number"
+                            id="cidFilterInput"
+                            min="1"
+                        />
+                    </label>
+                    <button
+                        type="button"
+                        id="filterByCidBtn"
+                    >
+                        Filter
+                    </button>
+                    <button
+                        type="button"
+                        id="clearFilterBtn"
+                    >
+                        Show All Reviews
+                    </button>
+                </div>
+                <p
+                    id="filterStatus"
+                    class="hint"
+                ></p>
+            </div>
+
+            <div class="panel">
+                <h2>Reviews</h2>
+                <div id="reviewsList"></div>
+                <div class="pagination">
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
+                    <span id="pageIndicator"></span>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
+                </div>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
+            </div>
+
+            <div class="panel">
+                <h2>Review Detail</h2>
+                <p id="detailBody">
+                    Click "View" on a review above to load its full detail here.
+                </p>
+            </div>
+        </div>
+
+        <script>
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+            let currentPage = 1;
+            let filterCid = null;
+
+            async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: fetchCredentials,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString() : "*";
+            }
+
+            function starString(rating) {
+                return "★".repeat(rating) + "☆".repeat(5 - rating);
+            }
+
+            function authorLabel(user) {
+                if (!user) return "Unknown";
+                return (
+                    user.first_name +
+                    " " +
+                    user.last_name +
+                    " (" +
+                    user.email +
+                    ")" +
+                    (user.is_deleted
+                        ? '<span class="badge deleted">deleted account</span>'
+                        : "")
+                );
+            }
+
+            // ------- List (all or filtered by cid) -------
+            async function loadReviews() {
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const path = filterCid
+                    ? "/api/dashboard/admin/reviews/catalog/" +
+                      filterCid +
+                      "?page=" +
+                      currentPage +
+                      "&limit=10"
+                    : "/api/dashboard/admin/reviews?page=" +
+                      currentPage +
+                      "&limit=10";
+
+                const { ok, body } = await apiFetch(path);
+
+                if (!ok) {
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load reviews.",
+                    );
+                    document.getElementById("reviewsList").innerHTML = "";
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                const listEl = document.getElementById("reviewsList");
+
+                if (items.length === 0) {
+                    listEl.innerHTML = "<p>No reviews found.</p>";
+                } else {
+                    listEl.innerHTML = "";
+                    for (const review of items) {
+                        const div = document.createElement("div");
+                        div.className = "review";
+
+                        const catalogItem = review.catalog_item;
+                        div.innerHTML =
+                            (catalogItem
+                                ? '<img src="' +
+                                  (catalogItem.primary_image_url || "") +
+                                  '" alt="" onerror="this.style.visibility=\'hidden\'" />'
+                                : "") +
+                            '<div class="body-col">' +
+                            (catalogItem
+                                ? "<strong>" + catalogItem.name + "</strong> * "
+                                : "") +
+                            '<span class="stars">' +
+                            starString(review.rating) +
+                            "</span><br />" +
+                            (review.title
+                                ? "<strong>" + review.title + "</strong><br />"
+                                : "") +
+                            "<span>" +
+                            review.body +
+                            '</span><div class="meta">By ' +
+                            authorLabel(review.user) +
+                            " on " +
+                            formatDate(review.created_at) +
+                            "</div></div>" +
+                            '<div class="review-actions">' +
+                            "<button type='button' class='viewBtn' data-rid='" +
+                            review.review_id +
+                            "'>View</button>" +
+                            "<button type='button' class='deleteBtn' data-rid='" +
+                            review.review_id +
+                            "'>Delete</button>" +
+                            "</div>";
+                        listEl.appendChild(div);
+                    }
+
+                    listEl.querySelectorAll(".viewBtn").forEach((btn) => {
+                        btn.addEventListener("click", () =>
+                            loadReviewDetail(btn.dataset.rid),
+                        );
+                    });
+                    listEl.querySelectorAll(".deleteBtn").forEach((btn) => {
+                        btn.addEventListener("click", () =>
+                            deleteReview(btn.dataset.rid),
+                        );
+                    });
+                }
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1) +
+                    " (" +
+                    pagination.total +
+                    " total)";
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            document
+                .getElementById("filterByCidBtn")
+                .addEventListener("click", () => {
+                    const cid = document.getElementById("cidFilterInput").value;
+                    if (!cid) return;
+                    filterCid = cid;
+                    currentPage = 1;
+                    document.getElementById("filterStatus").textContent =
+                        "Showing reviews for catalog item #" + cid + ".";
+                    loadReviews();
+                });
+
+            document
+                .getElementById("clearFilterBtn")
+                .addEventListener("click", () => {
+                    filterCid = null;
+                    document.getElementById("cidFilterInput").value = "";
+                    document.getElementById("filterStatus").textContent = "";
+                    currentPage = 1;
+                    loadReviews();
+                });
+
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadReviews();
+                    }
+                });
+
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadReviews();
+                });
+
+            // ------- Detail -------
+            async function loadReviewDetail(rid) {
+                const detailEl = document.getElementById("detailBody");
+                detailEl.textContent = "Loading...";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/reviews/" + rid,
+                );
+
+                if (!ok) {
+                    detailEl.textContent = errorMessage(
+                        body,
+                        "Could not load that review.",
+                    );
+                    return;
+                }
+
+                const review = body.data;
+                detailEl.innerHTML =
+                    "Review <strong>#" +
+                    review.review_id +
+                    "</strong> for <strong>" +
+                    (review.catalog_item?.name || "unknown vehicle") +
+                    "</strong><br />Rating: <span class='stars'>" +
+                    starString(review.rating) +
+                    "</span><br />" +
+                    (review.title ? "Title: " + review.title + "<br />" : "") +
+                    "Body: " +
+                    review.body +
+                    "<br />Author: " +
+                    authorLabel(review.user) +
+                    "<br />Posted: " +
+                    formatDate(review.created_at);
+            }
+
+            // ------- Delete -------
+            async function deleteReview(rid) {
+                if (
+                    !confirm(
+                        "Delete review #" + rid + "? This cannot be undone.",
+                    )
+                ) {
+                    return;
+                }
+
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/reviews/" + rid,
+                    { method: "DELETE" },
+                );
+
+                if (!ok) {
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not delete that review.",
+                    );
+                    return;
+                }
+
+                document.getElementById("detailBody").textContent =
+                    'Click "View" on a review above to load its full detail here.';
+                await loadReviews();
+            }
+
+            async function init() {
+                const statusEl = document.getElementById("status");
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok || body.data.role !== "admin") {
+                    statusEl.innerHTML =
+                        'You must be <a href="/auth.html">signed in as an admin</a> to view this page.';
+                    return;
+                }
+
+                statusEl.textContent = "Signed in as admin: " + body.data.email;
+                document.getElementById("adminView").hidden = false;
+                await loadReviews();
+            }
+
+            init();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    // history.length does not expose a forward stack; enable Forward
+                    // after the user goes back at least once in this page session.
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+        </script>
+    </body>
+</html>

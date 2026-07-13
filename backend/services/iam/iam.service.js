@@ -16,6 +16,7 @@ import {
     ROLES,
     JWT,
     AUTH_HEADERS,
+    AUTH_COOKIES,
     VALIDATIONS as ACCESS_VALIDATIONS,
 } from "./_access/constants.js";
 import {
@@ -57,6 +58,7 @@ const access_management = {
     ROLES,
     JWT,
     AUTH_HEADERS,
+    AUTH_COOKIES,
     VALIDATIONS: ACCESS_VALIDATIONS,
 };
 
@@ -107,6 +109,7 @@ export {
     ROLES,
     JWT,
     AUTH_HEADERS,
+    AUTH_COOKIES,
     ACCESS_VALIDATIONS,
 
     // Identity queries
