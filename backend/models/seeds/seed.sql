@@ -1,5 +1,5 @@
 -- Test seed
--- Seed users password: Password1!
+-- Seed users password: Passwrd@123
 
 SET FOREIGN_KEY_CHECKS = 1;
 START TRANSACTION;
