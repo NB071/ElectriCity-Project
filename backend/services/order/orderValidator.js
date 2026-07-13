@@ -151,6 +151,19 @@ const paymentInputSchema = z.object({
 const customerCheckoutSchema = z
     .object({
         userId: optionalUserIdSchema,
+        sessionToken: z.preprocess(
+            (value) =>
+                value === undefined || value === null || value === ""
+                    ? null
+                    : value,
+            z.union([
+                z
+                    .string()
+                    .uuid("sessionToken must be a valid UUID.")
+                    .length(36),
+                z.null(),
+            ]),
+        ).optional(),
         guest_email: guestEmailSchema.optional(),
         items: z.array(checkoutItemSchema).min(1).optional(),
         shipping_address: addressSchema,
@@ -166,10 +179,13 @@ const customerCheckoutSchema = z
                     path: ["guest_email"],
                 });
             }
-            if (!data.items || data.items.length === 0) {
+            const hasItems = data.items && data.items.length > 0;
+            const hasSession = data.sessionToken != null;
+            if (!hasItems && !hasSession) {
                 ctx.addIssue({
                     code: "custom",
-                    message: "items is required for guest checkout.",
+                    message:
+                        "Guest checkout requires items or an X-Cart-Session cart.",
                     path: ["items"],
                 });
             }

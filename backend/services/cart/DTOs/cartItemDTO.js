@@ -8,10 +8,11 @@ import {
  * This function maps the cart item fields to a representable format.
  * @param {object} row DAO row
  * @param {object[]} [options] Selected options for row.config_id
+ * @param {object[]} [promotions] Active promotions for row.cid
  * @returns {object}
  */
-function toCartItemDTO(row, options = []) {
-    const quantity = row.quantity;
+function toCartItemDTO(row, options = [], promotions = []) {
+    const quantity = Number(row.quantity);
     const unitPrice = resolveUnitPrice(row);
 
     return {
@@ -22,7 +23,7 @@ function toCartItemDTO(row, options = []) {
         added_at: row.added_at,
         unit_price: unitPrice,
         line_total: unitPrice * quantity,
-        catalog_item: toCartCatalogItemDTO(row),
+        catalog_item: toCartCatalogItemDTO(row, promotions),
         configuration: toCartConfigurationDTO(row, options),
     };
 }

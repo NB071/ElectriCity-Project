@@ -1,6 +1,8 @@
 // Queue Service
 // Strategy pattern / queue strategy abstract class
 
+import { InternalError } from "../../../utils/errors.js";
+
 /**
  * This is the abstract class for queue strategies.
  * @abstract
@@ -13,7 +15,7 @@ class QueueStrategy {
      * @param {object} _options
      */
     add(_jobName, _payload, _options) {
-        throw new Error("add() must be implemented by subclass");
+        throw new InternalError("add() must be implemented by subclass");
     }
 }
 

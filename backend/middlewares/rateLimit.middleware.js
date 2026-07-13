@@ -50,4 +50,16 @@ const shopRateLimiter = constructRateLimiter({
     msg: "Too many shop requests, please try again later.",
 });
 
-export { authRateLimiter, dashboardRateLimiter, shopRateLimiter };
+// > Chatbot (Gemini calls are expensive)
+const chatbotRateLimiter = constructRateLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 20, // 20 messages per minute
+    msg: "Too many chatbot messages, please try again later.",
+});
+
+export {
+    authRateLimiter,
+    dashboardRateLimiter,
+    shopRateLimiter,
+    chatbotRateLimiter,
+};

@@ -6,8 +6,14 @@ import {
     updateCartItemQuantity,
     removeFromCart,
     clearCart,
+    mergeGuestCartIntoUser,
 } from "./cartMutation.js";
-import { VALIDATIONS, DEFAULTS } from "./constants.js";
+import {
+    CART_KINDS,
+    VALIDATIONS,
+    DEFAULTS,
+    CART_HEADERS,
+} from "./constants.js";
 
 const cartService = {
     viewCart,
@@ -15,23 +21,24 @@ const cartService = {
     updateCartItemQuantity,
     removeFromCart,
     clearCart,
+    mergeGuestCartIntoUser,
+    CART_KINDS,
     VALIDATIONS,
     DEFAULTS,
+    CART_HEADERS,
 };
 
 export default cartService;
 
 export {
-    // Queries
     viewCart,
-
-    // Mutations
     addToCart,
     updateCartItemQuantity,
     removeFromCart,
     clearCart,
-
-    // Constants
+    mergeGuestCartIntoUser,
+    CART_KINDS,
     VALIDATIONS,
     DEFAULTS,
+    CART_HEADERS,
 };

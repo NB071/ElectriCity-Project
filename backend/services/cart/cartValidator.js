@@ -26,10 +26,31 @@ function throwValidationError(zodError) {
     throw new ValidationError(message, zodError.issues);
 }
 
+// Schema(s)
 const userIdSchema = z.coerce
     .number()
     .int("userId must be an integer.")
     .positive("userId must be a positive integer.");
+
+const optionalUserIdSchema = z.preprocess(
+    (value) =>
+        value === undefined || value === null || value === "" ? null : value,
+    z.union([userIdSchema, z.null()]),
+);
+
+const sessionTokenSchema = z
+    .string()
+    .uuid("sessionToken must be a valid UUID.")
+    .length(
+        VALIDATIONS.SESSION_TOKEN.LENGTH,
+        `sessionToken must be ${VALIDATIONS.SESSION_TOKEN.LENGTH} characters.`,
+    );
+
+const optionalSessionTokenSchema = z.preprocess(
+    (value) =>
+        value === undefined || value === null || value === "" ? null : value,
+    z.union([sessionTokenSchema, z.null()]),
+);
 
 const cartItemIdSchema = z.coerce
     .number()
@@ -58,23 +79,60 @@ const quantitySchema = z.coerce
         `quantity must be at most ${VALIDATIONS.QUANTITY.MAX}.`,
     );
 
+/**
+ * Owner is either an authenticated userId or a guest sessionToken (or neither yet guests may omit token on first request;
+ *  ensureCartForGuest will mint one).
+ */
+const cartOwnerSchema = z
+    .object({
+        userId: optionalUserIdSchema.optional(),
+        sessionToken: optionalSessionTokenSchema.optional(),
+    })
+    .transform((data) => ({
+        userId: data.userId ?? null,
+        sessionToken: data.sessionToken ?? null,
+    }));
+
 const addToCartSchema = z.object({
-    userId: userIdSchema,
+    userId: optionalUserIdSchema.optional(),
+    sessionToken: optionalSessionTokenSchema.optional(),
     cid: catalogItemIdSchema,
     configId: configIdSchema.nullable().optional(),
     quantity: quantitySchema.default(DEFAULTS.QUANTITY),
 });
 
-const updateCartItemSchema = z.object({
-    userId: userIdSchema,
-    cartItemId: cartItemIdSchema,
-    quantity: quantitySchema,
-});
+const updateCartItemSchema = z
+    .object({
+        userId: optionalUserIdSchema.optional(),
+        sessionToken: optionalSessionTokenSchema.optional(),
+        cartItemId: cartItemIdSchema,
+        quantity: quantitySchema,
+    })
+    .superRefine((data, ctx) => {
+        if (data.userId == null && data.sessionToken == null) {
+            ctx.addIssue({
+                code: "custom",
+                message: "Either authentication or X-Cart-Session is required.",
+                path: ["sessionToken"],
+            });
+        }
+    });
 
-const cartItemRefSchema = z.object({
-    userId: userIdSchema,
-    cartItemId: cartItemIdSchema,
-});
+const cartItemRefSchema = z
+    .object({
+        userId: optionalUserIdSchema.optional(),
+        sessionToken: optionalSessionTokenSchema.optional(),
+        cartItemId: cartItemIdSchema,
+    })
+    .superRefine((data, ctx) => {
+        if (data.userId == null && data.sessionToken == null) {
+            ctx.addIssue({
+                code: "custom",
+                message: "Either authentication or X-Cart-Session is required.",
+                path: ["sessionToken"],
+            });
+        }
+    });
 
 const sortParamsSchema = z.object({
     sort: z
@@ -86,11 +144,31 @@ const sortParamsSchema = z.object({
         .default(DEFAULTS.SORT),
 });
 
+const mergeGuestCartSchema = z.object({
+    userId: userIdSchema,
+    sessionToken: sessionTokenSchema,
+});
+
+/**
+ * Validates cart owner (user and/or guest session).
+ * @param {object} data
+ * @returns {{ userId: number|null, sessionToken: string|null }}
+ * @throws {ValidationError}
+ */
+function validateCartOwner(data) {
+    const parsed = cartOwnerSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
 /**
  * This function validates the input for adding an item to a cart.
- * userId must come from req.user.user_id, not the request body.
  * @param {object} data
- * @returns {{ userId: number, cid: number, configId?: number|null, quantity: number }}
+ * @returns {object}
  * @throws {ValidationError} If the cart data is invalid
  */
 function validateAddToCart(data) {
@@ -100,14 +178,17 @@ function validateAddToCart(data) {
         throwValidationError(parsed.error);
     }
 
-    return parsed.data;
+    return {
+        ...parsed.data,
+        userId: parsed.data.userId ?? null,
+        sessionToken: parsed.data.sessionToken ?? null,
+    };
 }
 
 /**
  * This function validates the input for updating a cart item quantity.
- * userId must come from req.user.user_id, not the request body.
  * @param {object} data
- * @returns {{ userId: number, cartItemId: number, quantity: number }}
+ * @returns {object}
  * @throws {ValidationError} If the cart data is invalid
  */
 function validateUpdateCartItem(data) {
@@ -117,14 +198,17 @@ function validateUpdateCartItem(data) {
         throwValidationError(parsed.error);
     }
 
-    return parsed.data;
+    return {
+        ...parsed.data,
+        userId: parsed.data.userId ?? null,
+        sessionToken: parsed.data.sessionToken ?? null,
+    };
 }
 
 /**
  * This function validates a cart item reference for removal.
- * userId must come from req.user.user_id, not the request body.
  * @param {object} data
- * @returns {{ userId: number, cartItemId: number }}
+ * @returns {object}
  * @throws {ValidationError} If the cart data is invalid
  */
 function validateCartItemRef(data) {
@@ -134,7 +218,11 @@ function validateCartItemRef(data) {
         throwValidationError(parsed.error);
     }
 
-    return parsed.data;
+    return {
+        ...parsed.data,
+        userId: parsed.data.userId ?? null,
+        sessionToken: parsed.data.sessionToken ?? null,
+    };
 }
 
 /**
@@ -171,7 +259,6 @@ function validateCatalogItemId(catalogItemId) {
 
 /**
  * This function validates a user primary key.
- * userId must come from req.user.user_id, not the request body.
  * @param {number|string} userId
  * @returns {number}
  * @throws {ValidationError} If the user id is invalid
@@ -202,7 +289,24 @@ function validateSortParams(params = {}) {
     return parsed.data;
 }
 
+/**
+ * Validates merge-guest-cart-into-user input.
+ * @param {object} data
+ * @returns {{ userId: number, sessionToken: string }}
+ * @throws {ValidationError}
+ */
+function validateMergeGuestCart(data) {
+    const parsed = mergeGuestCartSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
 export {
+    validateCartOwner,
     validateAddToCart,
     validateUpdateCartItem,
     validateCartItemRef,
@@ -210,4 +314,5 @@ export {
     validateCatalogItemId,
     validateUserId,
     validateSortParams,
+    validateMergeGuestCart,
 };

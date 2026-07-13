@@ -19,13 +19,13 @@ const strategies = {
  * This looks up a media strategy by type and returns it wrapped in a context.
  * @param {string} type - Media type from VALIDATIONS.MEDIA_TYPES constants
  * @returns {MediaContext} (Strategy pattern)
- * @throws {Error} If no strategy is registered under the given type
+ * @throws {InternalError} If no strategy is registered under the given type
  */
 function getStrategy(type) {
     const strategy = strategies[type];
 
     if (!strategy) {
-        throw new Error(
+        throw new InternalError(
             `Unknown media type "${type}". Registered: ${Object.keys(strategies).join(", ")}`,
         );
     }
@@ -39,7 +39,7 @@ function getStrategy(type) {
  * This looks up a media strategy context from a MIME file_type.
  * @param {string} file_type
  * @returns {MediaContext}
- * @throws {Error} If file_type is not supported by any registered strategy
+ * @throws {InternalError} If file_type is not supported by any registered strategy
  */
 function getStrategyForFileType(file_type) {
     if (VALIDATIONS.ALLOWED_FILE_TYPES.IMAGE.includes(file_type)) {
@@ -50,6 +50,7 @@ function getStrategyForFileType(file_type) {
         return getStrategy(VALIDATIONS.MEDIA_TYPES.PDF);
     }
 
+    // if the file type is not supported, throw a validation error.
     throw new ValidationError(
         `Unsupported file type "${file_type}". Allowed: ${[
             ...VALIDATIONS.ALLOWED_FILE_TYPES.IMAGE,

@@ -9,6 +9,7 @@
 
 import mysql from "mysql2/promise";
 import env from "./env.js";
+import log from "../utils/logger.js";
 
 /**
  * This object contains the MySQL database configuration.
@@ -59,11 +60,11 @@ async function getPool() {
         await connection.ping();
         connection.release();
 
-        console.log("[DB] MySQL pool ready");
+        log.info("DB", "getPool", "MySQL pool ready");
 
         return pool;
     } catch (error) {
-        console.error("[DB] Error connecting to MySQL:", error);
+        log.error("DB", "getPool", "Error connecting to MySQL", error);
         throw error;
     }
 }

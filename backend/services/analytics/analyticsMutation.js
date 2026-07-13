@@ -6,6 +6,7 @@ import { validateEvent } from "./analyticsValidator.js";
 import { isEventActive } from "./analyticsCache.js";
 import { REDIS } from "./constants.js";
 import getRedisClient from "../../configs/redis.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function captures an event.
@@ -30,7 +31,7 @@ async function capture(event) {
         const valid = validateEvent(event);
         return await analyticsDAO.insertEvent(valid);
     } catch (err) {
-        console.error("[Service: Analytics] capture failed:", err.message);
+        log.error("Analytics", "capture", "capture failed", err);
         throw err;
     }
 }
@@ -49,9 +50,11 @@ async function setEventTypeActive(eventTypeId, isActive) {
         const client = await getRedisClient();
         await client.publish(REDIS.CACHE_CHANNEL, String(eventTypeId));
     } catch (err) {
-        console.error(
-            "[Service: Analytics] setEventTypeActive failed:",
-            err.message,
+        log.error(
+            "Analytics",
+            "setEventTypeActive",
+            "setEventTypeActive failed",
+            err,
         );
         throw err;
     }

@@ -268,6 +268,7 @@ CREATE TABLE vehicle_history (
   history_id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   cid           BIGINT UNSIGNED NOT NULL,
   has_accidents BOOLEAN         NOT NULL DEFAULT FALSE,
+  owners_count  INT UNSIGNED    NOT NULL DEFAULT 0,
   media_id      BIGINT UNSIGNED DEFAULT NULL,
   created_at    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -283,7 +284,9 @@ CREATE TABLE vehicle_history (
     ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_vehicle_history_media
     FOREIGN KEY (media_id) REFERENCES media (media_id)
-    ON UPDATE CASCADE ON DELETE CASCADE
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT chk_vehicle_history_owners_count
+    CHECK (owners_count >= 0)
 );
 
 
@@ -305,7 +308,9 @@ CREATE TABLE catalog_options (
 );
 
 
--- Fixed/pre-installed features on used vehicles (not selectable, unlike catalog_options)
+-- Options already installed on a catalog item (e.g. used-car as-equipped package),
+-- fixed/pre-installed and not selectable -- separate from catalog_options, which
+-- lists options still available for purchase.
 CREATE TABLE equipped_options (
   cid        BIGINT UNSIGNED NOT NULL,
   option_id  INT UNSIGNED    NOT NULL,
@@ -412,7 +417,8 @@ CREATE TABLE carts (
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_id),
 
-  KEY idx_carts_user_id (user_id),
+  -- One cart per logged-in user
+  UNIQUE KEY uq_carts_user_id (user_id),
   UNIQUE KEY uq_carts_session_token (session_token),
 
   CONSTRAINT fk_carts_user
@@ -426,13 +432,16 @@ CREATE TABLE cart_items (
   cart_id       BIGINT UNSIGNED NOT NULL,
   cid           BIGINT UNSIGNED NOT NULL,
   config_id     BIGINT UNSIGNED DEFAULT NULL,
+  -- Generated key so NULL config_id still participates in uniqueness 
+  -- Ref: https://dev.mysql.com/doc/refman/8.4/en/create-table-generated-columns.html
+  config_key    BIGINT UNSIGNED GENERATED ALWAYS AS (IFNULL(config_id, 0)) STORED,
   quantity      INT UNSIGNED    NOT NULL DEFAULT 1,
   added_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_item_id),
 
-  KEY idx_cart_items_cart_id (cart_id),
+  UNIQUE KEY uq_cart_items_line (cart_id, cid, config_key),
   KEY idx_cart_items_cid (cid),
   KEY idx_cart_items_config_id (config_id),
 

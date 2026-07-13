@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import cors from "cors";
 import express from "express";
 import getPool, { dbConfig } from "./configs/db.js";
@@ -18,13 +19,17 @@ import dashboardRoute from "./routes/api/dashboard/index.js";
 import shopRoute from "./routes/api/shop/index.js";
 
 // Middlewares - import
-import { errorHandlerMiddleware } from "./middlewares/index.js";
+import {
+    errorHandlerMiddleware,
+    helmetMiddleware,
+} from "./middlewares/index.js";
 import {
     authRateLimiter,
     dashboardRateLimiter,
     shopRateLimiter,
 } from "./middlewares/rateLimit.middleware.js";
 import { AppError } from "./utils/errors.js";
+import log from "./utils/logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,14 +37,14 @@ const app = express();
 const server = http.createServer(app);
 
 // ------- Middlewares -------
+// > Middlewares (security)
+app.disable("x-powered-by");
+app.use(helmetMiddleware);
+app.use(cors());
+
 // > Middlewares (Server)
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
-// > Middlewares (security)
-app.disable("x-powered-by");
-app.use(cors());
-// TODO: Implement more security middlewares [helmet, express-validator]
 
 // ------- Routes -------
 // > Routes (/api)
@@ -48,19 +53,37 @@ app.use("/api/dashboard", dashboardRateLimiter, dashboardRoute);
 app.use("/api/shop", shopRateLimiter, shopRoute);
 
 // ------- Global error handler -------
+// Registration of Sentry.
+Sentry.setupExpressErrorHandler(app, {
+    // Log errors with status code >= 500.
+    shouldHandleError(error) {
+        if (error instanceof AppError) {
+            return Number(error.status) >= 500;
+        }
+
+        // if the error is not an AppError (Error class), check if there's a status code property and if it's >= 500.
+        // if there's no status code property, set it to 500 by default and log
+        const status = error?.status || error?.statusCode || 500;
+        return Number(status) >= 500;
+    },
+});
 app.use(errorHandlerMiddleware);
 
 // ------- Startup -------
 async function checkDatabase() {
     await getPool();
-    console.log(
+    log.info(
+        "Main",
+        "checkDatabase",
         `Database connection verified (${dbConfig.host}:${dbConfig.port}/${dbConfig.database})`,
     );
 }
 
 async function checkRedis() {
     await getRedisClient();
-    console.log(
+    log.info(
+        "Main",
+        "checkRedis",
         `Redis connection verified (${redisConfig.host}:${redisConfig.port})`,
     );
 }
@@ -88,7 +111,9 @@ function checkJwtConfig() {
         // Queue Service
         startWorkers(); // Start all queue workers.
     } catch (error) {
-        console.error("[Main] Startup failed:", error.message);
+        log.error("Main", "startup", "Startup failed", error);
+        Sentry.captureException(error);
+        await Sentry.flush(2000);
         process.exit(1);
     }
 
@@ -96,7 +121,9 @@ function checkJwtConfig() {
         Number(env.server.PORT),
         String(env.server.LOCAL_ADDRESS),
         () => {
-            console.log(
+            log.info(
+                "Main",
+                "listen",
                 `Server is running on ${env.server.LOCAL_ADDRESS}:${env.server.PORT}`,
             );
         },
