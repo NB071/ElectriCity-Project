@@ -72,11 +72,11 @@ const pdfMediaSchema = z.object({
 
 const catalogImageSchema = z.object({
     cid: z
-        .number({ required_error: "Catalog item ID (cid) is required." })
+        .coerce.number({ required_error: "Catalog item ID (cid) is required." })
         .int("cid must be an integer.")
         .positive("cid must be a positive integer."),
 
-    media_id: z
+    media_id: z.coerce
         .number({ required_error: "Media ID is required." })
         .int("media_id must be an integer.")
         .positive("media_id must be a positive integer."),

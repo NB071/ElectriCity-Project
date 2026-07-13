@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ElectriCity Admin - Payments</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 900px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            h1 {
+                margin-bottom: 0.25rem;
+            }
+            #status {
+                color: #555;
+            }
+            .panel {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+            .panel h2 {
+                margin-top: 0;
+                font-size: 1.1rem;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th,
+            td {
+                text-align: left;
+                padding: 0.4rem 0.6rem;
+                border-bottom: 1px solid #eee;
+                font-size: 0.9rem;
+            }
+            th {
+                border-bottom: 2px solid #ccc;
+            }
+            .badge {
+                display: inline-block;
+                font-size: 0.7rem;
+                border-radius: 3px;
+                padding: 0.1rem 0.4rem;
+                color: white;
+            }
+            .badge.success,
+            .badge.paid {
+                background: #2a7a2a;
+            }
+            .badge.failed {
+                background: #c33;
+            }
+            .badge.unpaid {
+                background: #a15c00;
+            }
+            .lookup-row {
+                display: flex;
+                gap: 0.5rem;
+                align-items: flex-end;
+                margin-bottom: 0.75rem;
+            }
+            .lookup-row label {
+                font-size: 0.85rem;
+            }
+            .lookup-row input,
+            .lookup-row select {
+                display: block;
+                width: 140px;
+                padding: 0.35rem;
+                margin-top: 0.2rem;
+            }
+            button {
+                padding: 0.4rem 0.8rem;
+                cursor: pointer;
+            }
+            button + button {
+                margin-left: 0.4rem;
+            }
+            .error {
+                color: #c33;
+            }
+            .success {
+                color: #2a7a2a;
+            }
+            .pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }
+            [hidden] {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Admin - Payment Oversight</h1>
+        <p id="status">Checking session…</p>
+
+        <div id="adminView" hidden>
+            <div class="panel">
+                <h2>All Payment Attempts</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Order</th>
+                            <th>Payer</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>When</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="allPaymentsBody"></tbody>
+                </table>
+                <div class="pagination">
+                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <span id="pageIndicator"></span>
+                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                </div>
+                <p class="error" id="listError"></p>
+            </div>
+
+            <div class="panel">
+                <h2>Attempt Detail</h2>
+                <p id="attemptDetailBody">
+                    Click "View" on an attempt above to load its detail here.
+                </p>
+            </div>
+
+            <div class="panel">
+                <h2>Order Payments &amp; Status</h2>
+                <div class="lookup-row">
+                    <label
+                        >Order ID
+                        <input type="number" id="orderIdInput" min="1" />
+                    </label>
+                    <button type="button" id="lookupOrderBtn">
+                        Look Up Payments
+                    </button>
+                </div>
+                <table id="orderPaymentsTable" hidden>
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>When</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderPaymentsBody"></tbody>
+                </table>
+                <p class="error" id="orderLookupError"></p>
+
+                <div id="paymentStatusForm" hidden>
+                    <h3>Manually Correct Payment Status</h3>
+                    <div class="lookup-row">
+                        <label
+                            >New payment status
+                            <select id="paymentStatusSelect">
+                                <option value="unpaid">unpaid</option>
+                                <option value="paid">paid</option>
+                                <option value="failed">failed</option>
+                            </select>
+                        </label>
+                        <button type="button" id="updatePaymentStatusBtn">
+                            Update Status
+                        </button>
+                    </div>
+                    <p class="success" id="paymentStatusSuccess"></p>
+                    <p class="error" id="paymentStatusError"></p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const apiBase = window.location.origin.replace(/\/$/, "");
+            let currentPage = 1;
+            let lookedUpOrderId = null;
+
+            async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: "same-origin" },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatMoney(amount) {
+                return (
+                    "$" +
+                    Number(amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+                );
+            }
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleString() : "—";
+            }
+
+            function payerLabel(attempt) {
+                if (attempt.user) {
+                    return (
+                        attempt.user.first_name +
+                        " " +
+                        attempt.user.last_name +
+                        " (" +
+                        attempt.user.email +
+                        ")"
+                    );
+                }
+                return attempt.user_id != null
+                    ? "User #" + attempt.user_id
+                    : "Guest";
+            }
+
+            // ------- All payments list -------
+            async function loadAllPayments() {
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/payments?page=" +
+                        currentPage +
+                        "&limit=10",
+                );
+
+                if (!ok) {
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load payment attempts.",
+                    );
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                const tbody = document.getElementById("allPaymentsBody");
+                tbody.innerHTML = "";
+
+                if (items.length === 0) {
+                    tbody.innerHTML =
+                        "<tr><td colspan='8'>No payment attempts yet.</td></tr>";
+                } else {
+                    for (const attempt of items) {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML =
+                            "<td>#" +
+                            attempt.attempt_id +
+                            "</td><td>#" +
+                            attempt.order_id +
+                            "</td><td>" +
+                            payerLabel(attempt) +
+                            "</td><td>" +
+                            attempt.payment_method +
+                            "</td><td>" +
+                            formatMoney(attempt.amount) +
+                            "</td><td><span class='badge " +
+                            attempt.status +
+                            "'>" +
+                            attempt.status +
+                            "</span></td><td>" +
+                            formatDate(attempt.attempted_at) +
+                            "</td><td><button type='button' class='viewAttemptBtn' data-attempt-id='" +
+                            attempt.attempt_id +
+                            "'>View</button></td>";
+                        tbody.appendChild(tr);
+                    }
+
+                    tbody.querySelectorAll(".viewAttemptBtn").forEach((btn) => {
+                        btn.addEventListener("click", () =>
+                            loadAttemptDetail(btn.dataset.attemptId),
+                        );
+                    });
+                }
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1) +
+                    " (" +
+                    pagination.total +
+                    " total)";
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            document.getElementById("prevPageBtn").addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    loadAllPayments();
+                }
+            });
+
+            document.getElementById("nextPageBtn").addEventListener("click", () => {
+                currentPage += 1;
+                loadAllPayments();
+            });
+
+            // ------- Attempt detail -------
+            async function loadAttemptDetail(attemptId) {
+                const detailEl = document.getElementById("attemptDetailBody");
+                detailEl.textContent = "Loading…";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/payments/" + attemptId,
+                );
+
+                if (!ok) {
+                    detailEl.textContent = errorMessage(
+                        body,
+                        "Could not load that payment attempt.",
+                    );
+                    return;
+                }
+
+                const attempt = body.data;
+                detailEl.innerHTML =
+                    "Attempt <strong>#" +
+                    attempt.attempt_id +
+                    "</strong> on order <strong>#" +
+                    attempt.order_id +
+                    "</strong><br />Payer: " +
+                    payerLabel(attempt) +
+                    "<br />Method: " +
+                    attempt.payment_method +
+                    "<br />Amount: " +
+                    formatMoney(attempt.amount) +
+                    "<br />Status: <span class='badge " +
+                    attempt.status +
+                    "'>" +
+                    attempt.status +
+                    "</span><br />Attempted: " +
+                    formatDate(attempt.attempted_at) +
+                    "<br /><em>No raw card numbers or CVVs are stored anywhere — only the payment method type and outcome status.</em>";
+            }
+
+            // ------- Order payment lookup + status update -------
+            document
+                .getElementById("lookupOrderBtn")
+                .addEventListener("click", async () => {
+                    const orderLookupErrorEl =
+                        document.getElementById("orderLookupError");
+                    orderLookupErrorEl.textContent = "";
+
+                    const orderId =
+                        document.getElementById("orderIdInput").value;
+                    if (!orderId) {
+                        orderLookupErrorEl.textContent = "Enter an order ID.";
+                        return;
+                    }
+
+                    const { ok, body } = await apiFetch(
+                        "/api/dashboard/admin/orders/" +
+                            orderId +
+                            "/payments",
+                    );
+
+                    if (!ok) {
+                        orderLookupErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not load payments for that order.",
+                        );
+                        document.getElementById(
+                            "orderPaymentsTable",
+                        ).hidden = true;
+                        document.getElementById(
+                            "paymentStatusForm",
+                        ).hidden = true;
+                        return;
+                    }
+
+                    lookedUpOrderId = Number(orderId);
+                    const attempts = body.data;
+                    const tbody = document.getElementById("orderPaymentsBody");
+
+                    tbody.innerHTML =
+                        attempts.length === 0
+                            ? "<tr><td colspan='5'>No payment attempts for this order.</td></tr>"
+                            : attempts
+                                  .map(
+                                      (attempt) =>
+                                          "<tr><td>#" +
+                                          attempt.attempt_id +
+                                          "</td><td>" +
+                                          attempt.payment_method +
+                                          "</td><td>" +
+                                          formatMoney(attempt.amount) +
+                                          "</td><td><span class='badge " +
+                                          attempt.status +
+                                          "'>" +
+                                          attempt.status +
+                                          "</span></td><td>" +
+                                          formatDate(attempt.attempted_at) +
+                                          "</td></tr>",
+                                  )
+                                  .join("");
+
+                    document.getElementById("orderPaymentsTable").hidden = false;
+                    document.getElementById("paymentStatusForm").hidden = false;
+                    document.getElementById("paymentStatusSuccess").textContent =
+                        "";
+                    document.getElementById("paymentStatusError").textContent =
+                        "";
+                });
+
+            document
+                .getElementById("updatePaymentStatusBtn")
+                .addEventListener("click", async () => {
+                    const paymentStatusSuccessEl = document.getElementById(
+                        "paymentStatusSuccess",
+                    );
+                    const paymentStatusErrorEl =
+                        document.getElementById("paymentStatusError");
+                    paymentStatusSuccessEl.textContent = "";
+                    paymentStatusErrorEl.textContent = "";
+
+                    const newStatus = document.getElementById(
+                        "paymentStatusSelect",
+                    ).value;
+
+                    const { ok, body } = await apiFetch(
+                        "/api/dashboard/admin/orders/" +
+                            lookedUpOrderId +
+                            "/payment-status",
+                        {
+                            method: "PATCH",
+                            body: JSON.stringify({ payment_status: newStatus }),
+                        },
+                    );
+
+                    if (!ok) {
+                        paymentStatusErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not update payment status.",
+                        );
+                        return;
+                    }
+
+                    paymentStatusSuccessEl.textContent =
+                        "Order #" +
+                        lookedUpOrderId +
+                        " payment status updated to '" +
+                        newStatus +
+                        "'.";
+                });
+
+            async function init() {
+                const statusEl = document.getElementById("status");
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok || body.data.role !== "admin") {
+                    statusEl.innerHTML =
+                        'You must be <a href="/auth.html">signed in as an admin</a> to view this page.';
+                    return;
+                }
+
+                statusEl.textContent = "Signed in as admin: " + body.data.email;
+                document.getElementById("adminView").hidden = false;
+                await loadAllPayments();
+            }
+
+            init();
+        </script>
+    </body>
+</html>
