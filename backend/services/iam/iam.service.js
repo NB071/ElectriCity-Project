@@ -23,8 +23,17 @@ import {
     getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
+    getUserAddresses,
+    getUserAddress,
 } from "./_identity/identityQuery.js";
-import { updateProfile, deleteProfile } from "./_identity/identityMutation.js";
+import {
+    updateProfile,
+    deleteProfile,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
+} from "./_identity/identityMutation.js";
 import {
     USER_FIELDS,
     SELECTABLE_FIELDS,
@@ -58,10 +67,16 @@ const identity_management = {
     getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
+    getUserAddresses,
+    getUserAddress,
 
     // mutations
     updateProfile,
     deleteProfile,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
 
     // constants
     USER_FIELDS,
@@ -101,10 +116,16 @@ export {
     getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
+    getUserAddresses,
+    getUserAddress,
 
     // Identity mutations
     updateProfile,
     deleteProfile,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
 
     // Identity constants
     USER_FIELDS,

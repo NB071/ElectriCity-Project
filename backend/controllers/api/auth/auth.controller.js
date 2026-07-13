@@ -173,3 +173,105 @@ export const deleteMe = tryCatch(async (req, res, _) => {
     });
     return apiResponse(res, responseData, 200);
 });
+
+/**
+ * This controller returns a paginated list of the authenticated user's saved addresses.
+ * @required_role Customer/Admin
+ * @route GET /api/auth/me/addresses
+ * @services_used IAM (identity_management)
+ */
+export const getMyAddresses = tryCatch(async (req, res, _) => {
+    const responseData = await iamService.identity_management.getUserAddresses(
+        req.user.user_id,
+        req.query,
+    );
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller returns one of the authenticated user's saved addresses.
+ * @required_role Customer/Admin
+ * @route GET /api/auth/me/addresses/:addressId
+ * @services_used IAM (identity_management)
+ */
+export const getMyAddress = tryCatch(async (req, res, _) => {
+    const responseData = await iamService.identity_management.getUserAddress({
+        userId: req.user.user_id,
+        addressId: req.params.addressId,
+    });
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller adds a new saved address for the authenticated user.
+ * @required_role Customer/Admin
+ * @route POST /api/auth/me/addresses
+ * @services_used IAM (identity_management)
+ */
+export const addMyAddress = tryCatch(async (req, res, _) => {
+    const { street, city, province, country, postal_code, is_default } =
+        req.body;
+
+    const responseData = await iamService.identity_management.addAddress({
+        userId: req.user.user_id,
+        street,
+        city,
+        province,
+        country,
+        postalCode: postal_code,
+        isDefault: is_default,
+    });
+    return apiResponse(res, responseData, 201);
+});
+
+/**
+ * This controller updates one of the authenticated user's saved addresses.
+ * @required_role Customer/Admin
+ * @route PATCH /api/auth/me/addresses/:addressId
+ * @services_used IAM (identity_management)
+ */
+export const updateMyAddress = tryCatch(async (req, res, _) => {
+    const { street, city, province, country, postal_code, is_default } =
+        req.body;
+
+    const responseData = await iamService.identity_management.updateAddress({
+        userId: req.user.user_id,
+        addressId: req.params.addressId,
+        street,
+        city,
+        province,
+        country,
+        postalCode: postal_code,
+        isDefault: is_default,
+    });
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller removes one of the authenticated user's saved addresses.
+ * @required_role Customer/Admin
+ * @route DELETE /api/auth/me/addresses/:addressId
+ * @services_used IAM (identity_management)
+ */
+export const deleteMyAddress = tryCatch(async (req, res, _) => {
+    const responseData = await iamService.identity_management.deleteAddress({
+        userId: req.user.user_id,
+        addressId: req.params.addressId,
+    });
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller marks one of the authenticated user's saved addresses as their default.
+ * @required_role Customer/Admin
+ * @route PATCH /api/auth/me/addresses/:addressId/default
+ * @services_used IAM (identity_management)
+ */
+export const setDefaultMyAddress = tryCatch(async (req, res, _) => {
+    const responseData =
+        await iamService.identity_management.setDefaultAddress({
+            userId: req.user.user_id,
+            addressId: req.params.addressId,
+        });
+    return apiResponse(res, responseData, 200);
+});

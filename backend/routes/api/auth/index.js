@@ -14,4 +14,35 @@ router.get("/me", authnMiddleware(), authController.getMe);
 router.patch("/me", authnMiddleware(), authController.updateMe);
 router.delete("/me", authnMiddleware(), authController.deleteMe);
 
+router.get(
+    "/me/addresses",
+    authnMiddleware(),
+    authController.getMyAddresses,
+);
+router.post(
+    "/me/addresses",
+    authnMiddleware(),
+    authController.addMyAddress,
+);
+router.get(
+    "/me/addresses/:addressId",
+    authnMiddleware(),
+    authController.getMyAddress,
+);
+router.patch(
+    "/me/addresses/:addressId",
+    authnMiddleware(),
+    authController.updateMyAddress,
+);
+router.delete(
+    "/me/addresses/:addressId",
+    authnMiddleware(),
+    authController.deleteMyAddress,
+);
+router.patch(
+    "/me/addresses/:addressId/default",
+    authnMiddleware(),
+    authController.setDefaultMyAddress,
+);
+
 export default router;

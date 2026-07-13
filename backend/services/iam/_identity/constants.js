@@ -31,6 +31,13 @@ const VALIDATIONS = {
         DELETED: ["deleted", "true", "yes", "1"],
         ACTIVE: ["active", "false", "no", "0"],
     },
+    ADDRESS: {
+        STREET_MAX_LENGTH: 255,
+        CITY_MAX_LENGTH: 100,
+        PROVINCE_MAX_LENGTH: 100,
+        COUNTRY_MAX_LENGTH: 100,
+        POSTAL_CODE_MAX_LENGTH: 20,
+    },
 };
 
 const DEFAULTS = {
