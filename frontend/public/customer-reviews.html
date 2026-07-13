@@ -123,13 +123,13 @@
             }
 
                 async function loadUserReviews(){
-                    ebody = document.getElementById("table-body");
+                    tbody = document.getElementById("table-body");
                     const { ok, body } = await apiFetch(
                         "/api/dashboard/customer/reviews"
                         );
 
                     if (!ok) {
-                        tbody.innerHTML = "Could not load reviews.";
+                        tbody.innerHTML = "Could not load reviews.";np
                         return;
                     }
 
