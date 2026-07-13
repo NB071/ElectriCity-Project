@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ElectriCity Admin - Orders</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 900px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            h1 {
+                margin-bottom: 0.25rem;
+            }
+            #status {
+                color: #555;
+            }
+            .panel {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+            .panel h2 {
+                margin-top: 0;
+                font-size: 1.1rem;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th,
+            td {
+                text-align: left;
+                padding: 0.4rem 0.6rem;
+                border-bottom: 1px solid #eee;
+                font-size: 0.9rem;
+            }
+            th {
+                border-bottom: 2px solid #ccc;
+            }
+            tr.orderRow {
+                cursor: pointer;
+            }
+            tr.orderRow:hover {
+                background: #f7f7f7;
+            }
+            .badge {
+                display: inline-block;
+                font-size: 0.7rem;
+                border-radius: 3px;
+                padding: 0.1rem 0.4rem;
+                color: white;
+            }
+            .badge.pending {
+                background: #a15c00;
+            }
+            .badge.confirmed {
+                background: #2a6ea1;
+            }
+            .badge.shipped {
+                background: #6a2a9c;
+            }
+            .badge.delivered {
+                background: #2a7a2a;
+            }
+            .badge.cancelled {
+                background: #c33;
+            }
+            .badge.paid {
+                background: #2a7a2a;
+            }
+            .badge.unpaid {
+                background: #a15c00;
+            }
+            .badge.failed {
+                background: #c33;
+            }
+            button {
+                padding: 0.4rem 0.8rem;
+                cursor: pointer;
+            }
+            button + button {
+                margin-left: 0.4rem;
+            }
+            select {
+                padding: 0.35rem;
+            }
+            .error {
+                color: #c33;
+            }
+            .success {
+                color: #2a7a2a;
+            }
+            .pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }
+            .addr-cols {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            .addr-cols div {
+                font-size: 0.9rem;
+            }
+            .status-form {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+            }
+            [hidden] {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Admin - Order Oversight &amp; Status Management</h1>
+        <p id="status">Checking session…</p>
+
+        <div id="adminView" hidden>
+            <div class="panel">
+                <h2>All Orders</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Owner</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Order Status</th>
+                            <th>Payment</th>
+                            <th>Placed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+                <div class="pagination">
+                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <span id="pageIndicator"></span>
+                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                </div>
+                <p class="error" id="listError"></p>
+            </div>
+
+            <div class="panel" id="detailPanel" hidden>
+                <h2 id="detailTitle"></h2>
+                <p id="detailOwner"></p>
+                <p>
+                    Status:
+                    <span class="badge" id="detailOrderStatusBadge"></span>
+                    &nbsp;Payment:
+                    <span class="badge" id="detailPaymentStatusBadge"></span>
+                </p>
+                <p id="detailTotals"></p>
+
+                <h3>Items</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailItemsBody"></tbody>
+                </table>
+
+                <h3>Addresses</h3>
+                <div class="addr-cols" id="detailAddresses"></div>
+
+                <h3>Payment Attempts</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>When</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailPaymentsBody"></tbody>
+                </table>
+
+                <h3>Update Order Status</h3>
+                <div class="status-form">
+                    <select id="statusSelect"></select>
+                    <button type="button" id="updateStatusBtn">
+                        Update Status
+                    </button>
+                </div>
+                <p class="success" id="statusSuccess"></p>
+                <p class="error" id="statusError"></p>
+            </div>
+        </div>
+
+        <script>
+            const apiBase = window.location.origin.replace(/\/$/, "");
+            let currentPage = 1;
+            let currentOrderId = null;
+
+            const ORDER_STATUS_TRANSITIONS = {
+                pending: ["confirmed", "cancelled"],
+                confirmed: ["shipped", "cancelled"],
+                shipped: ["delivered"],
+                delivered: [],
+                cancelled: [],
+            };
+
+            async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: "same-origin" },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatMoney(amount) {
+                return (
+                    "$" +
+                    Number(amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+                );
+            }
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleString() : "—";
+            }
+
+            function ownerLabel(row) {
+                if (row.user) {
+                    return (
+                        row.user.first_name +
+                        " " +
+                        row.user.last_name +
+                        " (" +
+                        row.user.email +
+                        ")"
+                    );
+                }
+                return "Guest: " + (row.guest_email || "unknown");
+            }
+
+            // ------- Orders list -------
+            async function loadOrders() {
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/orders?page=" +
+                        currentPage +
+                        "&limit=10",
+                );
+
+                if (!ok) {
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load orders.",
+                    );
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                const tbody = document.getElementById("ordersTableBody");
+                tbody.innerHTML = "";
+
+                if (items.length === 0) {
+                    tbody.innerHTML =
+                        "<tr><td colspan='7'>No orders yet.</td></tr>";
+                } else {
+                    for (const order of items) {
+                        const tr = document.createElement("tr");
+                        tr.className = "orderRow";
+                        tr.dataset.orderId = order.order_id;
+                        tr.innerHTML =
+                            "<td>#" +
+                            order.order_id +
+                            "</td><td>" +
+                            ownerLabel(order) +
+                            "</td><td>" +
+                            order.item_count +
+                            "</td><td>" +
+                            formatMoney(order.total) +
+                            "</td><td><span class='badge " +
+                            order.order_status +
+                            "'>" +
+                            order.order_status +
+                            "</span></td><td><span class='badge " +
+                            order.payment_status +
+                            "'>" +
+                            order.payment_status +
+                            "</span></td><td>" +
+                            formatDate(order.created_at) +
+                            "</td>";
+                        tr.addEventListener("click", () =>
+                            loadOrderDetail(order.order_id),
+                        );
+                        tbody.appendChild(tr);
+                    }
+                }
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1) +
+                    " (" +
+                    pagination.total +
+                    " total)";
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            document.getElementById("prevPageBtn").addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    loadOrders();
+                }
+            });
+
+            document.getElementById("nextPageBtn").addEventListener("click", () => {
+                currentPage += 1;
+                loadOrders();
+            });
+
+            // ------- Order detail -------
+            function renderStatusSelect(currentStatus) {
+                const select = document.getElementById("statusSelect");
+                const nextOptions = ORDER_STATUS_TRANSITIONS[currentStatus] || [];
+
+                if (nextOptions.length === 0) {
+                    select.innerHTML =
+                        "<option value=''>No further transitions from '" +
+                        currentStatus +
+                        "'</option>";
+                    select.disabled = true;
+                    document.getElementById("updateStatusBtn").disabled = true;
+                    return;
+                }
+
+                select.disabled = false;
+                document.getElementById("updateStatusBtn").disabled = false;
+                select.innerHTML = nextOptions
+                    .map(
+                        (status) =>
+                            "<option value='" +
+                            status +
+                            "'>" +
+                            status +
+                            "</option>",
+                    )
+                    .join("");
+            }
+
+            async function loadOrderDetail(orderId) {
+                currentOrderId = orderId;
+                document.getElementById("statusSuccess").textContent = "";
+                document.getElementById("statusError").textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/admin/orders/" + orderId,
+                );
+
+                const detailPanel = document.getElementById("detailPanel");
+
+                if (!ok) {
+                    detailPanel.hidden = false;
+                    document.getElementById("detailTitle").textContent =
+                        "Could not load order #" + orderId;
+                    document.getElementById("detailOwner").textContent =
+                        errorMessage(body, "");
+                    return;
+                }
+
+                const data = body.data;
+                detailPanel.hidden = false;
+                document.getElementById("detailTitle").textContent =
+                    "Order #" + data.order_id;
+                document.getElementById("detailOwner").textContent =
+                    "Owner: " + ownerLabel(data);
+
+                document.getElementById(
+                    "detailOrderStatusBadge",
+                ).className = "badge " + data.order_status;
+                document.getElementById(
+                    "detailOrderStatusBadge",
+                ).textContent = data.order_status;
+                document.getElementById(
+                    "detailPaymentStatusBadge",
+                ).className = "badge " + data.payment_status;
+                document.getElementById(
+                    "detailPaymentStatusBadge",
+                ).textContent = data.payment_status;
+
+                document.getElementById("detailTotals").textContent =
+                    "Subtotal " +
+                    formatMoney(data.subtotal) +
+                    " · Tax " +
+                    formatMoney(data.tax) +
+                    " · Total " +
+                    formatMoney(data.total) +
+                    " · Placed " +
+                    formatDate(data.created_at);
+
+                document.getElementById("detailItemsBody").innerHTML = data.items
+                    .map(
+                        (item) =>
+                            "<tr><td>" +
+                            item.catalog_item.name +
+                            (item.configuration
+                                ? " (configured #" +
+                                  item.configuration.config_id +
+                                  ")"
+                                : "") +
+                            "</td><td>" +
+                            item.quantity +
+                            "</td><td>" +
+                            formatMoney(item.unit_price) +
+                            "</td><td>" +
+                            formatMoney(item.line_total) +
+                            "</td></tr>",
+                    )
+                    .join("");
+
+                document.getElementById("detailAddresses").innerHTML = data.addresses
+                    .map(
+                        (addr) =>
+                            "<div><strong>" +
+                            addr.address_type +
+                            "</strong><br />" +
+                            addr.full_name +
+                            "<br />" +
+                            addr.street +
+                            "<br />" +
+                            addr.city +
+                            ", " +
+                            addr.province +
+                            " " +
+                            addr.postal_code +
+                            "<br />" +
+                            addr.country +
+                            (addr.phone_number
+                                ? "<br />" + addr.phone_number
+                                : "") +
+                            "</div>",
+                    )
+                    .join("");
+
+                document.getElementById("detailPaymentsBody").innerHTML =
+                    data.payment_attempts
+                        .map(
+                            (attempt) =>
+                                "<tr><td>#" +
+                                attempt.attempt_id +
+                                "</td><td>" +
+                                attempt.payment_method +
+                                "</td><td>" +
+                                formatMoney(attempt.amount) +
+                                "</td><td><span class='badge " +
+                                (attempt.status === "success"
+                                    ? "delivered"
+                                    : "failed") +
+                                "'>" +
+                                attempt.status +
+                                "</span></td><td>" +
+                                formatDate(attempt.attempted_at) +
+                                "</td></tr>",
+                        )
+                        .join("") ||
+                    "<tr><td colspan='5'>No payment attempts.</td></tr>";
+
+                renderStatusSelect(data.order_status);
+                detailPanel.scrollIntoView({ behavior: "smooth" });
+            }
+
+            document
+                .getElementById("updateStatusBtn")
+                .addEventListener("click", async () => {
+                    const statusSuccessEl =
+                        document.getElementById("statusSuccess");
+                    const statusErrorEl = document.getElementById("statusError");
+                    statusSuccessEl.textContent = "";
+                    statusErrorEl.textContent = "";
+
+                    const newStatus = document.getElementById("statusSelect")
+                        .value;
+                    if (!newStatus) return;
+
+                    const { ok, body } = await apiFetch(
+                        "/api/dashboard/admin/orders/" +
+                            currentOrderId +
+                            "/status",
+                        {
+                            method: "PATCH",
+                            body: JSON.stringify({ order_status: newStatus }),
+                        },
+                    );
+
+                    if (!ok) {
+                        statusErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not update order status.",
+                        );
+                        return;
+                    }
+
+                    statusSuccessEl.textContent =
+                        "Order status updated to '" + newStatus + "'.";
+                    await loadOrderDetail(currentOrderId);
+                    await loadOrders();
+                });
+
+            async function init() {
+                const statusEl = document.getElementById("status");
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok || body.data.role !== "admin") {
+                    statusEl.innerHTML =
+                        'You must be <a href="/auth.html">signed in as an admin</a> to view this page.';
+                    return;
+                }
+
+                statusEl.textContent = "Signed in as admin: " + body.data.email;
+                document.getElementById("adminView").hidden = false;
+                await loadOrders();
+            }
+
+            init();
+        </script>
+    </body>
+</html>

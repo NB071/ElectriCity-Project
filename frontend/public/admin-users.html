@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ElectriCity Admin - Users</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 860px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            h1 {
+                margin-bottom: 0.25rem;
+            }
+            #status {
+                color: #555;
+            }
+            .panel {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+            .panel h2 {
+                margin-top: 0;
+                font-size: 1.1rem;
+            }
+            .search-row {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .search-row input {
+                flex: 1;
+                padding: 0.4rem;
+            }
+            .hint {
+                font-size: 0.8rem;
+                color: #777;
+                margin: 0 0 0.75rem;
+            }
+            button {
+                padding: 0.4rem 0.8rem;
+                cursor: pointer;
+            }
+            button + button {
+                margin-left: 0.4rem;
+            }
+            .error {
+                color: #c33;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th,
+            td {
+                text-align: left;
+                padding: 0.4rem 0.6rem;
+                border-bottom: 1px solid #eee;
+                font-size: 0.9rem;
+            }
+            th {
+                border-bottom: 2px solid #ccc;
+            }
+            .badge {
+                display: inline-block;
+                font-size: 0.7rem;
+                border-radius: 3px;
+                padding: 0.1rem 0.4rem;
+            }
+            .badge.active {
+                background: #e6f5e6;
+                color: #2a7a2a;
+            }
+            .badge.deleted {
+                background: #fbe6e6;
+                color: #c33;
+            }
+            .pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }
+            [hidden] {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Admin - User Search &amp; Management</h1>
+        <p id="status">Checking session…</p>
+
+        <div id="adminView" hidden>
+            <div class="panel">
+                <h2>Search Users</h2>
+                <div class="search-row">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search by name, email, or phone…"
+                    />
+                    <button type="button" id="searchBtn">Search</button>
+                    <button type="button" id="clearSearchBtn">
+                        Show All
+                    </button>
+                </div>
+                <p class="hint">
+                    This is a read-only oversight screen — admins cannot edit
+                    another user's profile here. Tip: search for
+                    <code>deleted</code> (or <code>true</code>/<code
+                        >yes</code
+                    >/<code>1</code>) to list only deleted accounts, or
+                    <code>active</code> (or <code>false</code>/<code>no</code
+                    >/<code>0</code>) to list only active ones — anything
+                    else matches name/email/phone.
+                </p>
+                <p class="error" id="searchError"></p>
+            </div>
+
+            <div class="panel">
+                <h2>Results</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+                <div class="pagination">
+                    <button type="button" id="prevPageBtn">&laquo; Prev</button>
+                    <span id="pageIndicator"></span>
+                    <button type="button" id="nextPageBtn">Next &raquo;</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const apiBase = window.location.origin.replace(/\/$/, "");
+            let currentPage = 1;
+            let searchTerm = "";
+
+            async function apiFetch(path) {
+                const opts = { credentials: "same-origin" };
+                let res = await fetch(apiBase + path, opts);
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: "same-origin" },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString() : "—";
+            }
+
+            function renderUsers(items) {
+                const tbody = document.getElementById("usersTableBody");
+                tbody.innerHTML = "";
+
+                if (items.length === 0) {
+                    tbody.innerHTML =
+                        "<tr><td colspan='7'>No users found.</td></tr>";
+                    return;
+                }
+
+                for (const user of items) {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML =
+                        "<td>" +
+                        user.user_id +
+                        "</td><td>" +
+                        user.full_name +
+                        "</td><td>" +
+                        user.email +
+                        "</td><td>" +
+                        (user.phone_number || "—") +
+                        "</td><td>" +
+                        user.role +
+                        "</td><td>" +
+                        (user.is_deleted
+                            ? '<span class="badge deleted">Deleted</span>'
+                            : '<span class="badge active">Active</span>') +
+                        "</td><td>" +
+                        formatDate(user.created_at) +
+                        "</td>";
+                    tbody.appendChild(tr);
+                }
+            }
+
+            async function loadUsers() {
+                const searchErrorEl = document.getElementById("searchError");
+                searchErrorEl.textContent = "";
+
+                const path = searchTerm
+                    ? "/api/dashboard/admin/users/search?q=" +
+                      encodeURIComponent(searchTerm) +
+                      "&page=" +
+                      currentPage +
+                      "&limit=10"
+                    : "/api/dashboard/admin/users?page=" +
+                      currentPage +
+                      "&limit=10";
+
+                const { ok, body } = await apiFetch(path);
+
+                if (!ok) {
+                    searchErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load users.",
+                    );
+                    document.getElementById("usersTableBody").innerHTML = "";
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                renderUsers(items);
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1) +
+                    " (" +
+                    pagination.total +
+                    " total)";
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            document.getElementById("searchBtn").addEventListener("click", () => {
+                searchTerm = document.getElementById("searchInput").value.trim();
+                currentPage = 1;
+                loadUsers();
+            });
+
+            document
+                .getElementById("searchInput")
+                .addEventListener("keydown", (event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        document.getElementById("searchBtn").click();
+                    }
+                });
+
+            document
+                .getElementById("clearSearchBtn")
+                .addEventListener("click", () => {
+                    searchTerm = "";
+                    document.getElementById("searchInput").value = "";
+                    currentPage = 1;
+                    loadUsers();
+                });
+
+            document.getElementById("prevPageBtn").addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    loadUsers();
+                }
+            });
+
+            document.getElementById("nextPageBtn").addEventListener("click", () => {
+                currentPage += 1;
+                loadUsers();
+            });
+
+            async function init() {
+                const statusEl = document.getElementById("status");
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok || body.data.role !== "admin") {
+                    statusEl.innerHTML =
+                        'You must be <a href="/auth.html">signed in as an admin</a> to view this page.';
+                    return;
+                }
+
+                statusEl.textContent = "Signed in as admin: " + body.data.email;
+                document.getElementById("adminView").hidden = false;
+                await loadUsers();
+            }
+
+            init();
+        </script>
+    </body>
+</html>
