@@ -3,12 +3,14 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon --legacy-watch index.js",
+        "start": "nodemon --legacy-watch --import ./configs/sentry.js index.js",
         "db:schema:apply": "node models/apply-schema.js",
         "db:seed:apply": "node models/apply-seed.js",
         "test:email": "node tests/email-service/email-service.test.js",
         "test:media": "node tests/media-service/media-service.test.js",
         "test:iam:access": "node tests/iam-service/access-auth.test.js",
+        "test:iam:identity": "node tests/iam-service/identity.test.js",
+        "test:iam": "node tests/iam-service/access-auth.test.js && node tests/iam-service/identity.test.js",
         "test:review": "node tests/review-service/review.test.js",
         "test:payment": "node tests/payment-service/payment.test.js",
         "test:analytics:event": "node tests/analytics-service/generate-event.test.js",
@@ -18,9 +20,12 @@
         "test:catalog:details": "node tests/catalog-service/catalog-details.test.js",
         "test:catalog:compare": "node tests/catalog-service/catalog-compare.test.js",
         "test:catalog": "node tests/catalog-service/browse-vehicles.test.js && node tests/catalog-service/search-vehicles.test.js && node tests/catalog-service/catalog-details.test.js && node tests/catalog-service/catalog-compare.test.js",
+        "test:chatbot": "node tests/chatbot-service/chatbot.test.js",
+        "test:cart": "node tests/cart-service/cart.test.js",
         "docker:up": "docker compose -f ../docker/docker-compose.yml --env-file .env up -d --build",
         "docker:down": "docker compose -f ../docker/docker-compose.yml --env-file .env down",
-        "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f"
+        "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f",
+        "docker:npm-ci": "docker exec electricity-backend npm ci"
     },
     "keywords": [],
     "author": "EECS 4413 Group G",
@@ -28,6 +33,9 @@
     "type": "module",
     "description": "Backend for Electricity E-Commerce Platform",
     "dependencies": {
+        "@google/genai": "^2.11.0",
+        "@sentry/node": "^10.65.0",
+        "@sentry/profiling-node": "^10.65.0",
         "axios": "^1.16.1",
         "bcrypt": "^6.0.0",
         "bullmq": "^5.78.1",
@@ -38,13 +46,13 @@
         "helmet": "^8.2.0",
         "ioredis": "^5.11.1",
         "jsonwebtoken": "^9.0.3",
-        "morgan": "^1.10.1",
         "mysql2": "^3.22.4",
         "nodemailer": "^9.0.1",
         "nodemon": "^3.1.14",
         "stripe": "^22.2.1",
         "ua-parser-js": "^2.0.10",
         "uuid": "^14.0.0",
+        "winston": "^3.19.0",
         "zod": "^4.4.3"
     }
 }

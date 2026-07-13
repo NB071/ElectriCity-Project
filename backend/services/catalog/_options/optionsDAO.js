@@ -33,6 +33,32 @@ class OptionsDAO extends BaseDAO {
     }
 
     /**
+     * This method finds options already equipped on a catalog item.
+     * @param {number} cid
+     * @returns {Promise<object[]>}
+     * @throws {DatabaseError} On database failures
+     */
+    async findEquippedByCatalogItemId(cid) {
+        const [rows] = await this._query(
+            `SELECT
+                oc.category_id,
+                oc.name AS category_name,
+                oc.select_type,
+                ov.option_id,
+                ov.name AS option_name,
+                ov.price_delta
+             FROM equipped_options eo
+             JOIN option_values ov ON ov.option_id = eo.option_id
+             JOIN option_categories oc ON oc.category_id = ov.category_id
+             WHERE eo.cid = ?
+             ORDER BY oc.category_id ASC, ov.name ASC`,
+            [cid],
+            { suppressNotFound: true },
+        );
+        return rows;
+    }
+
+    /**
      * This method finds the options by the option IDs.
      * @param {number[]} optionIds
      * @returns {Promise<object[]>}

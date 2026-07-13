@@ -9,7 +9,6 @@ import { USER_FIELDS } from "../constants.js";
 function toUserDTO(row) {
     const dto = {};
 
-    // Straightforward 1:1 field copies
     const directFields = [
         USER_FIELDS.USER_ID,
         USER_FIELDS.FIRST_NAME,
@@ -26,13 +25,8 @@ function toUserDTO(row) {
         }
     }
 
-    // role populated from either role or role_name
-    if (
-        row[USER_FIELDS.ROLE] !== undefined ||
-        row[USER_FIELDS.ROLE_NAME] !== undefined
-    ) {
-        dto[USER_FIELDS.ROLE] =
-            row[USER_FIELDS.ROLE] ?? row[USER_FIELDS.ROLE_NAME];
+    if (row[USER_FIELDS.ROLE] !== undefined) {
+        dto[USER_FIELDS.ROLE] = row[USER_FIELDS.ROLE];
     }
 
     return dto;

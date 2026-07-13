@@ -264,7 +264,7 @@ class ProductDAO extends BaseDAO {
      */
     async findVehicleHistoryByCid(cid) {
         const [rows] = await this._query(
-            `SELECT history_id, cid, has_accidents, media_id
+            `SELECT history_id, cid, has_accidents, owners_count, media_id
              FROM vehicle_history
              WHERE cid = ?
              LIMIT 1`,

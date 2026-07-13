@@ -1,7 +1,11 @@
 // Catalog Compare Handler
 // Design Pattern / Technique: GoF Template Method / Object-Oriented Programming (OOP)
 
-import { NotFoundError, ValidationError } from "../../../../utils/errors.js";
+import {
+    NotFoundError,
+    ValidationError,
+    InternalError,
+} from "../../../../utils/errors.js";
 
 class CatalogCompareHandler {
     constructor({ productDAO, compareMatrixAssembler }) {
@@ -46,8 +50,13 @@ class CatalogCompareHandler {
         }
     }
 
+    /**
+     * This method must be implemented by each compare handler.
+     * @param {object} _item The item to get the comparable fields for.
+     * @returns {string[]} The comparable fields for the item.
+     */
     _comparableFields(_item) {
-        throw new Error("_comparableFields not implemented");
+        throw new InternalError("_comparableFields not implemented");
     }
 }
 

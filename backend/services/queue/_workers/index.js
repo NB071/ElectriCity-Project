@@ -4,6 +4,7 @@
 import startEmailWorker from "./EmailWorker.js";
 import startAnalyticsWorker from "./AnalyticsWorker.js";
 import { QUEUES } from "../constants.js";
+import log from "../../../utils/logger.js";
 
 /**
  * Registry of available worker starters, keyed by worker label.
@@ -22,7 +23,7 @@ function startWorkers() {
     // Start each worker.
     for (const { label, start } of workerStarters) {
         start();
-        console.log(`Queue worker started: ${label}`);
+        log.info("Queue", "startWorkers", `Queue worker started: ${label}`);
     }
 }
 

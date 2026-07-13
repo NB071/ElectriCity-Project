@@ -7,6 +7,7 @@ import {
     validateWishlistEntry,
 } from "./wishlistValidator.js";
 import { toWishlistEntryDTO } from "./DTOs/wishlistEntryDTO.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function adds a catalog item to a user's wishlist.
@@ -28,7 +29,7 @@ async function addToWishlist({ userId, cid }) {
         });
         return toWishlistEntryDTO(row);
     } catch (err) {
-        console.error("[Service: Wishlist] addToWishlist failed:", err.message);
+        log.error("Wishlist", "addToWishlist", "addToWishlist failed", err);
         throw err;
     }
 }
@@ -49,9 +50,11 @@ async function removeFromWishlist({ userId, cid }) {
         const valid = validateWishlistEntry({ userId, cid });
         await wishlistDAO.deleteByUserAndCid(valid.userId, valid.cid);
     } catch (err) {
-        console.error(
-            "[Service: Wishlist] removeFromWishlist failed:",
-            err.message,
+        log.error(
+            "Wishlist",
+            "removeFromWishlist",
+            "removeFromWishlist failed",
+            err,
         );
         throw err;
     }

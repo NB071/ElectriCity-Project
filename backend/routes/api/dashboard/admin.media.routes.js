@@ -6,31 +6,31 @@ const router = Router();
 
 router.post(
     "/media",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminMediaController.createMedia,
 );
 router.delete(
     "/media/:mediaId",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminMediaController.deleteMedia,
 );
 router.post(
     "/catalog/:cid/media",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminMediaController.linkCatalogMedia,
 );
 router.patch(
     "/catalog/:cid/media/:mediaId/primary",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminMediaController.setPrimaryMedia,
 );
 router.delete(
     "/catalog/:cid/media/:mediaId",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminMediaController.unlinkCatalogMedia,
 );

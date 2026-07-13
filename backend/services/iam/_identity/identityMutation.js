@@ -3,14 +3,20 @@
 
 import bcrypt from "bcrypt";
 import accountDAO from "./accountDAO.js";
+import addressDAO from "./addressDAO.js";
 import emailAdapter from "../EmailAdaptor.js";
 import {
     validateUpdateProfile,
     validateDeleteProfile,
+    validateCreateAddress,
+    validateUpdateAddress,
+    validateAddressRef,
 } from "./identityValidator.js";
 import { DEFAULTS, USER_FIELDS } from "./constants.js";
 import { getUserById } from "./identityQuery.js";
+import { toAddressDTO } from "./DTOs/addressDTO.js";
 import { ConflictError, UnauthorizedError } from "../../../utils/errors.js";
+import log from "../../../utils/logger.js";
 
 /**
  * This function updates profile fields for the authenticated user.
@@ -101,33 +107,52 @@ async function updateProfile({
         await accountDAO.updateById(valid.userId, updates);
         return getUserById(valid.userId);
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] updateProfile failed:",
-            err.message,
-        );
+        log.error("IAM", "updateProfile", "updateProfile failed", err);
         throw err;
     }
 }
 
 /**
  * This function soft-deletes the authenticated user's account and sends a confirmation email.
- * @param {object} data
- * @param {number} data.userId
+ * @param {object} data User ID and current password
+ * @param {number} data.userId User ID
+ * @param {string} data.currentPassword Current password
  * @returns {Promise<{ deleted: true }>}
  * @throws {ValidationError} If validation fails
+ * @throws {UnauthorizedError} If current_password is incorrect
  * @throws {NotFoundError} If the user does not exist or is already deleted
  * @throws {DatabaseError} On database failures
  */
-async function deleteProfile({ userId }) {
+async function deleteProfile({ userId, currentPassword }) {
     try {
-        const { userId: id } = validateDeleteProfile({ userId });
-        const user = await accountDAO.findById(id, [
+        // validate the user id and current password
+        const valid = validateDeleteProfile({ userId, currentPassword });
+
+        // find the password hash by the user id
+        const passwordHash = await accountDAO.findPasswordHashById(
+            valid.userId,
+        );
+        // compare the current password with the password hash
+        const passwordMatches = await bcrypt.compare(
+            valid.currentPassword,
+            passwordHash,
+        );
+
+        // if the password does not match, throw an unauthorized error
+        if (!passwordMatches) {
+            throw new UnauthorizedError("Current password is incorrect.");
+        }
+
+        // find the user by the user id
+        const user = await accountDAO.findById(valid.userId, [
             USER_FIELDS.FIRST_NAME,
             USER_FIELDS.EMAIL,
         ]);
 
-        await accountDAO.softDeleteById(id);
+        // soft delete the user by the user id
+        await accountDAO.softDeleteById(valid.userId);
 
+        // send the account deletion email
         await emailAdapter.sendAccountDeletionEmail(
             user.email,
             user.first_name,
@@ -135,12 +160,180 @@ async function deleteProfile({ userId }) {
 
         return { deleted: true };
     } catch (err) {
-        console.error(
-            "[Service: IAM Identity] deleteProfile failed:",
-            err.message,
-        );
+        log.error("IAM", "deleteProfile", "deleteProfile failed", err);
         throw err;
     }
 }
 
-export { updateProfile, deleteProfile };
+/**
+ * This function adds a saved address for the authenticated user.
+ * userId must come from req.user.user_id, not the request body.
+ * @requiredRole customer
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.street
+ * @param {string} data.city
+ * @param {string} data.province
+ * @param {string} data.country
+ * @param {string} data.postalCode
+ * @param {boolean} [data.isDefault=false]
+ * @returns {Promise<object>} The created address
+ * @throws {ValidationError} If validation fails
+ * @throws {DatabaseError} On database failures
+ */
+async function addAddress({
+    userId,
+    street,
+    city,
+    province,
+    country,
+    postalCode,
+    isDefault,
+}) {
+    try {
+        const valid = validateCreateAddress({
+            userId,
+            street,
+            city,
+            province,
+            country,
+            postalCode,
+            isDefault,
+        });
+
+        const row = await addressDAO.insert({
+            user_id: valid.userId,
+            street: valid.street,
+            city: valid.city,
+            province: valid.province,
+            country: valid.country,
+            postal_code: valid.postalCode,
+            is_default: valid.isDefault,
+        });
+
+        return toAddressDTO(row);
+    } catch (err) {
+        log.error("IAM", "addAddress", "addAddress failed", err);
+        throw err;
+    }
+}
+
+/**
+ * This function updates one of the authenticated user's saved addresses.
+ * userId must come from req.user.user_id, not the request body.
+ * @requiredRole customer
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {number} data.addressId
+ * @param {string} [data.street]
+ * @param {string} [data.city]
+ * @param {string} [data.province]
+ * @param {string} [data.country]
+ * @param {string} [data.postalCode]
+ * @param {boolean} [data.isDefault]
+ * @returns {Promise<object>} The updated address
+ * @throws {ValidationError} If validation fails
+ * @throws {NotFoundError} If the address does not exist or does not belong to the user
+ * @throws {DatabaseError} On database failures
+ */
+async function updateAddress({
+    userId,
+    addressId,
+    street,
+    city,
+    province,
+    country,
+    postalCode,
+    isDefault,
+}) {
+    try {
+        const valid = validateUpdateAddress({
+            userId,
+            addressId,
+            street,
+            city,
+            province,
+            country,
+            postalCode,
+            isDefault,
+        });
+
+        await addressDAO.updateById(valid.addressId, valid.userId, {
+            street: valid.street,
+            city: valid.city,
+            province: valid.province,
+            country: valid.country,
+            postal_code: valid.postalCode,
+            is_default: valid.isDefault,
+        });
+
+        const row = await addressDAO.findByIdForUser(
+            valid.addressId,
+            valid.userId,
+        );
+        return toAddressDTO(row);
+    } catch (err) {
+        log.error("IAM", "updateAddress", "updateAddress failed", err);
+        throw err;
+    }
+}
+
+/**
+ * This function removes one of the authenticated user's saved addresses.
+ * userId must come from req.user.user_id, not the request body.
+ * @requiredRole customer
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {number} data.addressId
+ * @returns {Promise<{ address_id: number }>}
+ * @throws {ValidationError} If validation fails
+ * @throws {NotFoundError} If the address does not exist or does not belong to the user
+ * @throws {DatabaseError} On database failures
+ */
+async function deleteAddress({ userId, addressId }) {
+    try {
+        const valid = validateAddressRef({ userId, addressId });
+        await addressDAO.deleteById(valid.addressId, valid.userId);
+        return { address_id: valid.addressId };
+    } catch (err) {
+        log.error("IAM", "deleteAddress", "deleteAddress failed", err);
+        throw err;
+    }
+}
+
+/**
+ * This function marks one of the authenticated user's saved addresses as their default,
+ * clearing the default flag from any other address they own.
+ * userId must come from req.user.user_id, not the request body.
+ * @requiredRole customer
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {number} data.addressId
+ * @returns {Promise<object>} The now-default address
+ * @throws {ValidationError} If validation fails
+ * @throws {NotFoundError} If the address does not exist or does not belong to the user
+ * @throws {DatabaseError} On database failures
+ */
+async function setDefaultAddress({ userId, addressId }) {
+    try {
+        const valid = validateAddressRef({ userId, addressId });
+        await addressDAO.setDefault(valid.addressId, valid.userId);
+        const row = await addressDAO.findByIdForUser(
+            valid.addressId,
+            valid.userId,
+        );
+        return toAddressDTO(row);
+    } catch (err) {
+        log.error("IAM", "setDefaultAddress", "setDefaultAddress failed", err);
+        throw err;
+    }
+}
+
+export {
+    updateProfile,
+    deleteProfile,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
+};

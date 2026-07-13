@@ -268,6 +268,7 @@ CREATE TABLE vehicle_history (
   history_id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   cid           BIGINT UNSIGNED NOT NULL,
   has_accidents BOOLEAN         NOT NULL DEFAULT FALSE,
+  owners_count  INT UNSIGNED    NOT NULL DEFAULT 0,
   media_id      BIGINT UNSIGNED DEFAULT NULL,
   created_at    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -283,7 +284,9 @@ CREATE TABLE vehicle_history (
     ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_vehicle_history_media
     FOREIGN KEY (media_id) REFERENCES media (media_id)
-    ON UPDATE CASCADE ON DELETE CASCADE
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT chk_vehicle_history_owners_count
+    CHECK (owners_count >= 0)
 );
 
 
@@ -300,6 +303,27 @@ CREATE TABLE catalog_options (
     FOREIGN KEY (cid) REFERENCES catalog_items (cid)
     ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_catalog_options_option_value
+    FOREIGN KEY (option_id) REFERENCES option_values (option_id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+
+-- Options already installed on a catalog item (e.g. used-car as-equipped package),
+-- fixed/pre-installed and not selectable -- separate from catalog_options, which
+-- lists options still available for purchase.
+CREATE TABLE equipped_options (
+  cid        BIGINT UNSIGNED NOT NULL,
+  option_id  INT UNSIGNED    NOT NULL,
+
+  -- Constraints, Keys, and Indexes
+  PRIMARY KEY (cid, option_id),
+
+  KEY idx_equipped_options_option_id (option_id),
+
+  CONSTRAINT fk_equipped_options_catalog_item
+    FOREIGN KEY (cid) REFERENCES catalog_items (cid)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_equipped_options_option_value
     FOREIGN KEY (option_id) REFERENCES option_values (option_id)
     ON UPDATE CASCADE ON DELETE CASCADE
 );
@@ -393,7 +417,8 @@ CREATE TABLE carts (
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_id),
 
-  KEY idx_carts_user_id (user_id),
+  -- One cart per logged-in user
+  UNIQUE KEY uq_carts_user_id (user_id),
   UNIQUE KEY uq_carts_session_token (session_token),
 
   CONSTRAINT fk_carts_user
@@ -407,13 +432,16 @@ CREATE TABLE cart_items (
   cart_id       BIGINT UNSIGNED NOT NULL,
   cid           BIGINT UNSIGNED NOT NULL,
   config_id     BIGINT UNSIGNED DEFAULT NULL,
+  -- Generated key so NULL config_id still participates in uniqueness 
+  -- Ref: https://dev.mysql.com/doc/refman/8.4/en/create-table-generated-columns.html
+  config_key    BIGINT UNSIGNED GENERATED ALWAYS AS (IFNULL(config_id, 0)) STORED,
   quantity      INT UNSIGNED    NOT NULL DEFAULT 1,
   added_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_item_id),
 
-  KEY idx_cart_items_cart_id (cart_id),
+  UNIQUE KEY uq_cart_items_line (cart_id, cid, config_key),
   KEY idx_cart_items_cid (cid),
   KEY idx_cart_items_config_id (config_id),
 
@@ -438,7 +466,7 @@ CREATE TABLE orders (
   user_id         BIGINT UNSIGNED DEFAULT NULL,
   guest_email     VARCHAR(255)    DEFAULT NULL,
   order_status    ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')     NOT NULL DEFAULT 'pending',
-  payment_status  ENUM('paid', 'failed')     NOT NULL DEFAULT 'failed',
+  payment_status  ENUM('unpaid', 'paid', 'failed')     NOT NULL DEFAULT 'unpaid',
   subtotal        DECIMAL(12,2)   NOT NULL,
   tax             DECIMAL(12,2)   NOT NULL DEFAULT 0.00,
   total           DECIMAL(12,2)   NOT NULL,
@@ -456,7 +484,7 @@ CREATE TABLE orders (
     FOREIGN KEY (user_id) REFERENCES users (user_id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT chk_orders_payment_status
-    CHECK (payment_status IN ('paid', 'failed')),
+    CHECK (payment_status IN ('unpaid', 'paid', 'failed')),
   CONSTRAINT chk_orders_order_status
     CHECK (order_status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
   CONSTRAINT chk_orders_subtotal

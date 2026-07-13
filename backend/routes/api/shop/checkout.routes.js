@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { checkoutController } from "../../../controllers/api/shop/index.js";
+import { authnMiddleware } from "../../../middlewares/index.js";
 
 const router = Router();
 
-router.get("/sample", checkoutController.sampleController);
+router.post("/", authnMiddleware({ optional: true }), checkoutController.checkout);
 
 export default router;

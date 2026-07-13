@@ -3,6 +3,7 @@
 
 import analyticsDAO from "./analyticsDAO.js";
 import { validateReportParams, validateEventId } from "./analyticsValidator.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function parses the metadata of an event.
@@ -82,9 +83,11 @@ async function eventTypeBreakdown(params = {}) {
     try {
         return await analyticsDAO.countByEventType(start, end, limit);
     } catch (err) {
-        console.error(
-            "[Service: Analytics] eventTypeBreakdown failed:",
-            err.message,
+        log.error(
+            "Analytics",
+            "eventTypeBreakdown",
+            "eventTypeBreakdown failed",
+            err,
         );
         throw err;
     }
@@ -111,9 +114,11 @@ async function topCatalogItems(eventTypeId, params = {}) {
             limit,
         );
     } catch (err) {
-        console.error(
-            "[Service: Analytics] topCatalogItems failed:",
-            err.message,
+        log.error(
+            "Analytics",
+            "topCatalogItems",
+            "topCatalogItems failed",
+            err,
         );
         throw err;
     }
@@ -134,7 +139,7 @@ async function trend(eventTypeId, params = {}) {
         const { start, end } = validateReportParams(params);
         return await analyticsDAO.dailyTrend(eventTypeId, start, end);
     } catch (err) {
-        console.error("[Service: Analytics] trend failed:", err.message);
+        log.error("Analytics", "trend", "trend failed", err);
         throw err;
     }
 }
@@ -153,7 +158,7 @@ async function eventDetail(eventId) {
         const row = await analyticsDAO.findEventById(id);
         return mapEventDetail(row);
     } catch (err) {
-        console.error("[Service: Analytics] eventDetail failed:", err.message);
+        log.error("Analytics", "eventDetail", "eventDetail failed", err);
         throw err;
     }
 }

@@ -68,8 +68,7 @@ export const setEventTypeActive = tryCatch(async (req, res, _) => {
     const { is_active: isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
-        const error = new Error("is_active must be a boolean.");
-        error.status = 400;
+        const error = new ValidationError("is_active must be a boolean.");
         throw error;
     }
 
