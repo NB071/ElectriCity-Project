@@ -43,17 +43,35 @@ class AccountDAO extends BaseDAO {
     }
 
     /**
-     * This private method builds a LIKE-based search clause for admin user queries.
+     * This private method builds the admin user search WHERE clause.
      * @private
      * @param {string} searchTerm
      * @returns {{ whereClause: string, params: unknown[] }}
      */
     #buildAdminSearchClause(searchTerm) {
-        const likeTerm = `%${searchTerm}%`;
+        // normalize the search term
         const normalizedTerm = searchTerm.trim().toLowerCase();
+
+        // if the search term is deleted, return the where clause for deleted users
+        if (
+            VALIDATIONS.DELETED_SEARCH_KEYWORDS.DELETED.includes(normalizedTerm)
+        ) {
+            return { whereClause: "u.deleted_at IS NOT NULL", params: [] };
+        }
+
+        // if the search term is active, return the where clause for active users
+        if (
+            VALIDATIONS.DELETED_SEARCH_KEYWORDS.ACTIVE.includes(normalizedTerm)
+        ) {
+            return { whereClause: "u.deleted_at IS NULL", params: [] };
+        }
+
+        // build the like term for the search
+        const likeTerm = `%${searchTerm}%`;
         const params = Array(8).fill(likeTerm);
 
-        let whereClause = `(
+        // build the where clause for the search
+        const whereClause = `(
             u.first_name LIKE ?
             OR u.last_name LIKE ?
             OR CONCAT(u.first_name, ' ', u.last_name) LIKE ?
@@ -63,16 +81,6 @@ class AccountDAO extends BaseDAO {
             OR DATE_FORMAT(u.created_at, '%Y-%m-%d') LIKE ?
             OR DATE_FORMAT(u.created_at, '%Y-%m-%d %H:%i:%s') LIKE ?
         )`;
-
-        if (
-            VALIDATIONS.DELETED_SEARCH_KEYWORDS.DELETED.includes(normalizedTerm)
-        ) {
-            whereClause = `(${whereClause} OR u.deleted_at IS NOT NULL)`;
-        } else if (
-            VALIDATIONS.DELETED_SEARCH_KEYWORDS.ACTIVE.includes(normalizedTerm)
-        ) {
-            whereClause = `(${whereClause} OR u.deleted_at IS NULL)`;
-        }
 
         return { whereClause, params };
     }
@@ -309,7 +317,14 @@ class AccountDAO extends BaseDAO {
         const [result] = await this._query(
             `INSERT INTO users (role_id, first_name, last_name, email, password_hash, phone_number)
              VALUES ((SELECT role_id FROM roles WHERE role_name = ?), ?, ?, ?, ?, ?)`,
-            [ROLES.CUSTOMER, firstName, lastName, email, passwordHash, phoneNumber],
+            [
+                ROLES.CUSTOMER,
+                firstName,
+                lastName,
+                email,
+                passwordHash,
+                phoneNumber,
+            ],
             {
                 conflictMessage: "Email is already registered.",
                 conflictDetails: { email },
@@ -380,10 +395,17 @@ class AccountDAO extends BaseDAO {
      */
     async softDeleteById(userId) {
         await this._transaction(async (conn) => {
+            // placeholder is bounded length: deleted_<id>_<unix>@deleted.local
             const [updateResult] = await conn.execute(
                 `UPDATE users
                  SET deleted_at = CURRENT_TIMESTAMP,
-                     email = CONCAT(email, '.deleted.', user_id, '.', UNIX_TIMESTAMP())
+                     email = CONCAT(
+                         'deleted_',
+                         user_id,
+                         '_',
+                         UNIX_TIMESTAMP(),
+                         '@deleted.local'
+                     )
                  WHERE user_id = ? AND deleted_at IS NULL`,
                 [userId],
             );

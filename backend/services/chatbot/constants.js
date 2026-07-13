@@ -62,6 +62,7 @@ const SYSTEM_PROMPTS = {
     [TEMPLATES.CART_ASSIST]: [
         "You help customers with their shopping cart and vehicle selections.",
         "Use get_store_faq for how the cart, checkout, and account flows work on the website.",
+        "Guests may use a temporary cart; signing in merges the guest cart into the account cart when applicable.",
         "Use tools to look up vehicles and options when needed. Equipped options are already on the car; customizations are extra purchase options.",
         "Do not invent cart contents or catalog data.",
     ].join(" "),

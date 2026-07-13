@@ -1,10 +1,6 @@
 import { Router } from "express";
 import { catalogController } from "../../../controllers/api/shop/index.js";
-import {
-    authnMiddleware,
-    authzMiddleware,
-    analyticsTrackMiddleware,
-} from "../../../middlewares/index.js";
+import { authnMiddleware, authzMiddleware, analyticsTrackMiddleware } from "../../../middlewares/index.js";
 import { EVENT_DEFINITIONS } from "../../../services/analytics/constants.js";
 
 const router = Router();
@@ -27,13 +23,13 @@ router.get("/:cid/reviews", catalogController.getCatalogReviews);
 // Customer-only catalog actions
 router.get(
     "/:cid/wishlist",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("customer"),
     catalogController.getWishlistStatus,
 );
 router.post(
     "/:cid/reviews",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("customer"),
     analyticsTrackMiddleware(EVENT_DEFINITIONS.REVIEW.PUBLISH_REVIEW),
     catalogController.publishReview,

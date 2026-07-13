@@ -150,6 +150,10 @@ const updateProfileSchema = z
 
 const deleteProfileSchema = z.object({
     userId: userIdSchema,
+    currentPassword: z
+        .string({ required_error: "current_password is required." })
+        .min(1, "current_password cannot be blank.")
+        .max(VALIDATIONS.PASSWORD.MAX_LENGTH),
 });
 
 const adminUserSearchSchema = z.object({
@@ -164,6 +168,133 @@ const adminUserSearchSchema = z.object({
             VALIDATIONS.SEARCH.MAX_LENGTH,
             `q must be at most ${VALIDATIONS.SEARCH.MAX_LENGTH} characters.`,
         ),
+});
+
+const addressIdSchema = z.coerce
+    .number({ required_error: "address_id is required." })
+    .int("address_id must be an integer.")
+    .positive("address_id must be a positive integer.");
+
+const createAddressSchema = z.object({
+    userId: userIdSchema,
+    street: z
+        .string({ required_error: "street is required." })
+        .trim()
+        .min(1, "street cannot be blank.")
+        .max(
+            VALIDATIONS.ADDRESS.STREET_MAX_LENGTH,
+            `street must be at most ${VALIDATIONS.ADDRESS.STREET_MAX_LENGTH} characters.`,
+        ),
+    city: z
+        .string({ required_error: "city is required." })
+        .trim()
+        .min(1, "city cannot be blank.")
+        .max(
+            VALIDATIONS.ADDRESS.CITY_MAX_LENGTH,
+            `city must be at most ${VALIDATIONS.ADDRESS.CITY_MAX_LENGTH} characters.`,
+        ),
+    province: z
+        .string({ required_error: "province is required." })
+        .trim()
+        .min(1, "province cannot be blank.")
+        .max(
+            VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH,
+            `province must be at most ${VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH} characters.`,
+        ),
+    country: z
+        .string({ required_error: "country is required." })
+        .trim()
+        .min(1, "country cannot be blank.")
+        .max(
+            VALIDATIONS.ADDRESS.COUNTRY_MAX_LENGTH,
+            `country must be at most ${VALIDATIONS.ADDRESS.COUNTRY_MAX_LENGTH} characters.`,
+        ),
+    postalCode: z
+        .string({ required_error: "postal_code is required." })
+        .trim()
+        .min(1, "postal_code cannot be blank.")
+        .max(
+            VALIDATIONS.ADDRESS.POSTAL_CODE_MAX_LENGTH,
+            `postal_code must be at most ${VALIDATIONS.ADDRESS.POSTAL_CODE_MAX_LENGTH} characters.`,
+        ),
+    isDefault: z.boolean().optional().default(false),
+});
+
+const updateAddressSchema = z
+    .object({
+        userId: userIdSchema,
+        addressId: addressIdSchema,
+        street: z
+            .string()
+            .trim()
+            .min(1, "street cannot be blank.")
+            .max(
+                VALIDATIONS.ADDRESS.STREET_MAX_LENGTH,
+                `street must be at most ${VALIDATIONS.ADDRESS.STREET_MAX_LENGTH} characters.`,
+            )
+            .optional(),
+        city: z
+            .string()
+            .trim()
+            .min(1, "city cannot be blank.")
+            .max(
+                VALIDATIONS.ADDRESS.CITY_MAX_LENGTH,
+                `city must be at most ${VALIDATIONS.ADDRESS.CITY_MAX_LENGTH} characters.`,
+            )
+            .optional(),
+        province: z
+            .string()
+            .trim()
+            .min(1, "province cannot be blank.")
+            .max(
+                VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH,
+                `province must be at most ${VALIDATIONS.ADDRESS.PROVINCE_MAX_LENGTH} characters.`,
+            )
+            .optional(),
+        country: z
+            .string()
+            .trim()
+            .min(1, "country cannot be blank.")
+            .max(
+                VALIDATIONS.ADDRESS.COUNTRY_MAX_LENGTH,
+                `country must be at most ${VALIDATIONS.ADDRESS.COUNTRY_MAX_LENGTH} characters.`,
+            )
+            .optional(),
+        postalCode: z
+            .string()
+            .trim()
+            .min(1, "postal_code cannot be blank.")
+            .max(
+                VALIDATIONS.ADDRESS.POSTAL_CODE_MAX_LENGTH,
+                `postal_code must be at most ${VALIDATIONS.ADDRESS.POSTAL_CODE_MAX_LENGTH} characters.`,
+            )
+            .optional(),
+        isDefault: z.boolean().optional(),
+    })
+    .superRefine((data, ctx) => {
+        const addressFields = [
+            data.street,
+            data.city,
+            data.province,
+            data.country,
+            data.postalCode,
+            data.isDefault,
+        ];
+        const hasChange = addressFields.some((value) => value !== undefined);
+
+        if (!hasChange) {
+            ctx.addIssue({
+                code: "custom",
+                message:
+                    "At least one address field must be provided for update.",
+                path: [],
+            });
+        }
+    });
+
+const addressRefSchema = z.object({
+    userId: userIdSchema,
+    addressId: addressIdSchema,
 });
 
 /**
@@ -234,7 +365,7 @@ function validateUpdateProfile(data) {
 /**
  * This function validates profile deletion input.
  * @param {object} data
- * @returns {{ userId: number }}
+ * @returns {{ userId: number, currentPassword: string }}
  * @throws {ValidationError} If validation fails
  */
 function validateDeleteProfile(data) {
@@ -263,10 +394,64 @@ function validateAdminUserSearchQuery(queryParams = {}) {
     return parsed.data;
 }
 
+/**
+ * This function validates input for creating a saved address.
+ * userId must come from req.user.user_id, not the request body.
+ * @param {object} data
+ * @returns {object} Validated address payload
+ * @throws {ValidationError} If validation fails
+ */
+function validateCreateAddress(data) {
+    const parsed = createAddressSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
+/**
+ * This function validates input for updating a saved address.
+ * userId must come from req.user.user_id, not the request body.
+ * @param {object} data
+ * @returns {object} Validated address update payload
+ * @throws {ValidationError} If validation fails
+ */
+function validateUpdateAddress(data) {
+    const parsed = updateAddressSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
+/**
+ * This function validates a reference to one of a user's saved addresses.
+ * userId must come from req.user.user_id, not the request body.
+ * @param {object} data
+ * @returns {{ userId: number, addressId: number }}
+ * @throws {ValidationError} If validation fails
+ */
+function validateAddressRef(data) {
+    const parsed = addressRefSchema.safeParse(data);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
 export {
     validateUserId,
     validateGetUserOptions,
     validateUpdateProfile,
     validateDeleteProfile,
     validateAdminUserSearchQuery,
+    validateCreateAddress,
+    validateUpdateAddress,
+    validateAddressRef,
 };

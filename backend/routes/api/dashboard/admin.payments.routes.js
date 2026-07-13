@@ -6,28 +6,28 @@ const router = Router();
 
 router.get(
     "/orders/:orderId/payments",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminPaymentsController.getOrderPayments,
 );
 
 router.patch(
     "/orders/:orderId/payment-status",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminPaymentsController.updateOrderPaymentStatus,
 );
 
 router.get(
     "/payments/:attemptId",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminPaymentsController.getPaymentDetail,
 );
 
 router.get(
     "/payments",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminPaymentsController.getAllPayments,
 );

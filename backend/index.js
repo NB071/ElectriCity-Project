@@ -30,6 +30,7 @@ import {
 } from "./middlewares/rateLimit.middleware.js";
 import { AppError } from "./utils/errors.js";
 import log from "./utils/logger.js";
+import { CART_HEADERS } from "./services/cart/constants.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +41,11 @@ const server = http.createServer(app);
 // > Middlewares (security)
 app.disable("x-powered-by");
 app.use(helmetMiddleware);
-app.use(cors());
+app.use(
+    cors({
+        exposedHeaders: [CART_HEADERS.SESSION],
+    }),
+);
 
 // > Middlewares (Server)
 app.use(express.json());

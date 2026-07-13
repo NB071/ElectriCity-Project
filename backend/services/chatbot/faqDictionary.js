@@ -118,7 +118,7 @@ const STORE_FAQ = {
     [FAQ_TOPICS.ACCOUNT_LOGIN]: {
         topic: FAQ_TOPICS.ACCOUNT_LOGIN,
         title: "Account and login",
-        answer: "Create an account or sign in from the site header. A logged-in customer can open the dashboard for orders, wishlist, and profile settings. Some shop actions (wishlist, reviews, cart sync) require an account. Guest checkout may be available for orders without signing in.",
+        answer: "Create an account or sign in from the site header. A logged-in customer can open the dashboard for orders, wishlist, and profile settings. Wishlist and reviews require an account. You can shop and use a cart as a guest; signing in merges your guest cart into your account cart when your session is still valid. Guest checkout may also be available without signing in.",
         keywords: [
             "account",
             "login",
@@ -134,7 +134,7 @@ const STORE_FAQ = {
     [FAQ_TOPICS.ACCOUNT_MANAGEMENT]: {
         topic: FAQ_TOPICS.ACCOUNT_MANAGEMENT,
         title: "Account management and profile",
-        answer: "Open your customer dashboard and go to the Profile page to manage your account. There you can update your first name, last name, email, and phone number; change your password (your current password is required); and view your active login sessions. To delete your account, use Delete account on the Profile page while signed in. Deletion is permanent for login purposes (your account is deactivated), and you will receive a confirmation email. After deletion you cannot sign in with that account. For order history questions after deletion, contact support with your order ID.",
+        answer: "Open your customer dashboard and go to the Profile page to manage your account. There you can update your first name, last name, email, and phone number; change your password (your current password is required); and view your active login sessions. To delete your account, use Delete account on the Profile page while signed in and confirm with your current password. Deletion is permanent for login purposes (your account is deactivated), and you will receive a confirmation email. After deletion you cannot sign in with that account. For order history questions after deletion, contact support with your order ID.",
         keywords: [
             "profile",
             "account management",
@@ -163,8 +163,16 @@ const STORE_FAQ = {
     [FAQ_TOPICS.CART]: {
         topic: FAQ_TOPICS.CART,
         title: "Shopping cart",
-        answer: "Add vehicles from the details page to your cart. You can add a base vehicle or a saved configuration. Open the cart to review items, quantities, and totals before checkout. Cart contents are tied to your account when logged in.",
-        keywords: ["cart", "add to cart", "basket", "items", "quantity"],
+        answer: "Add vehicles from the details page to your cart as a guest or while signed in. You can add a base vehicle or a saved configuration. Open the cart to review items, quantities, promotions shown on each vehicle, and totals before checkout. Guests keep a temporary cart for their browsing session; when you sign in, that guest cart is merged into your account cart. After you are logged in, cart contents stay with your account.",
+        keywords: [
+            "cart",
+            "add to cart",
+            "basket",
+            "items",
+            "quantity",
+            "guest cart",
+            "merge cart",
+        ],
     },
 
     // Checkout and orders related questions

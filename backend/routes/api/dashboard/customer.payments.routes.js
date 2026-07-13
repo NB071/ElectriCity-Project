@@ -6,7 +6,7 @@ const router = Router();
 
 router.get(
     "/payments",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("customer"),
     customerPaymentsController.getCustomerPayments,
 );
