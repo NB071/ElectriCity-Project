@@ -9,6 +9,8 @@
         "test:email": "node tests/email-service/email-service.test.js",
         "test:media": "node tests/media-service/media-service.test.js",
         "test:iam:access": "node tests/iam-service/access-auth.test.js",
+        "test:iam:identity": "node tests/iam-service/identity.test.js",
+        "test:iam": "node tests/iam-service/access-auth.test.js && node tests/iam-service/identity.test.js",
         "test:review": "node tests/review-service/review.test.js",
         "test:payment": "node tests/payment-service/payment.test.js",
         "test:analytics:event": "node tests/analytics-service/generate-event.test.js",

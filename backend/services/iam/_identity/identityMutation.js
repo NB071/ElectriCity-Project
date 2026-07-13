@@ -114,23 +114,45 @@ async function updateProfile({
 
 /**
  * This function soft-deletes the authenticated user's account and sends a confirmation email.
- * @param {object} data
- * @param {number} data.userId
+ * @param {object} data User ID and current password
+ * @param {number} data.userId User ID
+ * @param {string} data.currentPassword Current password
  * @returns {Promise<{ deleted: true }>}
  * @throws {ValidationError} If validation fails
+ * @throws {UnauthorizedError} If current_password is incorrect
  * @throws {NotFoundError} If the user does not exist or is already deleted
  * @throws {DatabaseError} On database failures
  */
-async function deleteProfile({ userId }) {
+async function deleteProfile({ userId, currentPassword }) {
     try {
-        const { userId: id } = validateDeleteProfile({ userId });
-        const user = await accountDAO.findById(id, [
+        // validate the user id and current password
+        const valid = validateDeleteProfile({ userId, currentPassword });
+
+        // find the password hash by the user id
+        const passwordHash = await accountDAO.findPasswordHashById(
+            valid.userId,
+        );
+        // compare the current password with the password hash
+        const passwordMatches = await bcrypt.compare(
+            valid.currentPassword,
+            passwordHash,
+        );
+
+        // if the password does not match, throw an unauthorized error
+        if (!passwordMatches) {
+            throw new UnauthorizedError("Current password is incorrect.");
+        }
+
+        // find the user by the user id
+        const user = await accountDAO.findById(valid.userId, [
             USER_FIELDS.FIRST_NAME,
             USER_FIELDS.EMAIL,
         ]);
 
-        await accountDAO.softDeleteById(id);
+        // soft delete the user by the user id
+        await accountDAO.softDeleteById(valid.userId);
 
+        // send the account deletion email
         await emailAdapter.sendAccountDeletionEmail(
             user.email,
             user.first_name,
@@ -302,12 +324,7 @@ async function setDefaultAddress({ userId, addressId }) {
         );
         return toAddressDTO(row);
     } catch (err) {
-        log.error(
-            "IAM",
-            "setDefaultAddress",
-            "setDefaultAddress failed",
-            err,
-        );
+        log.error("IAM", "setDefaultAddress", "setDefaultAddress failed", err);
         throw err;
     }
 }

@@ -150,6 +150,10 @@ const updateProfileSchema = z
 
 const deleteProfileSchema = z.object({
     userId: userIdSchema,
+    currentPassword: z
+        .string({ required_error: "current_password is required." })
+        .min(1, "current_password cannot be blank.")
+        .max(VALIDATIONS.PASSWORD.MAX_LENGTH),
 });
 
 const adminUserSearchSchema = z.object({
@@ -361,7 +365,7 @@ function validateUpdateProfile(data) {
 /**
  * This function validates profile deletion input.
  * @param {object} data
- * @returns {{ userId: number }}
+ * @returns {{ userId: number, currentPassword: string }}
  * @throws {ValidationError} If validation fails
  */
 function validateDeleteProfile(data) {

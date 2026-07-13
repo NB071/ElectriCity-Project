@@ -28,8 +28,9 @@ const VALIDATIONS = {
         MAX_LENGTH: 100,
     },
     DELETED_SEARCH_KEYWORDS: {
-        DELETED: ["deleted", "true", "yes", "1"],
-        ACTIVE: ["active", "false", "no", "0"],
+        // Exact-term status filters only
+        DELETED: ["deleted", "inactive"],
+        ACTIVE: ["active"],
     },
     ADDRESS: {
         STREET_MAX_LENGTH: 255,

@@ -47,18 +47,6 @@ async function getUserById(userId, options = {}) {
 }
 
 /**
- * This function returns the authenticated user's full profile
- * @param {number|string} userId authenticated user's id
- * @returns {Promise<object>} Authenticated user's profile
- * @throws {ValidationError} If userId is invalid
- * @throws {NotFoundError} If the user does not exist or is soft-deleted
- * @throws {DatabaseError} On database failures
- */
-async function getCurrentUserProfile(userId) {
-    return getUserById(userId);
-}
-
-/**
  * This function returns a paginated list of all platform users for admins.
  * @param {object} [queryParams] Raw query params (page, limit)
  * @returns {Promise<{ items: object[], pagination: object }>}
@@ -188,7 +176,6 @@ async function getUserAddress({ userId, addressId }) {
 
 export {
     getUserById,
-    getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
     getUserAddresses,

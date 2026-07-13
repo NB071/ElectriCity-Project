@@ -15,14 +15,6 @@ const ADDRESS_COLUMNS = `
  * @extends BaseDAO
  */
 class AddressDAO extends BaseDAO {
-    /**
-     * This constructor calls the constructor of the BaseDAO class.
-     * @constructor
-     */
-    constructor() {
-        super();
-    }
-
     // #########################
     // Read operations
     // #########################

@@ -170,6 +170,7 @@ export const updateMe = tryCatch(async (req, res, _) => {
 export const deleteMe = tryCatch(async (req, res, _) => {
     const responseData = await iamService.identity_management.deleteProfile({
         userId: req.user.user_id,
+        currentPassword: req.body?.current_password,
     });
     return apiResponse(res, responseData, 200);
 });
@@ -268,10 +269,11 @@ export const deleteMyAddress = tryCatch(async (req, res, _) => {
  * @services_used IAM (identity_management)
  */
 export const setDefaultMyAddress = tryCatch(async (req, res, _) => {
-    const responseData =
-        await iamService.identity_management.setDefaultAddress({
+    const responseData = await iamService.identity_management.setDefaultAddress(
+        {
             userId: req.user.user_id,
             addressId: req.params.addressId,
-        });
+        },
+    );
     return apiResponse(res, responseData, 200);
 });

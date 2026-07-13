@@ -134,7 +134,7 @@ const STORE_FAQ = {
     [FAQ_TOPICS.ACCOUNT_MANAGEMENT]: {
         topic: FAQ_TOPICS.ACCOUNT_MANAGEMENT,
         title: "Account management and profile",
-        answer: "Open your customer dashboard and go to the Profile page to manage your account. There you can update your first name, last name, email, and phone number; change your password (your current password is required); and view your active login sessions. To delete your account, use Delete account on the Profile page while signed in. Deletion is permanent for login purposes (your account is deactivated), and you will receive a confirmation email. After deletion you cannot sign in with that account. For order history questions after deletion, contact support with your order ID.",
+        answer: "Open your customer dashboard and go to the Profile page to manage your account. There you can update your first name, last name, email, and phone number; change your password (your current password is required); and view your active login sessions. To delete your account, use Delete account on the Profile page while signed in and confirm with your current password. Deletion is permanent for login purposes (your account is deactivated), and you will receive a confirmation email. After deletion you cannot sign in with that account. For order history questions after deletion, contact support with your order ID.",
         keywords: [
             "profile",
             "account management",

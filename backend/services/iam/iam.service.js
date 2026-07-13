@@ -20,7 +20,6 @@ import {
 } from "./_access/constants.js";
 import {
     getUserById,
-    getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
     getUserAddresses,
@@ -64,7 +63,6 @@ const access_management = {
 const identity_management = {
     // queries
     getUserById,
-    getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
     getUserAddresses,
@@ -113,7 +111,6 @@ export {
 
     // Identity queries
     getUserById,
-    getCurrentUserProfile,
     viewAllUsers,
     searchUsers,
     getUserAddresses,
