@@ -6,7 +6,7 @@ const router = Router();
 
 router.get(
     "/reviews",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("customer"),
     customerReviewsController.getCustomerReviews,
 );

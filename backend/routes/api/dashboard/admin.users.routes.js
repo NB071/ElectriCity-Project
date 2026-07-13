@@ -6,13 +6,13 @@ const router = Router();
 
 router.get(
     "/users/search",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminUsersController.searchUsers,
 );
 router.get(
     "/users",
-    authnMiddleware,
+    authnMiddleware(),
     authzMiddleware("admin"),
     adminUsersController.getAllUsers,
 );

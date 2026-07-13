@@ -14,17 +14,19 @@ function resolveUnitPrice(row) {
 /**
  * This function maps the cart catalog item fields to a representable format.
  * @param {object} row
+ * @param {object[]} [promotions]
  * @returns {object}
  */
-function toCartCatalogItemDTO(row) {
+function toCartCatalogItemDTO(row, promotions = []) {
     return {
         cid: row.cid,
         item_type: row.item_type,
         name: `${row.brand_name} ${row.model_name}`,
         base_price: Number(row.base_price),
-        stock: row.stock ?? row.quantity,
+        stock: Number(row.stock),
         is_active: Boolean(row.is_active),
         primary_image_url: row.primary_image_url ?? null,
+        promotions,
     };
 }
 

@@ -65,3 +65,7 @@
 - https://jsdoc.app/
 
 - https://adamcoster.com/blog/javascript-custom-errors
+
+- https://docs.scalev.com/en/storefront-api/auth
+
+- https://docs.scalev.com/api-reference/storefront/merge-a-guest-cart-into-the-authenticated-customer-cart

@@ -416,7 +416,8 @@ CREATE TABLE carts (
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_id),
 
-  KEY idx_carts_user_id (user_id),
+  -- One cart per logged-in user
+  UNIQUE KEY uq_carts_user_id (user_id),
   UNIQUE KEY uq_carts_session_token (session_token),
 
   CONSTRAINT fk_carts_user
@@ -430,13 +431,16 @@ CREATE TABLE cart_items (
   cart_id       BIGINT UNSIGNED NOT NULL,
   cid           BIGINT UNSIGNED NOT NULL,
   config_id     BIGINT UNSIGNED DEFAULT NULL,
+  -- Generated key so NULL config_id still participates in uniqueness 
+  -- Ref: https://dev.mysql.com/doc/refman/8.4/en/create-table-generated-columns.html
+  config_key    BIGINT UNSIGNED GENERATED ALWAYS AS (IFNULL(config_id, 0)) STORED,
   quantity      INT UNSIGNED    NOT NULL DEFAULT 1,
   added_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cart_item_id),
 
-  KEY idx_cart_items_cart_id (cart_id),
+  UNIQUE KEY uq_cart_items_line (cart_id, cid, config_key),
   KEY idx_cart_items_cid (cid),
   KEY idx_cart_items_config_id (config_id),
 

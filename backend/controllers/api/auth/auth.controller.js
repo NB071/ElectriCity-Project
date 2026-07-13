@@ -1,6 +1,8 @@
 import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import iamService from "../../../services/iam/iam.service.js";
+import cartService from "../../../services/cart/cart.service.js";
+import log from "../../../utils/logger.js";
 
 /**
  * This controller registers a new customer account.
@@ -34,6 +36,26 @@ export const login = tryCatch(async (req, res, _) => {
         ipAddress: req.ip ?? null,
         userAgent: req.headers["user-agent"] ?? null,
     });
+
+    // merge the guest cart into the user's cart (if a guest session is present)
+    const sessionToken = req.headers[cartService.CART_HEADERS.SESSION] ?? null;
+
+    if (sessionToken && responseData?.user?.user_id != null) {
+        try {
+            responseData.cart_merge = await cartService.mergeGuestCartIntoUser({
+                userId: responseData.user.user_id,
+                sessionToken,
+            });
+        } catch (err) {
+            log.error("Auth", "login", "guest cart merge failed", err);
+            responseData.cart_merge = {
+                merged: false,
+                moved_items: 0,
+                error: err.message ?? "Cart merge failed.",
+            };
+        }
+    }
+
     return apiResponse(res, responseData, 200);
 });
 

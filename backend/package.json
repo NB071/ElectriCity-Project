@@ -19,6 +19,7 @@
         "test:catalog:compare": "node tests/catalog-service/catalog-compare.test.js",
         "test:catalog": "node tests/catalog-service/browse-vehicles.test.js && node tests/catalog-service/search-vehicles.test.js && node tests/catalog-service/catalog-details.test.js && node tests/catalog-service/catalog-compare.test.js",
         "test:chatbot": "node tests/chatbot-service/chatbot.test.js",
+        "test:cart": "node tests/cart-service/cart.test.js",
         "docker:up": "docker compose -f ../docker/docker-compose.yml --env-file .env up -d --build",
         "docker:down": "docker compose -f ../docker/docker-compose.yml --env-file .env down",
         "docker:logs": "docker compose -f ../docker/docker-compose.yml --env-file .env logs -f",
