@@ -123,23 +123,18 @@
             }
 
                 async function loadUserReviews(){
-
+                    ebody = document.getElementById("table-body");
                     const { ok, body } = await apiFetch(
-                        "/api/dashboard/customer/reviews" +
-                            currentPage +
-                            "&limit=10",
-                    );
+                        "/api/dashboard/customer/reviews"
+                        );
 
                     if (!ok) {
-                        listErrorEl.textContent = errorMessage(
-                            body,
-                            "Could not load reviews.",
-                        );
+                        tbody.innerHTML = "Could not load reviews.";
                         return;
                     }
 
                     const { items, pagination } = body.data;
-                    const tbody = document.getElementById("allPaymentsBody");
+                    const tbody = document.getElementById("table-body");
                     tbody.innerHTML = "";
                     if (reviews.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="3">You have no reviews yet.</td></tr>';

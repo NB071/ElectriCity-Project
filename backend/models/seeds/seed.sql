@@ -1,5 +1,5 @@
 -- Test seed
--- Seed users password: Passwrd@123
+-- Seed users password: Password1!
 
 SET FOREIGN_KEY_CHECKS = 1;
 START TRANSACTION;
@@ -10,31 +10,31 @@ INSERT INTO roles (role_name) VALUES
   ('customer');
 
 INSERT INTO users (user_id, role_id, first_name, last_name, email, password_hash, phone_number, deleted_at) VALUES
-  (1, 1, 'Maya', 'Singh', 'maya.singh@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551001', NULL),
-  (2, 1, 'Daniel', 'Osei', 'daniel.osei@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551002', NULL),
-  (3, 1, 'Kara', 'Novak', 'kara.novak@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551003', NULL),
-  (4, 1, 'Jordan', 'Okafor', 'jordan.okafor@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551004', NULL),
-  (5, 1, 'Lea', 'Tremblay', 'lea.tremblay@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551005', NULL),
-  (6, 1, 'Soo', 'Park', 'soo.park@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551006', NULL),
-  (7, 1, 'Tara', 'Ahmadi', 'tara.ahmadi@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551007', NULL),
-  (8, 1, 'Paul', 'Fontaine', 'paul.fontaine@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551008', NULL),
-  (9, 1, 'Amy', 'Chen', 'amy.chen@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551009', NULL),
-  (10, 1, 'Rosa', 'Bianchi', 'rosa.bianchi@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551010', NULL),
-  (11, 1, 'Noah', 'Patel', 'noah.patel@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551011', NULL),
-  (12, 1, 'Emma', 'Nguyen', 'emma.nguyen@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551012', NULL),
-  (13, 1, 'Liam', 'Brooks', 'liam.brooks@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551013', NULL),
-  (14, 1, 'Olivia', 'Martinez', 'olivia.martinez@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551014', NULL),
-  (15, 1, 'Ethan', 'Walsh', 'ethan.walsh@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551015', NULL),
-  (16, 1, 'Ava', 'Kowalski', 'ava.kowalski@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551016', NULL),
-  (17, 1, 'Mason', 'Ibrahim', 'mason.ibrahim@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551017', NULL),
-  (18, 1, 'Isabella', 'Rossi', 'isabella.rossi@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551018', NULL),
-  (19, 1, 'Lucas', 'Kim', 'lucas.kim@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551019', NULL),
-  (20, 1, 'Mia', 'Santos', 'mia.santos@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551020', NULL),
-  (21, 1, 'James', 'OConnor', 'james.oconnor@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551021', NULL),
-  (22, 1, 'Sophia', 'Ali', 'sophia.ali@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551022', NULL),
-  (23, 1, 'Benjamin', 'Clarke', 'benjamin.clarke@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', '4165551023', NULL),
-  (24, 2, 'Admin', 'One', 'admin.one@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', NULL, NULL),
-  (25, 2, 'Admin', 'Two', 'admin.two@example.com', '$2b$10$iPs5TNOJj2yDhB90b.LYQOKgoJqpZJ9AygZKJDVNmNbs/xadpPT.G', NULL, NULL);
+  (1, 1, 'Maya', 'Singh', 'maya.singh@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551001', NULL),
+  (2, 1, 'Daniel', 'Osei', 'daniel.osei@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551002', NULL),
+  (3, 1, 'Kara', 'Novak', 'kara.novak@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551003', NULL),
+  (4, 1, 'Jordan', 'Okafor', 'jordan.okafor@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551004', NULL),
+  (5, 1, 'Lea', 'Tremblay', 'lea.tremblay@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551005', NULL),
+  (6, 1, 'Soo', 'Park', 'soo.park@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551006', NULL),
+  (7, 1, 'Tara', 'Ahmadi', 'tara.ahmadi@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551007', NULL),
+  (8, 1, 'Paul', 'Fontaine', 'paul.fontaine@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551008', NULL),
+  (9, 1, 'Amy', 'Chen', 'amy.chen@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551009', NULL),
+  (10, 1, 'Rosa', 'Bianchi', 'rosa.bianchi@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551010', NULL),
+  (11, 1, 'Noah', 'Patel', 'noah.patel@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551011', NULL),
+  (12, 1, 'Emma', 'Nguyen', 'emma.nguyen@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551012', NULL),
+  (13, 1, 'Liam', 'Brooks', 'liam.brooks@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551013', NULL),
+  (14, 1, 'Olivia', 'Martinez', 'olivia.martinez@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551014', NULL),
+  (15, 1, 'Ethan', 'Walsh', 'ethan.walsh@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551015', NULL),
+  (16, 1, 'Ava', 'Kowalski', 'ava.kowalski@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551016', NULL),
+  (17, 1, 'Mason', 'Ibrahim', 'mason.ibrahim@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551017', NULL),
+  (18, 1, 'Isabella', 'Rossi', 'isabella.rossi@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551018', NULL),
+  (19, 1, 'Lucas', 'Kim', 'lucas.kim@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551019', NULL),
+  (20, 1, 'Mia', 'Santos', 'mia.santos@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551020', NULL),
+  (21, 1, 'James', 'OConnor', 'james.oconnor@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551021', NULL),
+  (22, 1, 'Sophia', 'Ali', 'sophia.ali@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551022', NULL),
+  (23, 1, 'Benjamin', 'Clarke', 'benjamin.clarke@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551023', NULL),
+  (24, 2, 'Admin', 'One', 'admin.one@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', NULL, NULL),
+  (25, 2, 'Admin', 'Two', 'admin.two@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', NULL, NULL);
 
 
 INSERT INTO addresses (address_id, user_id, street, city, province, country, postal_code, is_default) VALUES
