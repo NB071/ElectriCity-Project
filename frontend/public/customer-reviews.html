@@ -7,6 +7,159 @@
             content="width=device-width, initial-scale=1.0"
         />
         <title>Customer Reviews</title>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
+    <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>Customer - Reviews</h1>
+        
+
+        <section
+            id="guestView"
+            hidden
+        >
+            <div class="panel">
+                <p>
+                    <a href="/auth.html">Sign in as a customer</a> to see your reviews.
+                </p>
+            </div>
+        </section>
+        <section
+            id="customerView"
+            
+        >
+            <div class="panel">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <!-- Give the tbody an ID so JS can find it easily -->
+                    <tbody id="table-body">
+                        <tr><td colspan="3">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h2>Saved Vehicles</h2>
+                <div id="wishlistItems"></div>
+                <div class="pagination">
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
+                    <span id="pageIndicator"></span>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
+                </div>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
+            </div>
+            <script>    
+                const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+                const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+                const fetchCredentials = isProduction ? "include" : "same-origin";
+                let currentPage = 1;
+                let lookedUpOrderId = null;
+                
+                async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: fetchCredentials,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+                async function loadUserReviews(){
+
+                    const { ok, body } = await apiFetch(
+                        "/api/dashboard/customer/reviews" +
+                            currentPage +
+                            "&limit=10",
+                    );
+
+                    if (!ok) {
+                        listErrorEl.textContent = errorMessage(
+                            body,
+                            "Could not load reviews.",
+                        );
+                        return;
+                    }
+
+                    const { items, pagination } = body.data;
+                    const tbody = document.getElementById("allPaymentsBody");
+                    tbody.innerHTML = "";
+                    if (reviews.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3">You have no reviews yet.</td></tr>';
+                        return;
+                    }
+                    reviews.forEac(review => {
+                        const row = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${review.review_id}</td>
+                            <td>${review.cid}</td>
+                            <td>${review.title}</td>
+                            <td>${review.body}</td>
+                            <td>${review.rating}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    })
+                }
+                document.addEventListener('DOMContentLoaded', loadUserReviews);
+            </script>
+
+        </section>
     <body></body>
 </html>
