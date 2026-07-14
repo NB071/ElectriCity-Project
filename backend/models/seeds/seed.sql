@@ -6,9 +6,9 @@ START TRANSACTION;
 
 -- ============== IAM ==============
 INSERT INTO roles (role_name) VALUES 
-  ('admin'),
-  ('customer');
-
+  ('customer'),
+  ('admin');
+ 
 INSERT INTO users (user_id, role_id, first_name, last_name, email, password_hash, phone_number, deleted_at) VALUES
   (1, 1, 'Maya', 'Singh', 'maya.singh@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551001', NULL),
   (2, 1, 'Daniel', 'Osei', 'daniel.osei@example.com', '$2b$10$2D4sd6jtJvlrNiqEwE7QFurnCms4LNemPPQy.UVSVm92g.VCUgXhm', '4165551002', NULL),
