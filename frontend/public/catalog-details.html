@@ -56,6 +56,75 @@
 
         <div
             class="panel"
+            id="loanCalcPanel"
+            hidden
+        >
+            <h2>Loan Calculator</h2>
+            <p class="muted">
+                Estimate a monthly payment if you financed this vehicle.
+                This is a rough estimate only, not an offer of credit.
+            </p>
+            <label
+                >Vehicle price ($)
+                <input
+                    type="number"
+                    id="loanPrice"
+                    min="0"
+                    step="0.01"
+                />
+            </label>
+            <label
+                >Down payment ($)
+                <input
+                    type="number"
+                    id="loanDownPayment"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                />
+            </label>
+            <label
+                >Loan term (months)
+                <input
+                    type="number"
+                    id="loanTermMonths"
+                    min="1"
+                    step="1"
+                    value="60"
+                />
+            </label>
+            <label
+                >Estimated APR (%)
+                <input
+                    type="number"
+                    id="loanApr"
+                    min="0"
+                    step="0.1"
+                    value="6.5"
+                />
+            </label>
+            <button
+                type="button"
+                id="calcLoanBtn"
+            >
+                Calculate
+            </button>
+            <p
+                class="error"
+                id="loanError"
+            ></p>
+            <div
+                class="card"
+                id="loanResult"
+                hidden
+            >
+                <h3 id="loanMonthlyPayment"></h3>
+                <table id="loanBreakdownTable"></table>
+            </div>
+        </div>
+
+        <div
+            class="panel"
             id="optionsPanel"
             hidden
         >
@@ -498,6 +567,12 @@
                 document.getElementById("promoBadges").textContent =
                     renderPromoBadges(data.promotions);
 
+                document.getElementById("loanCalcPanel").hidden = false;
+                document.getElementById("loanPrice").value =
+                    finalPrice.toFixed(2);
+                document.getElementById("loanResult").hidden = true;
+                document.getElementById("loanError").textContent = "";
+
                 document.getElementById("description").textContent =
                     data.description || "No description.";
 
@@ -666,6 +741,89 @@
                         formatMoney(body.data.total_price) +
                         "): " +
                         (optionNames || "none");
+                });
+
+            // ------- Loan calculator -------
+            document
+                .getElementById("calcLoanBtn")
+                .addEventListener("click", () => {
+                    const loanErrorEl = document.getElementById("loanError");
+                    const loanResultEl =
+                        document.getElementById("loanResult");
+                    loanErrorEl.textContent = "";
+                    loanResultEl.hidden = true;
+
+                    const price = Number(
+                        document.getElementById("loanPrice").value,
+                    );
+                    const downPayment = Number(
+                        document.getElementById("loanDownPayment").value,
+                    );
+                    const termMonths = Number(
+                        document.getElementById("loanTermMonths").value,
+                    );
+                    const apr = Number(
+                        document.getElementById("loanApr").value,
+                    );
+
+                    if (!(price > 0)) {
+                        loanErrorEl.textContent =
+                            "Enter a valid vehicle price.";
+                        return;
+                    }
+                    if (downPayment < 0 || downPayment >= price) {
+                        loanErrorEl.textContent =
+                            "Down payment must be less than the vehicle price.";
+                        return;
+                    }
+                    if (!(termMonths > 0) || !Number.isInteger(termMonths)) {
+                        loanErrorEl.textContent =
+                            "Enter a loan term in whole months.";
+                        return;
+                    }
+                    if (apr < 0) {
+                        loanErrorEl.textContent = "APR cannot be negative.";
+                        return;
+                    }
+
+                    const principal = price - downPayment;
+                    const monthlyRate = apr / 100 / 12;
+
+                    const monthlyPayment =
+                        monthlyRate === 0
+                            ? principal / termMonths
+                            : (principal *
+                                  monthlyRate *
+                                  Math.pow(1 + monthlyRate, termMonths)) /
+                              (Math.pow(1 + monthlyRate, termMonths) - 1);
+
+                    const totalPaid = monthlyPayment * termMonths;
+                    const totalInterest = totalPaid - principal;
+
+                    document.getElementById(
+                        "loanMonthlyPayment",
+                    ).textContent =
+                        formatMoney(monthlyPayment) + " / month";
+
+                    const breakdownRows = [
+                        ["Loan amount", formatMoney(principal)],
+                        ["Loan term", termMonths + " months"],
+                        ["Estimated APR", apr + "%"],
+                        ["Total interest", formatMoney(totalInterest)],
+                        ["Total paid", formatMoney(totalPaid)],
+                    ];
+                    document.getElementById("loanBreakdownTable").innerHTML =
+                        breakdownRows
+                            .map(
+                                ([label, value]) =>
+                                    "<tr><td>" +
+                                    label +
+                                    "</td><td>" +
+                                    value +
+                                    "</td></tr>",
+                            )
+                            .join("");
+                    loanResultEl.hidden = false;
                 });
 
             // ------- Wishlist status (read-only on this page) -------
