@@ -170,7 +170,7 @@
                         '<tr><td colspan="6">You have no reviews yet.</td></tr>';
                     return;
                 }
-
+                //The difference between this method and the other render method in payments and orders is that there is a hyper link to the product in the catalog
                 for (const review of items) {
                     const vehicle = review.catalog_item || {};
                     const vehicleLabel =

@@ -2,11 +2,260 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-        />
-        <title>Customer Orders</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>ElectriCity Orders</title>
+        <link rel="stylesheet" href="/site.css"/>
     </head>
-    <body></body>
-</html>
+    <body class="page-mid">
+        <nav class="history-nav" aria-label="Browser history">
+            <button type="button" id="Back" >
+                &lt; Back
+            </button>
+            <button type="button" id="histForward">
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>ElectriCity Orders</h1>
+        <p id="status">Checking session...</p>
+        <section id="guestView" hidden>
+            <div class="panel">
+                <p>
+                    <a href="/auth.html">Sign in as a customer</a> to see your order history.
+                </p>
+            </div>
+        </section>
+        <section id="customerView" hidden>
+            <div class="panel">
+                <h2>Your Orders</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersBody">
+                        <tr>
+                            <td colspan="6">Loading orders...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pages">
+                    <button type="button" id="prevPage">
+                        &laquo; Prev
+                    </button>
+                    <span id="pageIndicator"></span>
+                    <button type="button" id="nextPage">
+                        Next &raquo;
+                    </button>
+                </div>
+                <p class="error" id="listError"></p>
+            </div>
+        </section>
+        <script>
+            //Customer Orders/Payment/Reviews has a similar structure to eachother (Different way of doing each one as they were coded by different group members), as they are all just a table with rows that are taken from the database.
+            //This page will have the documentation/comments for the methods, the others will not, as they are similar and it would be redundant to comment on all.
+            //Methods that are not the same (i.e Reviews has a clickable link to the product page) will be commented on in their respective files. 
+            
+            //Ensures the API is pointed in the right location
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+
+            let currentPage = 1;
+
+            //Function fetches the API endpoint, checks if the refresh token that the user is using is currently active. Returns the response
+            //Including the body with the datapoints.
+            async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: fetchCredentials,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (
+                    res.status === 401 &&
+                    path !== "/api/auth/login" &&
+                    path !== "/api/auth/refresh"
+                ) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+            
+            //This method returns the error message if a response fails.
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            //Basic formatting method that allows amount to be displayed properl with a dollar sign + 2 decimal places.
+            function formatMoney(amount) {
+                return ("$" +Number(amount).toLocaleString(undefined, {minimumFractionDigits: 2,maximumFractionDigits: 2,}));
+            }
+            //This method turns special characters into HTML friendly values. Used to make the rows on the table.
+            function escapeHtml(value) {
+                const returnVal =  String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                console.log(returnVal);
+                return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            }
+
+            //Simply formats date
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleString() : "—";
+            }
+
+            //If the user is a guest, this shows the guest view
+            function showGuestView() {
+                document.getElementById("status").textContent = "Not signed in.";
+                document.getElementById("guestView").hidden = false ;
+                document.getElementById("customerView").hidden = true;
+            }
+            //If user is a customer, shows customer view
+            function showCustomerView(user) {
+                document.getElementById("status").textContent =
+                    "Signed in as " + user.email;
+                document.getElementById("guestView").hidden = true;
+                 document.getElementById("customerView").hidden = false;
+            }
+              
+            //This function takes items as a parameter, which will be the items given by the loadOrderTable. If the orders do not exist/have 0 orders, there is a message that says no orders yet.
+            //Otherwise, it loops through all of the user orders in the orders object that was given, and makes a row for each of them.
+             function renderOrders(items) {
+                const tbody = document.getElementById("ordersBody");
+                tbody.innerHTML = "";
+
+                if (!items || items.length === 0) {
+                    console.log(items);
+                    tbody.innerHTML =
+                        '<tr><td colspan="6">You have no orders yet.</td></tr>';
+                    return;
+                }
+
+                for (const order of items) {
+                    const row = document.createElement("tr");
+                    row.innerHTML =
+                        "<td>" + 
+                        escapeHtml(order.order_id) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(formatMoney(order.total)) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(order.payment_status) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(order.created_at) +
+                        "</td>";
+                    tbody.appendChild(row);
+                }
+            }
+            //This method loads the entire table, starting by fetching the API, starting by throwing an error if it is not reached. 
+            //If it is reached, it takes the apiFetch item and splits it into its 2 components, item and pagination, which comes from the 
+            //OrderService's listOrdersByUserID. .
+            async function loadOrderTable(){
+                const tBody = document.getElementById("ordersBody");
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+        
+                
+                const {status, body} = await apiFetch("/api/dashboard/customer/orders");
+                if (!status) {
+                    console.log("inside bad status");
+                    t.innerHTML = '<tr><td colspan="6">Could not load orders.</td></tr>';
+                    listErrorEl.textContent = errorMessage(body, "Could not load orders.",);a
+                    return;
+                }
+                const {items, pagination } = body.data;
+                renderOrders(items);
+                
+                document.getElementById("pageIndicator").textContent = "Page " + pagination.page + " of " + (pagination.totalPages || 1);
+                document.getElementById("prevPage").disabled = !pagination.hasPrev;
+                document.getElementById("nextPage").disabled =!pagination.hasNext;
+            }
+
+            //This function checks the session of the user and verifies if the user is a guest or a customer or admin. If the user is logged in as a customer, it shows the customer view
+            //If the user is a guest, it will show the guest view (i.e please log in to view)
+            //If the user is an admin, it will show admin view (i.e only for customers)
+            
+            async function checkSession() {
+                const { ok, body } = await apiFetch("/api/auth/me");
+                if (!ok) {
+                    showGuestView();
+                    return;
+                }
+                const user = body.data;
+                if (user.role !== "customer") {
+                    document.getElementById("status").textContent = "Orders are for customer accounts only.";
+                    document.getElementById("guestView").hidden = false;
+                    document.getElementById("customerView").hidden = true;
+                    document.getElementById("guestView").innerHTML = '<div class="panel"><p>Payment history is for customer accounts. You are signed in as an admin.</p></div>';
+                    return;
+                }
+
+                showCustomerView(user);
+                await loadOrderTable();
+            }
+
+            //If the user changes the page on the table, it reloads it.
+            document.getElementById("prevPage").addEventListener("click", () => {
+                if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadOrderTable();
+                    }
+                });
+
+            document.getElementById("nextPage").addEventListener("click", () => {
+                    currentPage += 1;
+                    loadOrderTable();
+                });
+
+            checkSession();
+        </script>
+        <script>
+            //This allows the user to go to the previous page and the next page.
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+
+        </script>
+

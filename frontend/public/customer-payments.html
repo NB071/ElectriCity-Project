@@ -2,53 +2,30 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title>ElectriCity Payments</title>
-        <link
-            rel="stylesheet"
-            href="/site.css"
-        />
+        <link rel="stylesheet" href="/site.css"/>
     </head>
     <body class="page-mid">
-        <nav
-            class="history-nav"
-            aria-label="Browser history"
-        >
-            <button
-                type="button"
-                id="histBack"
-            >
+        <nav class="history-nav" aria-label="Browser history">
+            <button type="button" id="histBack">
                 &lt; Back
             </button>
-            <button
-                type="button"
-                id="histForward"
-            >
+            <button type="button" id="histForward">
                 &gt; Forward
             </button>
         </nav>
         <h1>ElectriCity Payments</h1>
         <p id="status">Checking session...</p>
-
-        <section
-            id="guestView"
-            hidden
-        >
+        <section id="guestView" hidden>
             <div class="panel">
                 <p>
-                    <a href="/auth.html">Sign in as a customer</a> to see your
-                    payment history.
+                    <a href="/auth.html">Sign in as a customer</a> to see your payment history.
                 </p>
             </div>
         </section>
 
-        <section
-            id="customerView"
-            hidden
-        >
+        <section id="customerView" hidden>
             <div class="panel">
                 <h2>Your Payment Attempts</h2>
                 <table class="data-table">
@@ -69,24 +46,15 @@
                     </tbody>
                 </table>
                 <div class="pagination">
-                    <button
-                        type="button"
-                        id="prevPageBtn"
-                    >
+                    <button type="button" id="prevPage">
                         &laquo; Prev
                     </button>
                     <span id="pageIndicator"></span>
-                    <button
-                        type="button"
-                        id="nextPageBtn"
-                    >
+                    <button type="button" id="nextPage">
                         Next &raquo;
                     </button>
                 </div>
-                <p
-                    class="error"
-                    id="listError"
-                ></p>
+                <p class="error" id="listError"></p>
             </div>
         </section>
 
@@ -237,9 +205,9 @@
                     pagination.page +
                     " of " +
                     (pagination.totalPages || 1);
-                document.getElementById("prevPageBtn").disabled =
+                document.getElementById("prevPage").disabled =
                     !pagination.hasPrev;
-                document.getElementById("nextPageBtn").disabled =
+                document.getElementById("nextPage").disabled =
                     !pagination.hasNext;
             }
 
@@ -268,7 +236,7 @@
             }
 
             document
-                .getElementById("prevPageBtn")
+                .getElementById("prevPage")
                 .addEventListener("click", () => {
                     if (currentPage > 1) {
                         currentPage -= 1;
@@ -277,7 +245,7 @@
                 });
 
             document
-                .getElementById("nextPageBtn")
+                .getElementById("nextPage")
                 .addEventListener("click", () => {
                     currentPage += 1;
                     loadUserPayments();
