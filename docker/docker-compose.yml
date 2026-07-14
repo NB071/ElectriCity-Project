@@ -74,6 +74,7 @@ services:
         env_file:
             - ../backend/.env
         environment:
+            PORT: "80"
             BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-http://backend:8080}
         ports:
             - "3000:80"
