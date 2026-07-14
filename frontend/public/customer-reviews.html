@@ -7,6 +7,307 @@
             content="width=device-width, initial-scale=1.0"
         />
         <title>Customer Reviews</title>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
-    <body></body>
+    <body class="page-mid">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
+                &lt; Back
+            </button>
+            <button
+                type="button"
+                id="histForward"
+            >
+                &gt; Forward
+            </button>
+        </nav>
+        <h1>ElectriCity Reviews</h1>
+        <p id="status">Checking session...</p>
+
+        <section
+            id="guestView"
+            hidden
+        >
+            <div class="panel">
+                <p>
+                    <a href="/auth.html">Sign in as a customer</a> to see your
+                    reviews.
+                </p>
+            </div>
+        </section>
+
+        <section
+            id="customerView"
+            hidden
+        >
+            <div class="panel">
+                <h2>Your Reviews</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Vehicle</th>
+                            <th>Title</th>
+                            <th>Review</th>
+                            <th>Rating</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewsBody">
+                        <tr>
+                            <td colspan="6">Loading reviews...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <button
+                        type="button"
+                        id="prevPageBtn"
+                    >
+                        &laquo; Prev
+                    </button>
+                    <span id="pageIndicator"></span>
+                    <button
+                        type="button"
+                        id="nextPageBtn"
+                    >
+                        Next &raquo;
+                    </button>
+                </div>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
+            </div>
+        </section>
+
+        <script>
+            const isProduction =
+                window.location.hostname === "project-electricity.app" ||
+                window.location.hostname === "www.project-electricity.app";
+            const apiBase = isProduction
+                ? "https://api.project-electricity.app"
+                : window.location.origin.replace(/\/$/, "");
+            const fetchCredentials = isProduction ? "include" : "same-origin";
+
+            let currentPage = 1;
+
+            async function apiFetch(path, options = {}) {
+                const opts = {
+                    credentials: fetchCredentials,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                };
+
+                let res = await fetch(apiBase + path, opts);
+
+                if (
+                    res.status === 401 &&
+                    path !== "/api/auth/login" &&
+                    path !== "/api/auth/refresh"
+                ) {
+                    const refreshRes = await fetch(
+                        apiBase + "/api/auth/refresh",
+                        { method: "POST", credentials: fetchCredentials },
+                    );
+                    if (refreshRes.ok) {
+                        res = await fetch(apiBase + path, opts);
+                    }
+                }
+
+                const body = await res.json().catch(() => null);
+                return { ok: res.ok, status: res.status, body };
+            }
+
+            function errorMessage(body, fallback) {
+                return body?.data?.message || fallback;
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString() : "—";
+            }
+
+            function showGuestView() {
+                document.getElementById("status").textContent =
+                    "Not signed in.";
+                document.getElementById("guestView").hidden = false;
+                document.getElementById("customerView").hidden = true;
+            }
+
+            function showCustomerView(user) {
+                document.getElementById("status").textContent =
+                    "Signed in as " + user.email;
+                document.getElementById("guestView").hidden = true;
+                document.getElementById("customerView").hidden = false;
+            }
+
+            function renderReviews(items) {
+                const tbody = document.getElementById("reviewsBody");
+                tbody.innerHTML = "";
+
+                if (!items || items.length === 0) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6">You have no reviews yet.</td></tr>';
+                    return;
+                }
+                //The difference between this method and the other render method in payments and orders is that there is a hyper link to the product in the catalog
+                for (const review of items) {
+                    const vehicle = review.catalog_item || {};
+                    const vehicleLabel =
+                        vehicle.name ||
+                        (vehicle.cid != null ? "Catalog #" + vehicle.cid : "—");
+                    const row = document.createElement("tr");
+                    row.innerHTML =
+                        "<td>" +
+                        escapeHtml(review.review_id) +
+                        "</td>" +
+                        "<td>" +
+                        (vehicle.cid != null
+                            ? '<a href="/catalog-details.html?cid=' +
+                              encodeURIComponent(vehicle.cid) +
+                              '">' +
+                              escapeHtml(vehicleLabel) +
+                              "</a>"
+                            : escapeHtml(vehicleLabel)) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.title || "—") +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.body || "—") +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(review.rating) +
+                        "</td>" +
+                        "<td>" +
+                        escapeHtml(formatDate(review.created_at)) +
+                        "</td>";
+                    tbody.appendChild(row);
+                }
+            }
+
+            async function loadUserReviews() {
+                const tbody = document.getElementById("reviewsBody");
+                const listErrorEl = document.getElementById("listError");
+                listErrorEl.textContent = "";
+
+                const { ok, body } = await apiFetch(
+                    "/api/dashboard/customer/reviews?page=" +
+                        currentPage +
+                        "&limit=10",
+                );
+
+                if (!ok) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6">Could not load reviews.</td></tr>';
+                    listErrorEl.textContent = errorMessage(
+                        body,
+                        "Could not load reviews.",
+                    );
+                    return;
+                }
+
+                const { items, pagination } = body.data;
+                renderReviews(items);
+
+                document.getElementById("pageIndicator").textContent =
+                    "Page " +
+                    pagination.page +
+                    " of " +
+                    (pagination.totalPages || 1);
+                document.getElementById("prevPageBtn").disabled =
+                    !pagination.hasPrev;
+                document.getElementById("nextPageBtn").disabled =
+                    !pagination.hasNext;
+            }
+
+            async function checkSession() {
+                const { ok, body } = await apiFetch("/api/auth/me");
+
+                if (!ok) {
+                    showGuestView();
+                    return;
+                }
+
+                const user = body.data;
+
+                if (user.role !== "customer") {
+                    document.getElementById("status").textContent =
+                        "Reviews are for customer accounts only.";
+                    document.getElementById("guestView").hidden = false;
+                    document.getElementById("customerView").hidden = true;
+                    document.getElementById("guestView").innerHTML =
+                        '<div class="panel"><p>Your reviews page is for customer accounts. You are signed in as an admin.</p></div>';
+                    return;
+                }
+
+                showCustomerView(user);
+                await loadUserReviews();
+            }
+
+            document
+                .getElementById("prevPageBtn")
+                .addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        loadUserReviews();
+                    }
+                });
+
+            document
+                .getElementById("nextPageBtn")
+                .addEventListener("click", () => {
+                    currentPage += 1;
+                    loadUserReviews();
+                });
+
+            checkSession();
+        </script>
+        <script>
+            (function () {
+                const backBtn = document.getElementById("histBack");
+                const forwardBtn = document.getElementById("histForward");
+                if (!backBtn || !forwardBtn) return;
+
+                function syncNav() {
+                    backBtn.disabled = window.history.length <= 1;
+                }
+
+                let canForward = false;
+                forwardBtn.disabled = true;
+
+                backBtn.addEventListener("click", function () {
+                    canForward = true;
+                    forwardBtn.disabled = false;
+                    window.history.back();
+                });
+                forwardBtn.addEventListener("click", function () {
+                    if (!canForward) return;
+                    window.history.forward();
+                });
+                window.addEventListener("pageshow", syncNav);
+                syncNav();
+            })();
+        </script>
+    </body>
 </html>
