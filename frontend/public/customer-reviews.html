@@ -144,7 +144,7 @@
             }
 
             function formatDate(value) {
-                return value ? new Date(value).toLocaleDateString() : "—";
+                return value ? new Date(value).toLocaleDateString() : "-";
             }
 
             function showGuestView() {
@@ -175,7 +175,7 @@
                     const vehicle = review.catalog_item || {};
                     const vehicleLabel =
                         vehicle.name ||
-                        (vehicle.cid != null ? "Catalog #" + vehicle.cid : "—");
+                        (vehicle.cid != null ? "Catalog #" + vehicle.cid : "-");
                     const row = document.createElement("tr");
                     row.innerHTML =
                         "<td>" +
@@ -191,10 +191,10 @@
                             : escapeHtml(vehicleLabel)) +
                         "</td>" +
                         "<td>" +
-                        escapeHtml(review.title || "—") +
+                        escapeHtml(review.title || "-") +
                         "</td>" +
                         "<td>" +
-                        escapeHtml(review.body || "—") +
+                        escapeHtml(review.body || "-") +
                         "</td>" +
                         "<td>" +
                         escapeHtml(review.rating) +

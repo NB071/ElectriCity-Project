@@ -26,8 +26,10 @@ const logFormat = printf(
 /**
  * logger instance
  */
+const isJest = process.env.JEST_WORKER_ID != null; // source: https://jestjs.io/docs/environment-variables
 const logger = createLogger({
-    level: env.app.LOG_LEVEL,
+    level: isJest ? "silent" : env.app.LOG_LEVEL,
+    silent: isJest,
     format: combine(
         timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS", utc: true }),
         colorize({ level: true }),

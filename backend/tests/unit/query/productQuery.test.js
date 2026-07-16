@@ -1,0 +1,149 @@
+import { jest } from "@jest/globals";
+import { ValidationError, NotFoundError, DatabaseError } from "../../../utils/errors.js";
+
+const mockCountVehicles = jest.fn();
+const mockFindVehicles = jest.fn();
+const mockFindBaseById = jest.fn();
+const mockExistsById = jest.fn();
+const mockFindManyForCompare = jest.fn();
+const mockGetPrimaryImage = jest.fn();
+const mockGetPromotionsForItems = jest.fn();
+const mockGetForItem = jest.fn();
+const mockGetEquippedForItem = jest.fn();
+
+await jest.unstable_mockModule(
+    "../../../services/catalog/_product/productDAO.js",
+    () => ({
+        default: {
+            countVehicles: mockCountVehicles,
+            findVehicles: mockFindVehicles,
+            findBaseById: mockFindBaseById,
+            existsById: mockExistsById,
+            findManyForCompare: mockFindManyForCompare,
+        },
+    }),
+);
+
+await jest.unstable_mockModule(
+    "../../../services/catalog/MediaAdapter.js",
+    () => ({
+        default: {
+            getPrimaryImage: mockGetPrimaryImage,
+            getItemImages: jest.fn(),
+            getVehicleHistoryReport: jest.fn(),
+        },
+    }),
+);
+
+await jest.unstable_mockModule(
+    "../../../services/catalog/_promotions/promotionsQuery.js",
+    () => ({
+        getPromotionsForItems: mockGetPromotionsForItems,
+        getPromotionsForItem: jest.fn().mockResolvedValue([]),
+    }),
+);
+
+await jest.unstable_mockModule(
+    "../../../services/catalog/_options/optionsQuery.js",
+    () => ({
+        getForItem: mockGetForItem,
+        getEquippedForItem: mockGetEquippedForItem,
+        groupOptionsByCategory: jest.fn((rows) => rows),
+    }),
+);
+
+const {
+    browseVehicles,
+    searchVehicles,
+    getCatalogItemDetails,
+    compareCatalogItems,
+    ensureCatalogItemExists,
+} = await import("../../../services/catalog/_product/productQuery.js");
+
+const listRow = {
+    cid: 1,
+    item_type: "vehicle",
+    base_price: "45000",
+    quantity: 2,
+    is_active: 1,
+    created_at: "2025-01-01",
+    model_id: 1,
+    model_name: "Model 3",
+    brand_id: 1,
+    brand_name: "Tesla",
+    year: 2024,
+    condition: "new",
+    mileage: 0,
+    body_shape: "sedan",
+    door_count: 4,
+    drivetrain: "AWD",
+};
+
+describe("productQuery", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockGetPromotionsForItems.mockResolvedValue(new Map([[1, []]]));
+        mockCountVehicles.mockResolvedValue(1);
+        mockFindVehicles.mockResolvedValue([listRow]);
+        mockGetPrimaryImage.mockResolvedValue({
+            media_id: 1,
+            url: "https://cdn/a.jpg",
+        });
+    });
+
+    test("browseVehicles / searchVehicles reject bad pagination", async () => {
+        await expect(browseVehicles({ page: 0 })).rejects.toBeInstanceOf(
+            ValidationError,
+        );
+        await expect(searchVehicles({ page: 0, q: "tesla" })).rejects.toBeInstanceOf(
+            ValidationError,
+        );
+    });
+
+    test("browseVehicles swallows NotFoundError from primary image", async () => {
+        mockGetPrimaryImage.mockRejectedValue(new NotFoundError("Media"));
+        const result = await browseVehicles({ page: 1, limit: 10 });
+        expect(result.items).toHaveLength(1);
+        expect(result.items[0].primary_image_url).toBeNull();
+    });
+
+    test("browseVehicles rethrows non-NotFoundError from primary image", async () => {
+        mockGetPrimaryImage.mockRejectedValue(new DatabaseError("cdn down"));
+        await expect(browseVehicles({ page: 1, limit: 10 })).rejects.toBeInstanceOf(
+            DatabaseError,
+        );
+    });
+
+    test("searchVehicles returns q and items", async () => {
+        const result = await searchVehicles({ q: "Tesla", page: 1, limit: 10 });
+        expect(result.q).toBe("Tesla");
+        expect(result.items).toHaveLength(1);
+    });
+
+    test("getCatalogItemDetails throws when base missing", async () => {
+        mockFindBaseById.mockResolvedValue(null);
+        await expect(getCatalogItemDetails(1)).rejects.toBeInstanceOf(
+            NotFoundError,
+        );
+    });
+
+    test("compareCatalogItems throws when some cids missing", async () => {
+        mockFindManyForCompare.mockResolvedValue([listRow]);
+        await expect(
+            compareCatalogItems({ cids: "1,2" }),
+        ).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    test("ensureCatalogItemExists throws when missing", async () => {
+        mockExistsById.mockResolvedValue(false);
+        await expect(ensureCatalogItemExists(1)).rejects.toBeInstanceOf(
+            NotFoundError,
+        );
+
+        mockExistsById.mockResolvedValue(true);
+        await expect(
+            ensureCatalogItemExists(1, { requireActive: true }),
+        ).resolves.toBeUndefined();
+        expect(mockExistsById).toHaveBeenCalledWith(1, { requireActive: true });
+    });
+});
