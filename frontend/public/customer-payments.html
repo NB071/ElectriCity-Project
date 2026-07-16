@@ -2,30 +2,52 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
         <title>ElectriCity Payments</title>
-        <link rel="stylesheet" href="/site.css"/>
+        <link
+            rel="stylesheet"
+            href="/site.css"
+        />
     </head>
     <body class="page-mid">
-        <nav class="history-nav" aria-label="Browser history">
-            <button type="button" id="histBack">
+        <nav
+            class="history-nav"
+            aria-label="Browser history"
+        >
+            <button
+                type="button"
+                id="histBack"
+            >
                 &lt; Back
             </button>
-            <button type="button" id="histForward">
+            <button
+                type="button"
+                id="histForward"
+            >
                 &gt; Forward
             </button>
         </nav>
         <h1>ElectriCity Payments</h1>
         <p id="status">Checking session...</p>
-        <section id="guestView" hidden>
+        <section
+            id="guestView"
+            hidden
+        >
             <div class="panel">
                 <p>
-                    <a href="/auth.html">Sign in as a customer</a> to see your payment history.
+                    <a href="/auth.html">Sign in as a customer</a> to see your
+                    payment history.
                 </p>
             </div>
         </section>
 
-        <section id="customerView" hidden>
+        <section
+            id="customerView"
+            hidden
+        >
             <div class="panel">
                 <h2>Your Payment Attempts</h2>
                 <table class="data-table">
@@ -46,15 +68,24 @@
                     </tbody>
                 </table>
                 <div class="pagination">
-                    <button type="button" id="prevPage">
+                    <button
+                        type="button"
+                        id="prevPage"
+                    >
                         &laquo; Prev
                     </button>
                     <span id="pageIndicator"></span>
-                    <button type="button" id="nextPage">
+                    <button
+                        type="button"
+                        id="nextPage"
+                    >
                         Next &raquo;
                     </button>
                 </div>
-                <p class="error" id="listError"></p>
+                <p
+                    class="error"
+                    id="listError"
+                ></p>
             </div>
         </section>
 
@@ -105,10 +136,10 @@
 
             function escapeHtml(value) {
                 return String(value ?? "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
             }
 
             function formatMoney(amount) {
@@ -122,9 +153,7 @@
             }
 
             function formatDate(value) {
-                return value
-                    ? new Date(value).toLocaleString()
-                    : "—";
+                return value ? new Date(value).toLocaleString() : "-";
             }
 
             function showGuestView() {
@@ -154,7 +183,7 @@
                 for (const payment of items) {
                     const row = document.createElement("tr");
                     row.innerHTML =
-                        "<td>" + 
+                        "<td>" +
                         escapeHtml(payment.attempt_id) +
                         "</td>" +
                         "<td>" +
