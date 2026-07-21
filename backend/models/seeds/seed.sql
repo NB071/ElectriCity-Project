@@ -190,22 +190,22 @@ INSERT INTO media (media_id, url, file_type, alt_text) VALUES
   (115, '/media/vehicles/BMW i4 2026/opt1.jpg', 'image/jpeg', 'Detail');
 
 -- ============== Catalog: brands / models ==============
-INSERT INTO brands (brand_id, name, description, country, website_url, logo_url) VALUES
-  (1, 'Tesla', 'Electric vehicle manufacturer focused on EVs and energy products.', 'United States', 'https://www.tesla.com', '/media/brands/tesla.jpg'),
-  (2, 'Hyundai', 'Global automaker with a growing dedicated EV lineup.', 'South Korea', 'https://www.hyundai.com', '/media/brands/hyundai.jpg'),
-  (3, 'Kia', 'Automaker offering electric crossovers and SUVs.', 'South Korea', 'https://www.kia.com', '/media/brands/kia.jpg'),
-  (4, 'Ford', 'American automaker with electric trucks and SUVs.', 'United States', 'https://www.ford.com', '/media/brands/ford.jpg'),
-  (5, 'Chevrolet', 'GM brand with affordable and mid-range electric vehicles.', 'United States', 'https://www.chevrolet.com', '/media/brands/chevrolet.jpg'),
-  (6, 'Rivian', 'Adventure-focused electric truck and SUV manufacturer.', 'United States', 'https://www.rivian.com', '/media/brands/rivian.jpg'),
-  (7, 'Lucid', 'Luxury electric sedan manufacturer.', 'United States', 'https://www.lucidmotors.com', '/media/brands/lucid.jpg'),
-  (8, 'Polestar', 'Performance-oriented electric vehicle brand.', 'Sweden', 'https://www.polestar.com', '/media/brands/polestar.jpg'),
-  (9, 'Volkswagen', 'German automaker expanding its ID electric lineup.', 'Germany', 'https://www.vw.com', '/media/brands/volkswagen.jpg'),
-  (10, 'Nissan', 'Pioneer in mass-market electric vehicles.', 'Japan', 'https://www.nissanusa.com', '/media/brands/nissan.jpg'),
-  (11, 'BMW', 'Premium automaker with dedicated i-series EVs.', 'Germany', 'https://www.bmw.com', '/media/brands/bmw.jpg'),
-  (12, 'Audi', 'Premium brand with e-tron electric models.', 'Germany', 'https://www.audi.com', '/media/brands/audi.jpg'),
-  (13, 'Genesis', 'Luxury brand with electric SUVs and sedans.', 'South Korea', 'https://www.genesis.com', '/media/brands/genesis.jpg'),
-  (14, 'Toyota', 'Global automaker with battery-electric crossover models.', 'Japan', 'https://www.toyota.com', '/media/brands/toyota.jpg'),
-  (15, 'Volvo', 'Safety-focused brand with recharge electric models.', 'Sweden', 'https://www.volvocars.com', '/media/brands/volvo.jpg');
+INSERT INTO brands (brand_id, name, description, country, website_url, media_id, is_featured, display_order) VALUES
+  (1, 'Tesla', 'Electric vehicle manufacturer focused on EVs and energy products.', 'United States', 'https://www.tesla.com', 89, TRUE, 1),
+  (2, 'Hyundai', 'Global automaker with a growing dedicated EV lineup.', 'South Korea', 'https://www.hyundai.com', 90, FALSE, 2),
+  (3, 'Kia', 'Automaker offering electric crossovers and SUVs.', 'South Korea', 'https://www.kia.com', 91, FALSE, 3),
+  (4, 'Ford', 'American automaker with electric trucks and SUVs.', 'United States', 'https://www.ford.com', 92, TRUE, 4),
+  (5, 'Chevrolet', 'GM brand with affordable and mid-range electric vehicles.', 'United States', 'https://www.chevrolet.com', 93, FALSE, 5),
+  (6, 'Rivian', 'Adventure-focused electric truck and SUV manufacturer.', 'United States', 'https://www.rivian.com', 94, FALSE, 6),
+  (7, 'Lucid', 'Luxury electric sedan manufacturer.', 'United States', 'https://www.lucidmotors.com', 95, FALSE, 7),
+  (8, 'Polestar', 'Performance-oriented electric vehicle brand.', 'Sweden', 'https://www.polestar.com', 96, FALSE, 8),
+  (9, 'Volkswagen', 'German automaker expanding its ID electric lineup.', 'Germany', 'https://www.vw.com', 97, TRUE, 9),
+  (10, 'Nissan', 'Pioneer in mass-market electric vehicles.', 'Japan', 'https://www.nissanusa.com', 98, FALSE, 10),
+  (11, 'BMW', 'Premium automaker with dedicated i-series EVs.', 'Germany', 'https://www.bmw.com', 99, TRUE, 11),
+  (12, 'Audi', 'Premium brand with e-tron electric models.', 'Germany', 'https://www.audi.com', 100, TRUE, 12),
+  (13, 'Genesis', 'Luxury brand with electric SUVs and sedans.', 'South Korea', 'https://www.genesis.com', 101, FALSE, 13),
+  (14, 'Toyota', 'Global automaker with battery-electric crossover models.', 'Japan', 'https://www.toyota.com', 102, FALSE, 14),
+  (15, 'Volvo', 'Safety-focused brand with recharge electric models.', 'Sweden', 'https://www.volvocars.com', 103, TRUE, 15);
 
 INSERT INTO models (model_id, brand_id, model_type, name, description, release_year) VALUES
   (1, 1, 'vehicle', 'Model 3', 'Tesla Model 3 electric vehicle model.', 2017),
@@ -402,32 +402,32 @@ INSERT INTO catalog_items (cid, model_id, item_type, base_price, quantity, is_ac
   (24, 22, 'vehicle', 50000.00, 5, TRUE),
   (25, 23, 'vehicle', 44500.00, 1, TRUE);
 
-INSERT INTO vehicles (cid, year, `condition`, mileage) VALUES
-  (1, 2026, 'new', 12),
-  (2, 2023, 'used', 38200),
-  (3, 2026, 'new', 0),
-  (4, 2021, 'used', 61000),
-  (5, 2026, 'new', 2),
-  (6, 2024, 'used', 22500),
-  (7, 2026, 'new', 18),
-  (8, 2023, 'used', 45300),
-  (9, 2026, 'new', 8),
-  (10, 2019, 'used', 88000),
-  (11, 2026, 'new', 1),
-  (12, 2024, 'used', 18700),
-  (13, 2026, 'new', 22),
-  (14, 2022, 'used', 52000),
-  (15, 2026, 'new', 4),
-  (16, 2026, 'new', 15),
-  (17, 2022, 'used', 47000),
-  (18, 2018, 'used', 71000),
-  (19, 2026, 'new', 3),
-  (20, 2026, 'new', 5),
-  (21, 2023, 'used', 29000),
-  (22, 2026, 'new', 0),
-  (23, 2024, 'used', 15200),
-  (24, 2026, 'new', 2),
-  (25, 2022, 'used', 33800);
+INSERT INTO vehicles (cid, year, `condition`, mileage, exterior_color, interior_color) VALUES
+  (1, 2026, 'new', 12, 'Pearl White', 'Black'),
+  (2, 2023, 'used', 38200, 'Deep Blue Metallic', 'White'),
+  (3, 2026, 'new', 0, 'Atlas White', 'Gray'),
+  (4, 2021, 'used', 61000, 'Cyber Gray', 'Black'),
+  (5, 2026, 'new', 2, 'Snow White Pearl', 'Black'),
+  (6, 2024, 'used', 22500, 'Aurora Black Pearl', 'Brown'),
+  (7, 2026, 'new', 18, 'Grabber Blue', 'Black'),
+  (8, 2023, 'used', 45300, 'Oxford White', 'Gray'),
+  (9, 2026, 'new', 8, 'Radiant Red', 'Black'),
+  (10, 2019, 'used', 88000, 'Summit White', 'Gray'),
+  (11, 2026, 'new', 1, 'Rivian Blue', 'Black'),
+  (12, 2024, 'used', 18700, 'Forest Green', 'Brown'),
+  (13, 2026, 'new', 22, 'Stellar White', 'Cream'),
+  (14, 2022, 'used', 52000, 'Thunder Gray', 'Black'),
+  (15, 2026, 'new', 4, 'Snow White', 'Gray'),
+  (16, 2026, 'new', 15, 'Moonstone Gray', 'Black'),
+  (17, 2022, 'used', 47000, 'Kings Red', 'Black'),
+  (18, 2018, 'used', 71000, 'Gun Metallic', 'Gray'),
+  (19, 2026, 'new', 3, 'Everest White', 'Blue'),
+  (20, 2026, 'new', 5, 'Alpine White', 'Cognac'),
+  (21, 2023, 'used', 29000, 'Mineral White', 'Black'),
+  (22, 2026, 'new', 0, 'Navarra Blue', 'Gray'),
+  (23, 2024, 'used', 15200, 'Uyuni White', 'Black'),
+  (24, 2026, 'new', 2, 'Wind Chill Pearl', 'Gray'),
+  (25, 2022, 'used', 33800, 'Crystal White', 'Charcoal');
 
 -- history recorded for every vehicle (owners_count intentionally dropped: no matching schema column)
 INSERT INTO vehicle_history (history_id, cid, has_accidents, media_id) VALUES

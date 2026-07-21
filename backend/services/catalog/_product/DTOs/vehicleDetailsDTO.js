@@ -1,4 +1,5 @@
 import { toReviewSummaryDTO } from "../../../review/DTOs/reviewSummaryDTO.js";
+import { toBrandListItemDTO } from "../../_brand/DTOs/brandListItemDTO.js";
 
 /**
  * This function maps the vehicle details to a representable format.
@@ -14,67 +15,75 @@ import { toReviewSummaryDTO } from "../../../review/DTOs/reviewSummaryDTO.js";
  * @returns {object}
  */
 function toVehicleDetailsDTO(
-    base,
-    subtype,
-    customizations,
-    equipped_options,
-    history,
-    images = [],
-    historyReport = null,
-    promotions = [],
-    reviewSummary = { review_count: 0, avg_rating: null },
+  base,
+  subtype,
+  customizations,
+  equipped_options,
+  history,
+  images = [],
+  historyReport = null,
+  promotions = [],
+  reviewSummary = { review_count: 0, avg_rating: null },
 ) {
-    return {
-        id: base.cid,
-        item_type: base.item_type,
-        name: `${base.brand_name} ${base.model_name}`,
-        description: base.model_description,
-        base_price: Number(base.base_price),
-        stock: base.quantity,
-        is_active: Boolean(base.is_active),
-        ...toReviewSummaryDTO(reviewSummary),
-        brand: {
-            id: base.brand_id,
-            name: base.brand_name,
-            country: base.brand_country,
-        },
-        model: {
-            id: base.model_id,
-            name: base.model_name,
-            release_year: base.release_year,
-        },
-        vehicle: {
-            year: subtype.year,
-            condition: subtype.condition,
-            mileage: subtype.mileage,
-            body_shape: subtype.body_shape,
-            door_count: subtype.door_count,
-            drivetrain: subtype.drivetrain,
-        },
-        equipped_options,
-        customizations,
-        promotions,
-        history: history
+  return {
+    id: base.cid,
+    item_type: base.item_type,
+    name: `${base.brand_name} ${base.model_name}`,
+    description: base.model_description,
+    base_price: Number(base.base_price),
+    stock: base.quantity,
+    is_active: Boolean(base.is_active),
+    ...toReviewSummaryDTO(reviewSummary),
+    brand: toBrandListItemDTO({
+      brand_id: base.brand_id,
+      name: base.brand_name,
+      country: base.brand_country,
+      is_featured: base.brand_is_featured,
+      display_order: base.brand_display_order,
+      media_id: base.brand_media_id,
+      logo_url: base.brand_logo_url,
+      logo_file_type: base.brand_logo_file_type,
+      logo_alt_text: base.brand_logo_alt_text,
+    }),
+    model: {
+      id: base.model_id,
+      name: base.model_name,
+      release_year: base.release_year,
+    },
+    vehicle: {
+      year: subtype.year,
+      condition: subtype.condition,
+      mileage: subtype.mileage,
+      exterior_color: subtype.exterior_color,
+      interior_color: subtype.interior_color,
+      body_shape: subtype.body_shape,
+      door_count: subtype.door_count,
+      drivetrain: subtype.drivetrain,
+    },
+    equipped_options,
+    customizations,
+    promotions,
+    history: history
+      ? {
+          has_accidents: Boolean(history.has_accidents),
+          owners_count: Number(history.owners_count ?? 0),
+          report: historyReport
             ? {
-                  has_accidents: Boolean(history.has_accidents),
-                  owners_count: Number(history.owners_count ?? 0),
-                  report: historyReport
-                      ? {
-                            media_id: historyReport.media_id,
-                            url: historyReport.url,
-                            alt_text: historyReport.alt_text ?? null,
-                        }
-                      : null,
+                media_id: historyReport.media_id,
+                url: historyReport.url,
+                alt_text: historyReport.alt_text ?? null,
               }
             : null,
-        images: images.map((image) => ({
-            media_id: image.media_id,
-            url: image.url,
-            alt_text: image.alt_text ?? null,
-            display_order: image.display_order ?? 0,
-            is_primary: Boolean(image.is_primary),
-        })),
-    };
+        }
+      : null,
+    images: images.map((image) => ({
+      media_id: image.media_id,
+      url: image.url,
+      alt_text: image.alt_text ?? null,
+      display_order: image.display_order ?? 0,
+      is_primary: Boolean(image.is_primary),
+    })),
+  };
 }
 
 export { toVehicleDetailsDTO };

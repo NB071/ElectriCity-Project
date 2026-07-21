@@ -29,6 +29,8 @@ function toCatalogListItemDTO(row, primaryImage = null, promotions = []) {
                       year: row.year,
                       condition: row.condition,
                       mileage: row.mileage,
+                      exterior_color: row.exterior_color,
+                      interior_color: row.interior_color,
                       body_shape: row.body_shape,
                       door_count: row.door_count,
                       drivetrain: row.drivetrain,

@@ -1,0 +1,16 @@
+# TanStack Router
+src/routeTree.gen.ts
+
+# Shadcn components
+src/components/ui/*.tsx
+
+# Node modules 
+node_modules
+
+# dist/build directory
+dist
+build
+
+# env files
+.env
+.env-example

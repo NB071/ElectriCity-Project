@@ -1,10 +1,19 @@
-FROM nginx:alpine
+FROM node:20-alpine
 
-COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
-COPY public/ /usr/share/nginx/html/
+# Set the working directory
+WORKDIR /app
 
-ENV PORT=80
-# Railway private DNS for the Express service (override in Railway vars if renamed)
-ENV BACKEND_UPSTREAM=http://backend--express.railway.internal:8080
+# Copy package.json and package-lock.json to install dependencies
+COPY package.json package-lock.json ./
 
-EXPOSE 80
+# Install dependencies
+RUN npm ci
+
+# Copy the rest of the application code
+COPY . .
+
+# Expose the port
+EXPOSE 3000
+
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

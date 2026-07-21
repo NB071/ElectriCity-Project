@@ -175,6 +175,10 @@ describe("promptValidator", () => {
             });
             expect(byQuery.query).toBe("checkout");
         });
+
+        test("list_brands accepts empty args", () => {
+            expect(validateToolArgs(TOOLS.LIST_BRANDS, {})).toEqual({});
+        });
     });
 
     describe("encodeToolResult", () => {

@@ -99,6 +99,8 @@ const TOOL_ARG_SCHEMAS = {
             ),
     }),
 
+    [TOOLS.LIST_BRANDS]: z.object({}),
+
     [TOOLS.GET_VEHICLE_DETAILS]: vehicleReferenceArgsSchema,
 
     [TOOLS.GET_CUSTOMIZATION_OPTIONS]: vehicleReferenceArgsSchema,

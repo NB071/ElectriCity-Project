@@ -1,12 +1,14 @@
 import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import {
-    recordMedia,
-    linkMediaToCatalogItem,
-    setPrimaryCatalogImage,
-    unlinkMediaFromCatalogItem,
-    deleteMediaById,
+  recordMedia,
+  linkMediaToCatalogItem,
+  setPrimaryCatalogImage,
+  unlinkMediaFromCatalogItem,
+  deleteMediaById,
+  viewAllMedia,
 } from "../../../services/media/media.service.js";
+import { parsePaginationQuery } from "../../../utils/pagination.js";
 
 /**
  * This controller records a new media asset and optionally links it to a catalog item.
@@ -15,17 +17,16 @@ import {
  * @services_used Media
  */
 export const createMedia = tryCatch(async (req, res, _) => {
-    const { url, file_type, alt_text, cid, display_order, is_primary } =
-        req.body;
-    const responseData = await recordMedia({
-        url,
-        file_type,
-        alt_text,
-        cid,
-        display_order,
-        is_primary,
-    });
-    return apiResponse(res, responseData, 201);
+  const { url, file_type, alt_text, cid, display_order, is_primary } = req.body;
+  const responseData = await recordMedia({
+    url,
+    file_type,
+    alt_text,
+    cid,
+    display_order,
+    is_primary,
+  });
+  return apiResponse(res, responseData, 201);
 });
 
 /**
@@ -35,18 +36,18 @@ export const createMedia = tryCatch(async (req, res, _) => {
  * @services_used Media
  */
 export const linkCatalogMedia = tryCatch(async (req, res, _) => {
-    const { media_id, display_order, is_primary } = req.body;
-    await linkMediaToCatalogItem({
-        cid: req.params.cid,
-        media_id,
-        display_order,
-        is_primary,
-    });
-    return apiResponse(
-        res,
-        { cid: Number(req.params.cid), media_id: Number(media_id) },
-        201,
-    );
+  const { media_id, display_order, is_primary } = req.body;
+  await linkMediaToCatalogItem({
+    cid: req.params.cid,
+    media_id,
+    display_order,
+    is_primary,
+  });
+  return apiResponse(
+    res,
+    { cid: Number(req.params.cid), media_id: Number(media_id) },
+    201,
+  );
 });
 
 /**
@@ -56,16 +57,16 @@ export const linkCatalogMedia = tryCatch(async (req, res, _) => {
  * @services_used Media
  */
 export const setPrimaryMedia = tryCatch(async (req, res, _) => {
-    await setPrimaryCatalogImage(req.params.cid, req.params.mediaId);
-    return apiResponse(
-        res,
-        {
-            cid: Number(req.params.cid),
-            media_id: Number(req.params.mediaId),
-            is_primary: true,
-        },
-        200,
-    );
+  await setPrimaryCatalogImage(req.params.cid, req.params.mediaId);
+  return apiResponse(
+    res,
+    {
+      cid: Number(req.params.cid),
+      media_id: Number(req.params.mediaId),
+      is_primary: true,
+    },
+    200,
+  );
 });
 
 /**
@@ -75,15 +76,15 @@ export const setPrimaryMedia = tryCatch(async (req, res, _) => {
  * @services_used Media
  */
 export const unlinkCatalogMedia = tryCatch(async (req, res, _) => {
-    await unlinkMediaFromCatalogItem(req.params.cid, req.params.mediaId);
-    return apiResponse(
-        res,
-        {
-            cid: Number(req.params.cid),
-            media_id: Number(req.params.mediaId),
-        },
-        200,
-    );
+  await unlinkMediaFromCatalogItem(req.params.cid, req.params.mediaId);
+  return apiResponse(
+    res,
+    {
+      cid: Number(req.params.cid),
+      media_id: Number(req.params.mediaId),
+    },
+    200,
+  );
 });
 
 /**
@@ -93,6 +94,17 @@ export const unlinkCatalogMedia = tryCatch(async (req, res, _) => {
  * @services_used Media
  */
 export const deleteMedia = tryCatch(async (req, res, _) => {
-    await deleteMediaById(req.params.mediaId);
-    return apiResponse(res, { media_id: Number(req.params.mediaId) }, 200);
+  await deleteMediaById(req.params.mediaId);
+  return apiResponse(res, { media_id: Number(req.params.mediaId) }, 200);
+});
+
+/**
+ * This controller fetches a paginated list of all media across the platform.
+ * @route GET /api/dashboard/admin/media
+ * @requiredRole admin
+ * @services_used Media
+ */
+export const getMediaList = tryCatch(async (req, res, _) => {
+  const responseData = await viewAllMedia(req.query);
+  return apiResponse(res, responseData, 200);
 });

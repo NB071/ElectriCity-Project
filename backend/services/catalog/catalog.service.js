@@ -7,6 +7,7 @@ import {
     compareCatalogItems,
     ensureCatalogItemExists,
 } from "./_product/productQuery.js";
+import { listBrands, getBrandById } from "./_brand/brandQuery.js";
 import { createConfiguration } from "./_configurations/configurationsMutation.js";
 import { getConfigurationById } from "./_configurations/configurationsQuery.js";
 import {
@@ -25,6 +26,8 @@ const catalogService = {
     compareCatalogItems,
     ensureCatalogItemExists,
     getConfigurationById,
+    listBrands,
+    getBrandById,
 
     // Mutation functions
     createConfiguration,
@@ -47,6 +50,8 @@ export {
     compareCatalogItems,
     ensureCatalogItemExists,
     getConfigurationById,
+    listBrands,
+    getBrandById,
 
     // Mutation functions
     createConfiguration,

@@ -1,6 +1,6 @@
 /**
  * TC_11 - Payment/Cart/Order - Checkout and Payment Strategies
- * UC12–UC15
+ * UC12-UC15
  *
  * Expected: cart items checkout with shipping/billing; payment validated across
  * strategies (credit card, Apple Pay); tax resolved from shipping province;
@@ -65,7 +65,9 @@ describe("TC_11 Checkout and Payment Strategies (UC12-UC15)", () => {
                 ].includes(result.order_status) || result.order_id > 0,
             ).toBe(true);
             expect(Number(result.tax)).toBeGreaterThan(0);
-            expect(Number(result.total)).toBeGreaterThan(Number(result.subtotal));
+            expect(Number(result.total)).toBeGreaterThan(
+                Number(result.subtotal),
+            );
         } finally {
             await cleanupUser(me.user_id);
         }

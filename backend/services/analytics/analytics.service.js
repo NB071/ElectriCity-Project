@@ -1,43 +1,65 @@
 // Analytics Service (Facade)
 
-import { capture, setEventTypeActive } from "./analyticsMutation.js";
+import { capture, setEventTypeActive } from "./_track/trackMutation.js";
 import {
-    eventTypeBreakdown,
-    topCatalogItems,
-    trend,
-    eventDetail,
-} from "./analyticsQuery.js";
+  eventTypeBreakdown,
+  topCatalogItems,
+  trend,
+  eventDetail,
+} from "./_track/trackQuery.js";
 import {
-    EVENT_IDS,
-    EVENT_DEFINITIONS,
-    REPORT_DEFAULTS,
-    REDIS,
+  getAdminOverview,
+  getCustomerOverview,
+} from "./_dashboard/dashboardQuery.js";
+import {
+  EVENT_IDS,
+  EVENT_DEFINITIONS,
+  REPORT_DEFAULTS,
+  REDIS,
 } from "./constants.js";
 
 const analyticsService = {
-    capture,
-    setEventTypeActive,
-    eventTypeBreakdown,
-    topCatalogItems,
-    trend,
-    eventDetail,
-    EVENT_IDS,
-    EVENT_DEFINITIONS,
-    REPORT_DEFAULTS,
-    REDIS,
+  // Track - Mutations
+  capture,
+  setEventTypeActive,
+
+  // Track - Queries
+  eventTypeBreakdown,
+  topCatalogItems,
+  trend,
+  eventDetail,
+
+  // Dashboard - Queries
+  getAdminOverview,
+  getCustomerOverview,
+
+  // Constants
+  EVENT_IDS,
+  EVENT_DEFINITIONS,
+  REPORT_DEFAULTS,
+  REDIS,
 };
 
 export default analyticsService;
 
 export {
-    capture,
-    setEventTypeActive,
-    eventTypeBreakdown,
-    topCatalogItems,
-    trend,
-    eventDetail,
-    EVENT_IDS,
-    EVENT_DEFINITIONS,
-    REPORT_DEFAULTS,
-    REDIS,
+  // Track - Mutations
+  capture,
+  setEventTypeActive,
+
+  // Track - Queries
+  eventTypeBreakdown,
+  topCatalogItems,
+  trend,
+  eventDetail,
+
+  // Dashboard - Queries
+  getAdminOverview,
+  getCustomerOverview,
+
+  // Constants
+  EVENT_IDS,
+  EVENT_DEFINITIONS,
+  REPORT_DEFAULTS,
+  REDIS,
 };

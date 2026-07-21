@@ -26,6 +26,17 @@ function throwValidationError(zodError) {
 
 const positiveInt = z.coerce.number().int().positive();
 
+const multiValueStringSchema = z
+    .union([z.string(), z.array(z.string())])
+    .transform((value) =>
+        (Array.isArray(value) ? value : value.split(","))
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+    )
+    .refine((values) => values.length > 0, {
+        message: "must contain at least one value",
+    });
+
 const browseFiltersSchema = z
     .looseObject({
         brand_id: positiveInt.optional(),
@@ -36,8 +47,10 @@ const browseFiltersSchema = z
         price_min: z.coerce.number().min(0).optional(),
         price_max: z.coerce.number().min(0).optional(),
         mileage_max: z.coerce.number().int().min(0).optional(),
-        body_shape: z.string().min(1).optional(),
+        body_shape: multiValueStringSchema.optional(),
         drivetrain: z.string().min(1).optional(),
+        exterior_color: z.string().min(1).optional(),
+        interior_color: z.string().min(1).optional(),
         promo: optionalPromoTypeSchema,
     })
     .refine(

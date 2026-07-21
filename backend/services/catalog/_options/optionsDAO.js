@@ -2,19 +2,20 @@ import BaseDAO from "../../../utils/BaseDAO.js";
 
 /**
  * This class is the DAO for the options.
+ * @touches_tables: catalog_options, option_values, option_categories, equipped_options
  * @class
- * @extends {BaseDAO}
+ * @extends BaseDAO
  */
 class OptionsDAO extends BaseDAO {
-    /**
-     * This method finds the options by the catalog item ID.
-     * @param {number} cid
-     * @returns {Promise<object[]>}
-     * @throws {DatabaseError} On database failures
-     */
-    async findByCatalogItemId(cid) {
-        const [rows] = await this._query(
-            `SELECT
+  /**
+   * This method finds the options by the catalog item ID.
+   * @param {number} cid
+   * @returns {Promise<object[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findByCatalogItemId(cid) {
+    const [rows] = await this._query(
+      `SELECT
                 oc.category_id,
                 oc.name AS category_name,
                 oc.select_type,
@@ -26,21 +27,21 @@ class OptionsDAO extends BaseDAO {
              JOIN option_categories oc ON oc.category_id = ov.category_id
              WHERE co.cid = ?
              ORDER BY oc.category_id ASC, ov.name ASC`,
-            [cid],
-            { suppressNotFound: true },
-        );
-        return rows;
-    }
+      [cid],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
 
-    /**
-     * This method finds options already equipped on a catalog item.
-     * @param {number} cid
-     * @returns {Promise<object[]>}
-     * @throws {DatabaseError} On database failures
-     */
-    async findEquippedByCatalogItemId(cid) {
-        const [rows] = await this._query(
-            `SELECT
+  /**
+   * This method finds options already equipped on a catalog item.
+   * @param {number} cid
+   * @returns {Promise<object[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findEquippedByCatalogItemId(cid) {
+    const [rows] = await this._query(
+      `SELECT
                 oc.category_id,
                 oc.name AS category_name,
                 oc.select_type,
@@ -52,27 +53,27 @@ class OptionsDAO extends BaseDAO {
              JOIN option_categories oc ON oc.category_id = ov.category_id
              WHERE eo.cid = ?
              ORDER BY oc.category_id ASC, ov.name ASC`,
-            [cid],
-            { suppressNotFound: true },
-        );
-        return rows;
+      [cid],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+
+  /**
+   * This method finds the options by the option IDs.
+   * @param {number[]} optionIds
+   * @returns {Promise<object[]>}
+   * @throws {NotFoundError} If the options do not exist
+   * @throws {DatabaseError} On database failures
+   */
+  async findOptionsByIds(optionIds) {
+    if (!optionIds.length) {
+      return [];
     }
 
-    /**
-     * This method finds the options by the option IDs.
-     * @param {number[]} optionIds
-     * @returns {Promise<object[]>}
-     * @throws {NotFoundError} If the options do not exist
-     * @throws {DatabaseError} On database failures
-     */
-    async findOptionsByIds(optionIds) {
-        if (!optionIds.length) {
-            return [];
-        }
-
-        const placeholders = optionIds.map(() => "?").join(", ");
-        const [rows] = await this._query(
-            `SELECT
+    const placeholders = optionIds.map(() => "?").join(", ");
+    const [rows] = await this._query(
+      `SELECT
                 ov.option_id,
                 ov.category_id,
                 ov.name,
@@ -82,35 +83,35 @@ class OptionsDAO extends BaseDAO {
              FROM option_values ov
              JOIN option_categories oc ON oc.category_id = ov.category_id
              WHERE ov.option_id IN (${placeholders})`,
-            optionIds,
-            { notFoundResource: "Options" },
-        );
-        return rows;
+      optionIds,
+      { notFoundResource: "Options" },
+    );
+    return rows;
+  }
+
+  /**
+   * This method finds the catalog options for the item.
+   * @param {number} cid
+   * @param {number[]} optionIds
+   * @returns {Promise<object[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findCatalogOptionsForItem(cid, optionIds) {
+    if (!optionIds.length) {
+      return [];
     }
 
-    /**
-     * This method finds the catalog options for the item.
-     * @param {number} cid
-     * @param {number[]} optionIds
-     * @returns {Promise<object[]>}
-     * @throws {DatabaseError} On database failures
-     */
-    async findCatalogOptionsForItem(cid, optionIds) {
-        if (!optionIds.length) {
-            return [];
-        }
-
-        const placeholders = optionIds.map(() => "?").join(", ");
-        const [rows] = await this._query(
-            `SELECT co.option_id
+    const placeholders = optionIds.map(() => "?").join(", ");
+    const [rows] = await this._query(
+      `SELECT co.option_id
              FROM catalog_options co
              WHERE co.cid = ?
                AND co.option_id IN (${placeholders})`,
-            [cid, ...optionIds],
-            { suppressNotFound: true },
-        );
-        return rows;
-    }
+      [cid, ...optionIds],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
 }
 
 const optionsDAO = new OptionsDAO();

@@ -5,6 +5,10 @@ import { EVENT_DEFINITIONS } from "../../../services/analytics/constants.js";
 
 const router = Router();
 
+// Public brand reads (must be registered before /:cid)
+router.get("/brands", catalogController.listBrands);
+router.get("/brands/:brandId", catalogController.getBrandById);
+
 // Public catalog reads
 router.get("/vehicles", catalogController.browseVehicles);
 router.get("/vehicles/search", catalogController.searchVehicles);

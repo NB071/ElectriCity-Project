@@ -5,6 +5,31 @@ import reviewService from "../../../services/review/review.service.js";
 import wishlistService from "../../../services/wishlist/wishlist.service.js";
 
 /**
+ * This controller lists brands.
+ * Pass `lite=true` for filter UIs (`{ id, name }` only, unpaginated, A-Z).
+ * Pass `is_featured=true` for the homepage premium strip (unpaginated).
+ * Otherwise returns a paginated list ordered by display_order.
+ * @route GET /api/shop/catalog/brands
+ * @requiredRole N/A
+ * @services_used Catalog
+ */
+export const listBrands = tryCatch(async (req, res, _) => {
+    const responseData = await catalogService.listBrands(req.query);
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller returns one brand by ID.
+ * @route GET /api/shop/catalog/brands/:brandId
+ * @requiredRole N/A
+ * @services_used Catalog
+ */
+export const getBrandById = tryCatch(async (req, res, _) => {
+    const responseData = await catalogService.getBrandById(req.params.brandId);
+    return apiResponse(res, responseData, 200);
+});
+
+/**
  * This controller browses catalog vehicles with filters, sort, and pagination.
  * @route GET /api/shop/catalog/vehicles
  * @requiredRole N/A

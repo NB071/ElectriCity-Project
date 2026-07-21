@@ -4,6 +4,7 @@ export * as adminPaymentsController from "./admin.payments.controller.js";
 export * as adminReviewsController from "./admin.reviews.controller.js";
 export * as adminMediaController from "./admin.media.controller.js";
 export * as adminUsersController from "./admin.users.controller.js";
+export * as customerAnalyticsController from "./customer.analytics.controller.js";
 export * as customerOrdersController from "./customer.orders.controller.js";
 export * as customerPaymentsController from "./customer.payments.controller.js";
 export * as customerReviewsController from "./customer.reviews.controller.js";

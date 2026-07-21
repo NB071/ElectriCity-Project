@@ -1,7 +1,7 @@
 // Analytics Service
 // In-memory cache of active event types via Redis Pub/Sub
 
-import analyticsDAO from "./analyticsDAO.js";
+import TrackDAO from "./_track/trackDAO.js";
 import getRedisClient from "../../configs/redis.js";
 import { REDIS } from "./constants.js";
 import log from "../../utils/logger.js";
@@ -16,13 +16,18 @@ let activeIds = new Set();
  * @throws {NotFoundError} If there's no active event type
  */
 async function loadActiveEventTypes() {
-    try {
-        const rows = await analyticsDAO.findActiveEventTypeIds();
-        activeIds = new Set(rows.map((r) => r.event_type_id));
-    } catch (err) {
-        log.error("Analytics", "loadActiveEventTypes", "loadActiveEventTypes failed", err);
-        throw err;
-    }
+  try {
+    const rows = await TrackDAO.findActiveEventTypeIds();
+    activeIds = new Set(rows.map((r) => r.event_type_id));
+  } catch (err) {
+    log.error(
+      "Analytics",
+      "loadActiveEventTypes",
+      "loadActiveEventTypes failed",
+      err,
+    );
+    throw err;
+  }
 }
 
 /**
@@ -31,7 +36,7 @@ async function loadActiveEventTypes() {
  * @returns {boolean} True if the event type is active, false otherwise
  */
 function isEventActive(eventTypeId) {
-    return activeIds.has(eventTypeId);
+  return activeIds.has(eventTypeId);
 }
 
 /**
@@ -42,21 +47,26 @@ function isEventActive(eventTypeId) {
  * @throws {NotFoundError} If there's no active event type
  */
 async function subscribeToEventTypeChanges() {
-    const client = await getRedisClient();
-    const subscriber = client.duplicate(); // sub mode blocks normal commands, needs own conn
+  const client = await getRedisClient();
+  const subscriber = client.duplicate(); // sub mode blocks normal commands, needs own conn
 
-    subscriber.on("message", async (channel) => {
-        if (channel === REDIS.CACHE_CHANNEL) {
-            try {
-                await loadActiveEventTypes();
-            } catch (err) {
-                log.error("Analytics", "subscribeToEventTypeChanges", "cache reload failed", err);
-                throw err;
-            }
-        }
-    });
+  subscriber.on("message", async (channel) => {
+    if (channel === REDIS.CACHE_CHANNEL) {
+      try {
+        await loadActiveEventTypes();
+      } catch (err) {
+        log.error(
+          "Analytics",
+          "subscribeToEventTypeChanges",
+          "cache reload failed",
+          err,
+        );
+        throw err;
+      }
+    }
+  });
 
-    await subscriber.subscribe(REDIS.CACHE_CHANNEL);
+  await subscriber.subscribe(REDIS.CACHE_CHANNEL);
 }
 
 export { loadActiveEventTypes, isEventActive, subscribeToEventTypeChanges };

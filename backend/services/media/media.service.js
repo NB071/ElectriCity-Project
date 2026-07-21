@@ -1,32 +1,34 @@
 // Media Service (Facade)
 
 import {
-    resolveMediaById,
-    resolveMediaByCid,
-    resolvePrimaryCatalogImage,
+  resolveMediaById,
+  resolveMediaByCid,
+  resolvePrimaryCatalogImage,
+  viewAllMedia,
 } from "./mediaQuery.js";
 import {
-    recordMedia,
-    linkMediaToCatalogItem,
-    setPrimaryCatalogImage,
-    unlinkMediaFromCatalogItem,
-    deleteMediaById,
+  recordMedia,
+  linkMediaToCatalogItem,
+  setPrimaryCatalogImage,
+  unlinkMediaFromCatalogItem,
+  deleteMediaById,
 } from "./mediaMutation.js";
 import { VALIDATIONS } from "./constants.js";
 
 export {
-    // Queries
-    resolveMediaById,
-    resolveMediaByCid,
-    resolvePrimaryCatalogImage,
+  // Queries
+  resolveMediaById,
+  resolveMediaByCid,
+  resolvePrimaryCatalogImage,
+  viewAllMedia,
 
-    // Mutations
-    recordMedia,
-    linkMediaToCatalogItem,
-    setPrimaryCatalogImage,
-    unlinkMediaFromCatalogItem,
-    deleteMediaById,
+  // Mutations
+  recordMedia,
+  linkMediaToCatalogItem,
+  setPrimaryCatalogImage,
+  unlinkMediaFromCatalogItem,
+  deleteMediaById,
 
-    // Constants
-    VALIDATIONS,
+  // Constants
+  VALIDATIONS,
 };

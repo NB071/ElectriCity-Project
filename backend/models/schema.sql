@@ -135,20 +135,29 @@ CREATE TABLE refresh_tokens (
 -- #########################################################
 
 CREATE TABLE brands (
-  brand_id     INT UNSIGNED  NOT NULL AUTO_INCREMENT,
-  name         VARCHAR(100)  NOT NULL,
-  description  TEXT          DEFAULT NULL,
-  country      VARCHAR(100)  DEFAULT NULL,
-  website_url  VARCHAR(255)  DEFAULT NULL,
-  logo_url     VARCHAR(255)  DEFAULT NULL,
-  created_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
-                            ON UPDATE CURRENT_TIMESTAMP,
+  brand_id       INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  name           VARCHAR(100)  NOT NULL,
+  description    TEXT          DEFAULT NULL,
+  country        VARCHAR(100)  DEFAULT NULL,
+  website_url    VARCHAR(255)  DEFAULT NULL,
+  media_id       BIGINT UNSIGNED DEFAULT NULL,
+  is_featured    BOOLEAN       NOT NULL DEFAULT FALSE,
+  display_order  INT UNSIGNED  DEFAULT NULL,
+  created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                              ON UPDATE CURRENT_TIMESTAMP,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (brand_id),
 
-  UNIQUE KEY uq_brands_name (name)
+  UNIQUE KEY uq_brands_name (name),
+  KEY idx_brands_is_featured (is_featured),
+  KEY idx_brands_display_order (display_order),
+  KEY idx_brands_media_id (media_id),
+
+  CONSTRAINT fk_brands_media
+    FOREIGN KEY (media_id) REFERENCES media (media_id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 -- >> Model (Super) table
@@ -252,6 +261,8 @@ CREATE TABLE vehicles (
   year       SMALLINT UNSIGNED DEFAULT NULL,
   `condition`  VARCHAR(20)      DEFAULT NULL,     
   mileage    INT UNSIGNED     DEFAULT NULL,
+  exterior_color  VARCHAR(50)  DEFAULT NULL,
+  interior_color  VARCHAR(50)  DEFAULT NULL,
 
   -- Constraints, Keys, and Indexes
   PRIMARY KEY (cid),
@@ -470,6 +481,7 @@ CREATE TABLE orders (
   subtotal        DECIMAL(12,2)   NOT NULL,
   tax             DECIMAL(12,2)   NOT NULL DEFAULT 0.00,
   total           DECIMAL(12,2)   NOT NULL,
+  additional_information TEXT     DEFAULT NULL,
   created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
                                 ON UPDATE CURRENT_TIMESTAMP,

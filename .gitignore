@@ -22,6 +22,14 @@
 **/.njsproj
 **/.sln
 **/.sw?
+**/.eclipse
+**/.settings
+**/.project
+**/.classpath
+**/.factorypath
+**/.settings
+**/.xcode
+**/.workspace
 
 # env files
 **/.env

@@ -2,6 +2,7 @@
 
 import browseVehiclesStrategy from "./BrowseVehiclesStrategy.js";
 import searchVehiclesStrategy from "./SearchVehiclesStrategy.js";
+import listBrandsStrategy from "./ListBrandsStrategy.js";
 import getVehicleDetailsStrategy from "./GetVehicleDetailsStrategy.js";
 import getCustomizationOptionsStrategy from "./GetCustomizationOptionsStrategy.js";
 import compareVehiclesStrategy from "./CompareVehiclesStrategy.js";
@@ -13,6 +14,7 @@ import { ValidationError } from "../../../utils/errors.js";
 const strategies = {
     [browseVehiclesStrategy.name]: browseVehiclesStrategy,
     [searchVehiclesStrategy.name]: searchVehiclesStrategy,
+    [listBrandsStrategy.name]: listBrandsStrategy,
     [getVehicleDetailsStrategy.name]: getVehicleDetailsStrategy,
     [getCustomizationOptionsStrategy.name]: getCustomizationOptionsStrategy,
     [compareVehiclesStrategy.name]: compareVehiclesStrategy,
