@@ -1,0 +1,7 @@
+# dev/prod indicator
+VITE_ENVIRONMENT=development
+VITE_VERSION=1.0.0
+VITE_DEV_API_URL=http://localhost:8080
+VITE_PROD_API_URL=https://api.project-electricity.app
+VITE_STORAGE_SECRET=85235y209v58n09285nvy03hn3verv3894v
+

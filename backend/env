@@ -1,0 +1,49 @@
+
+# Express variables
+LOCAL_ADDRESS=127.0.0.1
+PORT=8080
+NODE_ENV=development
+LOG_LEVEL=info
+
+# MySQL 
+MYSQL_ROOT_PASSWORD=sJkNRh2SwJC1SzcF1ax4k2UmC6VJpPwN
+MYSQL_PORT=3306
+
+# DB variables (LOCAL)
+DB_HOST=127.0.0.1
+DB_LOCAL_DBNAME=electricity_db
+DB_LOCAL_USER=electricity_db_user
+DB_LOCAL_PASSWORD=L1wRaigYK3WrJeEf0xPeoh56754ELB7e
+
+# Redis variables
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=tUHJ4iyJYJtnFe5CMbxtRxzAg14Ru6Lc
+
+
+# Email variables
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=eecs4413.group.g@gmail.com
+EMAIL_PASS=irfw xzlp vmby gmzp
+EMAIL_FROM="Electricity <eecs4413.group.g@gmail.com>"
+SMTP_SECURE=false
+
+# Gemini variables
+GEMINI_API_KEY=AQ.Ab8RN6L7gcheOd8MrifoGHN7UTIkF8R6CI87RB5dV6G0Uenf4Q
+GEMINI_MODEL=gemini-3.1-flash-lite
+
+# Sentry variables
+SENTRY_ENABLED=true
+SENTRY_DSN=https://2c965d187ac576d0733353b31d4b309b@o4511667998752768.ingest.us.sentry.io/4511714629648384
+SENTRY_DEV_TRACES_SAMPLE_RATE=1.0
+SENTRY_DEV_PROFILE_SESSION_SAMPLE_RATE=1.0
+SENTRY_PROD_TRACES_SAMPLE_RATE=0.1
+SENTRY_PROD_PROFILE_SESSION_SAMPLE_RATE=0.1
+
+# Other variables
+JWT_SIGN_KEY=9c04f6fad12d5c066d360d2f2f4258219a642f17dd2324ab6ff3545b81abc277
+
+# Frontend nginx -> backend (must match PORT above)
+BACKEND_UPSTREAM=http://backend:8080
+
