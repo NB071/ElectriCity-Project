@@ -4,6 +4,9 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
     // Endpoints: [POST] /api/shop/checkout
 
 export const useCheckout = () => {
-    // TODO: implement mutation
+    return useApiMutation({
+        url: "/api/shop/checkout",
+        method: "post"
+    })
 };
 

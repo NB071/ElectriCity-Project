@@ -4,10 +4,18 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
     // Endpoints: [GET] /api/dashboard/admin/orders, [GET] /api/dashboard/admin/orders/:id
 
 export const useGetAdminOrders = () => {
-    // TODO: implement paginated
+    return usePaginatedQuery({
+        queryKey: ["admin", "orders"],
+        url: "/api/dashbaord/admin/orders",
+        method: "get"
+    })
 };
 
-export const useGetAdminOrderById = () => {
-    // TODO: implement query
+export const useGetAdminOrderById = (id: string) => {
+    return useApiQuery({
+        queryKey: ["admin", "orders", id],
+        url: `/api/dashbaord/admin/orders/${id}`,
+        method: "get"
+    })
 };
 
