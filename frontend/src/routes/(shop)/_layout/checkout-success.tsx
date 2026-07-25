@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import { MOCK_ITEMS, resolveUnitPrice } from "@/lib/mock-cart";
+import { queryClient } from "@/integrations/tanstack-query/query-client";
 
 export const Route = createFileRoute("/(shop)/_layout/checkout-success")({
     component: CheckoutSuccessPage,
@@ -11,7 +12,8 @@ function CheckoutSuccessPage() {
     const subtotal = MOCK_ITEMS.reduce((sum, item) => sum + resolveUnitPrice(item) * item.quantity, 0);
     const shipping = 1200;
     const finalTotal = subtotal + shipping;
-
+    const orderData = queryClient.getQueryData(["checkout-data"]);
+    console.log(orderData);
     const [orderNumber] = useState(() => Math.floor(10000 + Math.random() * 90000).toString());
     const [today] = useState(() =>
         new Date().toLocaleDateString("en-GB", {

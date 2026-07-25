@@ -14,6 +14,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useCheckoutDraftStore } from "@/stores";
 import { CreditCardVisual } from "@/components/ui/credit-card";
 import { MOCK_ITEMS, resolveUnitPrice } from "@/lib/mock-cart";
+import { useCheckout } from "@/hooks/api/order/use-order-mutations";
 export const Route = createFileRoute("/(shop)/_layout/checkout")({
     component: CheckoutPage,
 });
@@ -26,6 +27,7 @@ function CheckoutPage() {
     const activeStep = useCheckoutDraftStore((s) => s.activeStep);
     const maxLevel = useCheckoutDraftStore((s) => s.maxLevel);
     const [initialDraft] = useState(() => useCheckoutDraftStore.getState().draft);
+    const checkoutMutation = useCheckout();
 
     const initialValues: CheckoutFormValues = {
         ...initialDraft,
@@ -36,10 +38,16 @@ function CheckoutPage() {
         cardholder_name: "",
     } as CheckoutFormValues;
 
-    const handleSubmit = (values: CheckoutFormValues) => {
+    const handleSubmit = async (values: CheckoutFormValues) => {
         console.log("Submitting Order...", values);
-        // Payment submission and order creation logic will be implemented here
-        navigate({ to: "/checkout-success" });
+        try{
+            await checkoutMutation.mutateAsync({
+                body: values
+        })
+        }
+        catch{
+            alert("handleSubmit Error")
+        }
     };
 
     const subtotal = MOCK_ITEMS.reduce((sum, item) => sum + resolveUnitPrice(item) * item.quantity, 0);
