@@ -3,11 +3,13 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
 
     // Endpoints: [GET] /api/dashboard/customer/orders, [GET] /api/dashboard/customer/orders/:id
 
-export const useGetCustomerOrders = () => {
+export const useGetCustomerOrders = (page : number = 1, limit: number = 20) => {
     return usePaginatedQuery({
         queryKey : ["customer", "orders"],
         url: "/api/dashboard/customer/orders",
-        method: "get"
+        method: "get",
+        page,
+        limit
     })
 };
 

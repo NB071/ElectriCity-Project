@@ -3,11 +3,17 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
 
     // Endpoints: [POST] /api/dashboard/customer/wishlist/:id, [DELETE] /api/dashboard/customer/wishlist/:id
 
-export const useAddToWishlist = () => {
-    // TODO: implement mutation
+export const useAddToWishlist = (id: string) => {
+    return useApiMutation({
+        url: `/api/dashboard/customer/wishlist/${id}`,
+        method: "post"
+    })
 };
 
-export const useRemoveFromWishlist = () => {
-    // TODO: implement mutation
+export const useRemoveFromWishlist = (id: string) => {
+    return useApiMutation({
+        url: `/api/dashboard/customer/wishlist/${id}`,
+        method: "delete"
+    })
 };
 
