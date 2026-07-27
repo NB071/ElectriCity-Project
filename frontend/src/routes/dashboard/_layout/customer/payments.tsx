@@ -1,11 +1,12 @@
-/* eslint-disable */
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, type PaginationState } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
+import { useGetCustomerPayments } from "@/hooks/api/payment/use-payments";
+
 
 export const Route = createFileRoute("/dashboard/_layout/customer/payments")({
     component: RouteComponent,
@@ -20,7 +21,7 @@ type CustomerPaymentAttemptDTO = {
     attempted_at: string;
 };
 
-const MOCK_PAYMENTS: CustomerPaymentAttemptDTO[] = [
+/*const MOCK_PAYMENTS: CustomerPaymentAttemptDTO[] = [
     {
         attempt_id: "pa_9001",
         order_id: "ord_20304050",
@@ -69,10 +70,16 @@ const MOCK_PAYMENTS: CustomerPaymentAttemptDTO[] = [
         status: "pending",
         attempted_at: new Date().toISOString(),
     },
-];
+];*/
 
 function RouteComponent() {
-    const [data] = useState<CustomerPaymentAttemptDTO[]>(MOCK_PAYMENTS);
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+
+    const { data: queryData, isLoading, refetch } = useGetCustomerPayments(pagination.pageIndex + 1, pagination.pageSize);
+    const data = (queryData?.items as CustomerPaymentAttemptDTO[]) || [];
 
     const columns = useMemo(
         () => [
@@ -135,11 +142,13 @@ function RouteComponent() {
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
+        manualPagination: true,
+        rowCount: queryData?.pagination?.total || -1, 
+        
+        state: {
+            pagination,
         },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -147,7 +156,7 @@ function RouteComponent() {
             title="My Payments"
             desc="View your transaction history across all your orders."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Payments")}
+            RefreshFunction={() => refetch()}
         >
             <div className="mt-4 space-y-4">
                 <div className="rounded-md border">
@@ -164,7 +173,13 @@ function RouteComponent() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        Loading transactions...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
                                         {row.getVisibleCells().map((cell) => (

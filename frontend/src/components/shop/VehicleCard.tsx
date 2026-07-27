@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Separator } from "@/components/ui/separator";
 import { UnderlineLinkButton } from "@/components/common/underline-link-button";
 import { useRecentlyViewedStore, useCompareStore } from "@/stores";
+import { useAddToWishlist, useRemoveFromWishlist } from "@/hooks/api/wishlist/use-wishlist-mutations";
 
 export type CatalogListItem = {
     id: number;
@@ -148,6 +149,10 @@ export function CardImageCarousel({ images, alt }: { images: string[]; alt: stri
 }
 
 export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListItem; saved: boolean; onToggleSave: () => void }) {
+
+    const addToWishlist = useAddToWishlist(String(item.id))
+    const removeFromWishlist = useRemoveFromWishlist(String(item.id));
+
     const { lastViewedId } = useRecentlyViewedStore();
     const compareStore = useCompareStore();
     const isComparing = compareStore.has(String(item.id));
@@ -182,6 +187,12 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
+                        if (saved){
+                            addToWishlist.mutate({})
+                        }
+                        else{
+                            removeFromWishlist.mutate({})
+                        }
                         onToggleSave();
                     }}
                     className="absolute top-3 right-3 z-10 size-8 rounded-full bg-white/95 shadow-sm hover:bg-white"
