@@ -1,8 +1,13 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import type { QueryClient } from "@tanstack/react-query";
 import { ModalsContainer } from "@/components/dashboard/modals/ModalsContainer";
 
-export const Route = createRootRoute({
+export type RouterContext = {
+    queryClient: QueryClient;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
     component: () => (
         <>
             <Outlet />

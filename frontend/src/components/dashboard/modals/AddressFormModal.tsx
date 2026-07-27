@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { addressSchema, type AddressFormValues } from "@/zod/address";
+import { useAddMyAddress, useUpdateMyAddress } from "@/hooks/api/iam/use-addresses";
 
 const validateWithZod = (schema: z.ZodSchema) => (values: any) => {
     const result = schema.safeParse(values);
@@ -25,6 +26,10 @@ export function AddressFormModal() {
 
     const isEdit = data?.mode === "edit";
 
+    const addAddress = useAddMyAddress();
+    const updateAddress = useUpdateMyAddress(data?.addressData?.address_id ?? 0);
+    const activeMutation = isEdit ? updateAddress : addAddress;
+
     const formik = useFormik<AddressFormValues>({
         initialValues: {
             street: data?.addressData?.street || "",
@@ -37,9 +42,13 @@ export function AddressFormModal() {
         validate: validateWithZod(addressSchema),
         enableReinitialize: true,
         onSubmit: (values, { setSubmitting }) => {
-            console.log("Submitted Modal", values);
-            setSubmitting(false);
-            closeModal("addressForm");
+            activeMutation.mutate(
+                { body: values },
+                {
+                    onSuccess: () => closeModal("addressForm"),
+                    onSettled: () => setSubmitting(false),
+                }
+            );
         },
     });
 
@@ -54,6 +63,11 @@ export function AddressFormModal() {
                 </DialogHeader>
 
                 <form onSubmit={formik.handleSubmit} className="space-y-4 pt-2">
+                    {activeMutation.isError && (
+                        <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                            {activeMutation.error.message}
+                        </p>
+                    )}
                     <div className="grid gap-2">
                         <Label htmlFor="street">Street Address</Label>
                         <Input id="street" placeholder="123 Example St" {...formik.getFieldProps("street")} />
@@ -108,8 +122,8 @@ export function AddressFormModal() {
                         <Button type="button" variant="outline" onClick={() => closeModal("addressForm")}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={formik.isSubmitting}>
-                            Save Address
+                        <Button type="submit" disabled={formik.isSubmitting || activeMutation.isPending}>
+                            {activeMutation.isPending ? "Saving…" : "Save Address"}
                         </Button>
                     </div>
                 </form>

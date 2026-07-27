@@ -1,13 +1,35 @@
-import { useApiQuery, useApiMutation, usePaginatedQuery, useInfiniteApiQuery } from "@/hooks/use-api";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
+import { useApiQuery } from "@/hooks/use-api";
+import { authKeys, useLogoutAll } from "./use-auth";
 
-    // Endpoints: [GET] /api/auth/sessions, [DELETE] /api/auth/sessions
+// type(s)
 
-export const useGetSessions = () => {
-    // TODO: implement query
+export type SessionDTO = {
+    session_id: string;
+    device_label: string | null;
+    ip_address: string | null;
+    user_agent: string | null;
+    last_seen_at: string;
+    created_at: string;
+    is_current: boolean;
 };
 
+export type SessionListResponse = {
+    sessions: SessionDTO[];
+};
+
+// hook(s)
+
+// Endpoint: [GET] /api/auth/me/sessions
+export const useGetSessions = (options?: { enabled?: boolean }) => {
+    return useApiQuery<SessionListResponse, SessionDTO[]>({
+        queryKey: authKeys.sessions,
+        url: "/api/auth/me/sessions",
+        select: (data) => data.sessions,
+        enabled: options?.enabled ?? true,
+    });
+};
+
+// Endpoint: [POST] /api/auth/logout-all
 export const useDeleteSessions = () => {
-    // TODO: implement mutation
+    return useLogoutAll();
 };
-

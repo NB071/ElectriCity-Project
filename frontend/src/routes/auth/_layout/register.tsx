@@ -1,21 +1,31 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { useFormik } from "formik";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { registerSchema } from "@/zod/auth";
+import { useLogin, useRegister } from "@/hooks/api/iam/use-auth";
+import { dashboardHomeFor, ensureAuthUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/_layout/register")({
+    beforeLoad: async ({ context }) => {
+        const user = await ensureAuthUser(context.queryClient);
+        if (user) {
+            throw redirect({ to: dashboardHomeFor(user) });
+        }
+    },
     component: RegisterForm,
 });
 
-// TODO: Implement actual login logic
-// TODO: redirect to correct dashboard based on role!
-
 function RegisterForm({ className, ...props }: Omit<React.ComponentProps<"form">, "onSubmit">) {
     const navigate = useNavigate();
+    const register = useRegister();
+    const login = useLogin();
+
+    const submitError = register.error?.message ?? login.error?.message;
+    const isSubmitting = register.isPending || login.isPending;
 
     const formik = useFormik({
         initialValues: {
@@ -26,9 +36,31 @@ function RegisterForm({ className, ...props }: Omit<React.ComponentProps<"form">
             password: "",
         },
         validationSchema: toFormikValidationSchema(registerSchema),
-        onSubmit: (values) => {
-            // Proceed with validated values...
-            navigate({ to: "/dashboard" });
+        onSubmit: (values, { setSubmitting }) => {
+            register.mutate(
+                {
+                    body: {
+                        first_name: values.firstName,
+                        last_name: values.lastName,
+                        email: values.email,
+                        password: values.password,
+                        phone_number: values.phone ? values.phone : null,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        login.mutate(
+                            { body: { email: values.email, password: values.password } },
+                            {
+                                onSuccess: (data) => navigate({ to: dashboardHomeFor(data.user) }),
+                                onError: () => navigate({ to: "/auth/login" }),
+                                onSettled: () => setSubmitting(false),
+                            }
+                        );
+                    },
+                    onError: () => setSubmitting(false),
+                }
+            );
         },
     });
 
@@ -39,6 +71,11 @@ function RegisterForm({ className, ...props }: Omit<React.ComponentProps<"form">
                     <h1 className="text-2xl font-bold">Create an account</h1>
                     <p className="text-muted-foreground text-sm text-balance">Enter your details below to register for a new account</p>
                 </div>
+                {submitError && (
+                    <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                        {submitError}
+                    </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                     <Field>
                         <FieldLabel htmlFor="firstName">First Name</FieldLabel>
@@ -120,7 +157,9 @@ function RegisterForm({ className, ...props }: Omit<React.ComponentProps<"form">
                     {formik.touched.password && formik.errors.password && <span className="text-destructive text-sm">{formik.errors.password}</span>}
                 </Field>
                 <Field>
-                    <Button type="submit">Register</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating account…" : "Register"}
+                    </Button>
                 </Field>
                 <FieldDescription className="text-center">
                     Already have an account?{" "}

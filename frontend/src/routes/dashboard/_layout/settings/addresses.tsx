@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -8,192 +8,86 @@ import { DataTablePagination } from "@/components/data-table";
 import { MoreHorizontal, Plus, MapPin } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useUiStore } from "@/stores/ui-store";
+import { useGetMyAddresses, useSetDefaultMyAddress, type AddressResponse } from "@/hooks/api/iam/use-addresses";
 
 export const Route = createFileRoute("/dashboard/_layout/settings/addresses")({
     component: RouteComponent,
 });
 
-// Mocked DTO based on backend structure
-type AddressDTO = {
-    address_id: number;
-    street: string;
-    city: string;
-    province: string;
-    country: string;
-    postal_code: string;
-    is_default: boolean;
-};
+function AddressRowActions({ address }: { address: AddressResponse }) {
+    const { openModal } = useUiStore();
+    const setDefault = useSetDefaultMyAddress(address.address_id);
 
-const MOCK_ADDRESSES: AddressDTO[] = [
-    {
-        address_id: 1,
-        street: "123 Tesla Blvd",
-        city: "Austin",
-        province: "TX",
-        country: "USA",
-        postal_code: "73301",
-        is_default: true,
-    },
-    {
-        address_id: 2,
-        street: "456 Silicon Ave",
-        city: "San Jose",
-        province: "CA",
-        country: "USA",
-        postal_code: "95112",
-        is_default: false,
-    },
-    {
-        address_id: 3,
-        street: "789 Innovation Dr",
-        city: "Seattle",
-        province: "WA",
-        country: "USA",
-        postal_code: "98101",
-        is_default: false,
-    },
-    {
-        address_id: 4,
-        street: "101 Tech Way",
-        city: "Boston",
-        province: "MA",
-        country: "USA",
-        postal_code: "02108",
-        is_default: false,
-    },
-    {
-        address_id: 5,
-        street: "112 Future St",
-        city: "New York",
-        province: "NY",
-        country: "USA",
-        postal_code: "10001",
-        is_default: false,
-    },
-    {
-        address_id: 6,
-        street: "123 Tesla Blvd",
-        city: "Austin",
-        province: "TX",
-        country: "USA",
-        postal_code: "73301",
-        is_default: false,
-    },
-    {
-        address_id: 7,
-        street: "456 Silicon Ave",
-        city: "San Jose",
-        province: "CA",
-        country: "USA",
-        postal_code: "95112",
-        is_default: false,
-    },
-    {
-        address_id: 8,
-        street: "789 Innovation Dr",
-        city: "Seattle",
-        province: "WA",
-        country: "USA",
-        postal_code: "98101",
-        is_default: false,
-    },
-    {
-        address_id: 9,
-        street: "101 Tech Way",
-        city: "Boston",
-        province: "MA",
-        country: "USA",
-        postal_code: "02108",
-        is_default: false,
-    },
-    {
-        address_id: 10,
-        street: "112 Future St",
-        city: "New York",
-        province: "NY",
-        country: "USA",
-        postal_code: "10001",
-        is_default: false,
-    },
-];
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => openModal("addressForm", { mode: "edit", addressData: address })}>Edit Address</DropdownMenuItem>
+                {!address.is_default && (
+                    <DropdownMenuItem disabled={setDefault.isPending} onClick={() => setDefault.mutate({})}>
+                        {setDefault.isPending ? "Setting…" : "Set as Default"}
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => openModal("addressDelete", { addressId: address.address_id, label: address.street })}
+                >
+                    Delete Address
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
 
 function RouteComponent() {
     const { openModal } = useUiStore();
-    const [data] = useState<AddressDTO[]>(MOCK_ADDRESSES);
 
-    const columns = useMemo(
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const { data, isPending, isError, error, refetch, isFetching } = useGetMyAddresses(pagination.pageIndex + 1, pagination.pageSize);
+
+    const rows = data?.items ?? [];
+    const rowCount = data?.pagination.total ?? 0;
+
+    const columns = useMemo<ColumnDef<AddressResponse>[]>(
         () => [
             {
                 accessorKey: "street",
                 header: "Address",
-                cell: (info: any) => {
-                    const row = info.row.original;
-                    return (
-                        <div className="flex items-center gap-2">
-                            <MapPin className="text-muted-foreground h-4 w-4" />
-                            <span className="font-medium">{row.street}</span>
-                            {row.is_default && <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold">Default</span>}
-                        </div>
-                    );
-                },
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-2">
+                        <MapPin className="text-muted-foreground h-4 w-4" />
+                        <span className="font-medium">{row.original.street}</span>
+                        {row.original.is_default && (
+                            <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold">Default</span>
+                        )}
+                    </div>
+                ),
             },
-            {
-                accessorKey: "city",
-                header: "City",
-            },
-            {
-                accessorKey: "province",
-                header: "State/Province",
-            },
-            {
-                accessorKey: "postal_code",
-                header: "Zip/Postal Code",
-            },
+            { accessorKey: "city", header: "City" },
+            { accessorKey: "province", header: "State/Province" },
+            { accessorKey: "postal_code", header: "Zip/Postal Code" },
             {
                 id: "actions",
-                cell: ({ row }: any) => {
-                    const address = row.original;
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => openModal("addressForm", { mode: "edit", addressData: address })}>
-                                    Edit Address
-                                </DropdownMenuItem>
-                                {!address.is_default && (
-                                    <DropdownMenuItem onClick={() => console.log("Set Default", address.address_id)}>Set as Default</DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={() => openModal("addressDelete", { addressId: address.address_id, label: address.street })}
-                                >
-                                    Delete Address
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                },
+                cell: ({ row }) => <AddressRowActions address={row.original} />,
             },
         ],
         []
     );
 
     const table = useReactTable({
-        data,
+        data: rows,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 5,
-            },
-        },
+        manualPagination: true,
+        rowCount,
+        state: { pagination },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -205,9 +99,14 @@ function RouteComponent() {
             ctaFunction={() => openModal("addressForm", { mode: "add" })}
             ctaIcon={<Plus />}
             withRefresh
-            RefreshFunction={() => console.log("Refresh")}
+            RefreshFunction={() => refetch()}
         >
             <div className="mt-4 space-y-4">
+                {isError && (
+                    <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                        {error.message}
+                    </p>
+                )}
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader className="bg-muted/50">
@@ -222,9 +121,15 @@ function RouteComponent() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {isPending ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                        Loading addresses…
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} className={isFetching ? "opacity-60" : undefined}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                         ))}

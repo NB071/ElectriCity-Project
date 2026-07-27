@@ -1,87 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
-import { Star, ImageOff, Trash2 } from "lucide-react";
+import { Star, ImageOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useUiStore } from "@/stores/ui-store";
+import { useGetCustomerReviews } from "@/hooks/api/review/use-customer-reviews";
+import type { CustomerReviewDTO } from "@/hooks/api/review/types";
 
 export const Route = createFileRoute("/dashboard/_layout/customer/reviews")({
     component: RouteComponent,
 });
 
-type CustomerReviewDTO = {
-    review_id: number;
-    title: string | null;
-    body: string | null;
-    rating: number;
-    created_at: string;
-    catalog_item: {
-        cid: string;
-        item_type: string;
-        name: string;
-        primary_image_url: string | null;
-    };
-};
-
-const MOCK_REVIEWS: CustomerReviewDTO[] = [
-    {
-        review_id: 1,
-        title: "Incredible Performance",
-        body: "The vehicle exceeds all my expectations. The acceleration is incredibly smooth, and the autopilot features have practically driven me through all cross-state trips. Highly recommend grabbing the extended battery pack.",
-        rating: 5,
-        created_at: new Date(Date.now() - 86400000 * 42).toISOString(),
-        catalog_item: {
-            cid: "cat_101",
-            item_type: "vehicle",
-            name: "ElectriCity Model Z",
-            primary_image_url: null,
-        },
-    },
-    {
-        review_id: 32,
-        title: "Good but could be sturdier",
-        body: "Looks slick covering the wall connector, but the plastic feels slightly thinner than I anticipated for outdoor weathering. It works fine so far, just slightly disappointed.",
-        rating: 3,
-        created_at: new Date(Date.now() - 86400000 * 20).toISOString(),
-        catalog_item: {
-            cid: "cat_201",
-            item_type: "accessory",
-            name: "Wall Connector Cover",
-            primary_image_url: null,
-        },
-    },
-    {
-        review_id: 18,
-        title: "Perfect Integration",
-        body: "Hooks straight up to the dashboard! The electricity output perfectly bridges into the grid offsetting practically my entire summer electrical cost.",
-        rating: 5,
-        created_at: new Date(Date.now() - 86400000 * 12).toISOString(),
-        catalog_item: {
-            cid: "cat_801",
-            item_type: "energy",
-            name: "Solar Roof Tile Module",
-            primary_image_url: null,
-        },
-    },
-];
-
 function RouteComponent() {
-    const { openModal } = useUiStore();
-    const [data] = useState<CustomerReviewDTO[]>(MOCK_REVIEWS);
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const { data, isPending, isError, error, isFetching, refetch } = useGetCustomerReviews(pagination.pageIndex + 1, pagination.pageSize);
 
-    const columns = useMemo(
+    const rows = data?.items ?? [];
+    const rowCount = data?.pagination.total ?? 0;
+
+    const columns = useMemo<ColumnDef<CustomerReviewDTO>[]>(
         () => [
             {
-                accessorKey: "catalog_item.primary_image_url",
+                id: "thumbnail",
                 header: "",
-                cell: (info: any) => {
-                    const url = info.getValue();
-                    const name = info.row.original.catalog_item.name;
+                cell: ({ row }) => {
+                    const { primary_image_url: url, name } = row.original.catalog_item;
                     return (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -101,15 +47,15 @@ function RouteComponent() {
                 },
             },
             {
-                accessorKey: "catalog_item.name",
+                id: "product",
                 header: "Product",
-                cell: (info: any) => {
-                    const item = info.row.original.catalog_item;
+                cell: ({ row }) => {
+                    const item = row.original.catalog_item;
                     return (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className="flex max-w-[200px] flex-col gap-0.5">
-                                    <span className="truncate text-sm font-semibold">{info.getValue()}</span>
+                                    <span className="truncate text-sm font-semibold">{item.name}</span>
                                     <div className="flex items-center gap-2 text-[10px]">
                                         <span className="text-muted-foreground truncate font-mono">{item.cid}</span>
                                         <Badge variant="secondary" className="h-4 px-1 text-[8px] tracking-widest uppercase">
@@ -119,7 +65,7 @@ function RouteComponent() {
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent className="flex flex-col">
-                                <p className="font-medium">{info.getValue()}</p>
+                                <p className="font-medium">{item.name}</p>
                                 <p className="text-muted-foreground font-mono text-xs">{item.cid}</p>
                             </TooltipContent>
                         </Tooltip>
@@ -129,8 +75,8 @@ function RouteComponent() {
             {
                 accessorKey: "rating",
                 header: "Rating",
-                cell: (info: any) => {
-                    const rating = info.getValue();
+                cell: (info) => {
+                    const rating = info.getValue() as number;
                     return (
                         <div className="flex gap-0.5">
                             {[...Array(5)].map((_, i) => (
@@ -143,7 +89,7 @@ function RouteComponent() {
             {
                 id: "feedback",
                 header: "Feedback",
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     return (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -162,40 +108,21 @@ function RouteComponent() {
             },
             {
                 accessorKey: "created_at",
-                header: ({ column }: any) => <DataTableColumnHeader column={column} title="Date" />,
-                cell: (info: any) => new Date(info.getValue()).toLocaleDateString(),
-            },
-            {
-                id: "actions",
-                cell: ({ row }: any) => {
-                    return (
-                        <div className="flex justify-end pr-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                onClick={() => openModal("reviewDelete", { reviewId: row.original.review_id, reviewTitle: row.original.title })}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    );
-                },
+                header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+                cell: (info) => new Date(String(info.getValue())).toLocaleDateString(),
             },
         ],
         []
     );
 
     const table = useReactTable({
-        data,
+        data: rows,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
-        },
+        manualPagination: true,
+        rowCount,
+        state: { pagination },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -203,9 +130,14 @@ function RouteComponent() {
             title="My Reviews"
             desc="Manage your product feedback and view ratings you've left across your orders."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Reviews")}
+            RefreshFunction={() => refetch()}
         >
             <div className="mt-4 space-y-4">
+                {isError && (
+                    <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                        {error.message}
+                    </p>
+                )}
                 <TooltipProvider delayDuration={300}>
                     <div className="rounded-md border">
                         <Table>
@@ -221,9 +153,15 @@ function RouteComponent() {
                                 ))}
                             </TableHeader>
                             <TableBody>
-                                {table.getRowModel().rows?.length ? (
+                                {isPending ? (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                            Loading your reviews…
+                                        </TableCell>
+                                    </TableRow>
+                                ) : table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id}>
+                                        <TableRow key={row.id} className={isFetching ? "opacity-60" : undefined}>
                                             {row.getVisibleCells().map((cell) => (
                                                 <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                             ))}

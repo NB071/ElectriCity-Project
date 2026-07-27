@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ContentSection } from "@/components/dashboard/ContentSection";
-import { useAuthStore } from "@/stores/auth-store";
+import { useMe } from "@/hooks/use-me";
+import { useUpdateProfile } from "@/hooks/api/iam/use-profile";
 import { accountFormSchema, type AccountFormValues } from "@/zod/profile";
 
 export const Route = createFileRoute("/dashboard/_layout/settings/profile")({
@@ -27,7 +28,8 @@ const validateWithZod = (schema: z.ZodSchema) => (values: any) => {
 // --- Subcomponents ---
 
 function AccountForm() {
-    const { user } = useAuthStore();
+    const { data: user, isPending } = useMe();
+    const updateProfile = useUpdateProfile();
 
     const formik = useFormik<AccountFormValues>({
         initialValues: {
@@ -38,14 +40,36 @@ function AccountForm() {
         },
         validate: validateWithZod(accountFormSchema),
         enableReinitialize: true,
-        onSubmit: (values) => {
-            console.log("Submitting account updates...", values);
-            // TODO: integrate backend mutation for account update
+        onSubmit: (values, { setSubmitting }) => {
+            const changed: Record<string, string | null> = {};
+            if (values.first_name !== user?.first_name) changed.first_name = values.first_name;
+            if (values.last_name !== user?.last_name) changed.last_name = values.last_name;
+            if (values.email !== user?.email) changed.email = values.email;
+            if ((values.phone_number || "") !== (user?.phone_number || "")) {
+                changed.phone_number = values.phone_number ? values.phone_number : null;
+            }
+
+            if (Object.keys(changed).length === 0) {
+                setSubmitting(false);
+                return;
+            }
+
+            updateProfile.mutate({ body: changed }, { onSettled: () => setSubmitting(false) });
         },
     });
 
+    if (isPending) {
+        return <p className="text-muted-foreground text-sm">Loading your profile…</p>;
+    }
+
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-8">
+            {updateProfile.isError && (
+                <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                    {updateProfile.error.message}
+                </p>
+            )}
+            {updateProfile.isSuccess && !formik.dirty && <p className="text-sm font-medium text-green-600">Profile updated.</p>}
             <div className="grid gap-2">
                 <Label htmlFor="first_name">First Name</Label>
                 <Input id="first_name" placeholder="Your first name" {...formik.getFieldProps("first_name")} />
@@ -79,7 +103,9 @@ function AccountForm() {
                 )}
             </div>
 
-            <Button type="submit">Update account</Button>
+            <Button type="submit" disabled={updateProfile.isPending || !formik.dirty}>
+                {updateProfile.isPending ? "Saving…" : "Update account"}
+            </Button>
         </form>
     );
 }

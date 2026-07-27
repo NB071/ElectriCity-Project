@@ -1,22 +1,29 @@
 // The purpose of this file is to guard routes based on the user's role.
 
 import { redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import type { QueryClient } from "@tanstack/react-query";
+import { dashboardHomeFor, ensureAuthUser } from "@/lib/auth";
+
+type GuardArgs = {
+    context: { queryClient: QueryClient };
+    location: { href: string };
+};
 
 function withRoleGuard(requiredRoles: string[]) {
     return {
         staticData: { requiredRoles },
-        beforeLoad: ({ location }: { location: { href: string } }) => {
-            const auth = useAuthStore.getState();
-            const role = auth.user?.role;
+        beforeLoad: async ({ context, location }: GuardArgs) => {
+            const user = await ensureAuthUser(context.queryClient);
 
-            if (!role || !requiredRoles.includes(role)) {
-                const destination = auth.status === "authenticated" ? "/dashboard" : "/auth/login";
-                throw redirect({
-                    to: destination,
-                    search: { redirect: location.href },
-                });
+            if (!user) {
+                throw redirect({ to: "/auth/login", search: { redirect: location.href } });
             }
+
+            if (!requiredRoles.includes(user.role)) {
+                throw redirect({ to: dashboardHomeFor(user) });
+            }
+
+            return { user };
         },
     };
 }

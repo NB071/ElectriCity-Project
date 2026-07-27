@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import { useMe } from "@/hooks/use-me";
 import { ChevronRight } from "lucide-react";
 import { sidebarData } from "../data/sidebar-data";
 
@@ -24,7 +24,7 @@ import { NavUser } from "./NavUser";
 import { SiteSwitcher } from "./SiteSwitcher";
 
 export function AppSidebar() {
-    const { user } = useAuthStore();
+    const { data: user } = useMe();
     const navigate = useNavigate();
     const location = useLocation();
 

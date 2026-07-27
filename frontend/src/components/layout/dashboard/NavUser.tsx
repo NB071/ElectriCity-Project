@@ -4,17 +4,23 @@ import { ChevronUp, LogOut, Settings, User2 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { Navigate, useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores";
+import { useNavigate } from "@tanstack/react-router";
+import { useMe } from "@/hooks/use-me";
+import { useLogout } from "@/hooks/api/iam/use-auth";
 
 export function NavUser() {
     const { isMobile } = useSidebar();
-    const { user, clear } = useAuthStore();
+    const { data: user } = useMe();
     const navigate = useNavigate();
+    const logout = useLogout();
 
     const handleLogout = () => {
-        clear();
-        navigate({ to: "/" });
+        logout.mutate(
+            {},
+            {
+                onSettled: () => navigate({ to: "/" }),
+            }
+        );
     };
 
     return (
@@ -36,13 +42,13 @@ export function NavUser() {
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side={isMobile ? "bottom" : "right"} className="w-[--radix-popper-anchor-width]">
-                        <DropdownMenuItem onClick={() => Navigate({ to: "/dashboard/settings/profile" })}>
+                        <DropdownMenuItem onClick={() => navigate({ to: "/dashboard/settings/profile" })}>
                             <Settings className="mr-2 size-4" />
                             <span>Account Settings</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>
+                        <DropdownMenuItem onClick={handleLogout} disabled={logout.isPending}>
                             <LogOut className="mr-2 size-4" />
-                            <span>Log Out</span>
+                            <span>{logout.isPending ? "Logging out…" : "Log Out"}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
