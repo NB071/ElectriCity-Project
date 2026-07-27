@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, type PaginationState } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useGetAdminPayments } from "@/hooks/api/payment/use-payments";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/payments")({
     component: RouteComponent,
@@ -30,7 +31,7 @@ type AdminPaymentAttemptDTO = {
     };
 };
 
-const MOCK_ADMIN_PAYMENTS: AdminPaymentAttemptDTO[] = [
+/*const MOCK_ADMIN_PAYMENTS: AdminPaymentAttemptDTO[] = [
     {
         attempt_id: "pay_xyz98s7df6g5h4",
         order_id: 8492,
@@ -85,14 +86,16 @@ const MOCK_ADMIN_PAYMENTS: AdminPaymentAttemptDTO[] = [
             email: "sarahc@example.com",
         },
     },
-];
+];*/
 
 function RouteComponent() {
-    const [data] = useState<AdminPaymentAttemptDTO[]>(MOCK_ADMIN_PAYMENTS);
-
-    const handleCopyId = (id: string) => {
-        navigator.clipboard.writeText(id);
-    };
+     const [pagination, setPagination] = useState<PaginationState>({
+            pageIndex: 0,
+            pageSize: 10,
+    });
+    
+    const { data: queryData, isLoading, refetch } = useGetAdminPayments(pagination.pageIndex + 1, pagination.pageSize);
+    const data = (queryData?.items as AdminPaymentAttemptDTO[]) || [];
 
     const columns = useMemo(
         () => [
@@ -170,7 +173,7 @@ function RouteComponent() {
                 header: ({ column }: any) => <DataTableColumnHeader column={column} title="Date" />,
                 cell: (info: any) => new Date(info.getValue()).toLocaleString(),
             },
-            {
+            /*{
                 id: "actions",
                 cell: ({ row }: any) => {
                     const payment = row.original;
@@ -194,7 +197,7 @@ function RouteComponent() {
                         </div>
                     );
                 },
-            },
+            },*/
         ],
         []
     );
@@ -204,11 +207,13 @@ function RouteComponent() {
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
+        manualPagination: true,
+        rowCount: queryData?.pagination?.total || -1, 
+        
+        state: {
+            pagination,
         },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -233,7 +238,13 @@ function RouteComponent() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        Loading transactions...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
                                         {row.getVisibleCells().map((cell) => (
@@ -244,7 +255,7 @@ function RouteComponent() {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        No transaction records fit the global filter bounds.
+                                        No transactions found in global ledger.
                                     </TableCell>
                                 </TableRow>
                             )}

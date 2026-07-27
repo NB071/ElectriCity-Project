@@ -6,7 +6,7 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
 export const useGetAdminOrders = (page : number = 1, limit: number = 20) => {
     return usePaginatedQuery({
         queryKey: ["admin", "orders"],
-        url: "/api/dashbaord/admin/orders",
+        url: "/api/dashboard/admin/orders",
         method: "get",
         page,
         limit
@@ -16,7 +16,7 @@ export const useGetAdminOrders = (page : number = 1, limit: number = 20) => {
 export const useGetAdminOrderById = (id: string) => {
     return useApiQuery({
         queryKey: ["admin", "orders", id],
-        url: `/api/dashbaord/admin/orders/${id}`,
+        url: `/api/dashboard/admin/orders/${id}`,
         method: "get"
     })
 };
