@@ -221,7 +221,7 @@ function RouteComponent() {
             title="Payment Logs"
             desc="Global ledger of every transaction attempt cross-linked to user profiles and orders."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Payments")}
+            RefreshFunction={() => refetch()}
         >
             <div className="mt-4 space-y-4">
                 <div className="rounded-md border">
