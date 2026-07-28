@@ -11,9 +11,10 @@ export const Route = createFileRoute("/(shop)/_layout/checkout-success")({
 
 function CheckoutSuccessPage() {
     const orderData = queryClient.getQueryData(["checkout-data"]) as any;
-    const finalTotal = 100;
-
-    const orderId = orderData?.order_id;
+    const subTotal = 100;
+    const tax = 1.13;
+    const finalTotal = subTotal * tax;
+    const orderId = orderData?.order_id ?? "101010101";
     const [today] = useState(() =>
         new Date().toLocaleDateString("en-GB", {
             day: "2-digit",
@@ -58,7 +59,6 @@ function CheckoutSuccessPage() {
                 </div>
 
                 {/* Order Details Details */}
-
                 {/* <div className="bg-card mt-8 rounded-xl border p-6 shadow-sm md:p-8">
                     <h2 className="mb-6 text-xl font-bold tracking-tight">Order details</h2>
 
