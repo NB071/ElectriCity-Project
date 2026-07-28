@@ -188,10 +188,10 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                         e.stopPropagation();
                         e.preventDefault();
                         if (saved){
-                            addToWishlist.mutate({})
+                            removeFromWishlist.mutate({})
                         }
                         else{
-                            removeFromWishlist.mutate({})
+                            addToWishlist.mutate({})
                         }
                         onToggleSave();
                     }}

@@ -11,11 +11,9 @@ export const Route = createFileRoute("/(shop)/_layout/checkout-success")({
 
 function CheckoutSuccessPage() {
     const orderData = queryClient.getQueryData(["checkout-data"]) as any;
-    
-    const getCustomerOrderById = useGetCustomerOrderById(orderData?.userId);
-    
+    const finalTotal = 100;
 
-    const items = orderData.items || [];
+    const orderId = orderData?.order_id;
     const [today] = useState(() =>
         new Date().toLocaleDateString("en-GB", {
             day: "2-digit",
@@ -40,7 +38,7 @@ function CheckoutSuccessPage() {
                     <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                         <div className="flex flex-col space-y-1">
                             <span className="text-muted-foreground text-xs font-medium uppercase">Order Number</span>
-                            <span className="text-foreground font-semibold">{orderNumber}</span>
+                            <span className="text-foreground font-semibold">{orderId}</span>
                         </div>
                         <div className="flex flex-col space-y-1">
                             <span className="text-muted-foreground text-xs font-medium uppercase">Date</span>
@@ -60,7 +58,8 @@ function CheckoutSuccessPage() {
                 </div>
 
                 {/* Order Details Details */}
-                <div className="bg-card mt-8 rounded-xl border p-6 shadow-sm md:p-8">
+
+                {/* <div className="bg-card mt-8 rounded-xl border p-6 shadow-sm md:p-8">
                     <h2 className="mb-6 text-xl font-bold tracking-tight">Order details</h2>
 
                     <div className="space-y-4 text-sm">
@@ -115,7 +114,7 @@ function CheckoutSuccessPage() {
                             <span>${finalTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );
