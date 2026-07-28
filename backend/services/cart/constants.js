@@ -12,12 +12,7 @@ const VALIDATIONS = {
         MAX: 99,
     },
 
-    SORT_VALUES: [
-        "added_at_desc",
-        "added_at_asc",
-        "price_asc",
-        "price_desc",
-    ],
+    SORT_VALUES: ["added_at_desc", "added_at_asc", "price_asc", "price_desc"],
 
     SESSION_TOKEN: {
         LENGTH: 36,
@@ -28,6 +23,8 @@ const DEFAULTS = {
     SORT: "added_at_desc",
     QUANTITY: 1,
     GUEST_CART_TTL_DAYS: 30,
+    SUMMARY_PREVIEW_LIMIT: 5,
+    SUMMARY_PREVIEW_MAX: 10,
 };
 
 const CART_HEADERS = {

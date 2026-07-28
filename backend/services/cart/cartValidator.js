@@ -144,6 +144,18 @@ const sortParamsSchema = z.object({
         .default(DEFAULTS.SORT),
 });
 
+const summaryParamsSchema = z.object({
+    limit: z.coerce
+        .number()
+        .int("limit must be an integer.")
+        .positive("limit must be a positive integer.")
+        .max(
+            DEFAULTS.SUMMARY_PREVIEW_MAX,
+            `limit must be at most ${DEFAULTS.SUMMARY_PREVIEW_MAX}.`,
+        )
+        .default(DEFAULTS.SUMMARY_PREVIEW_LIMIT),
+});
+
 const mergeGuestCartSchema = z.object({
     userId: userIdSchema,
     sessionToken: sessionTokenSchema,
@@ -290,6 +302,22 @@ function validateSortParams(params = {}) {
 }
 
 /**
+ * This function validates cart summary query parameters (header preview).
+ * @param {object} params Raw query params (limit)
+ * @returns {{ limit: number }}
+ * @throws {ValidationError} If the limit parameter is invalid
+ */
+function validateSummaryParams(params = {}) {
+    const parsed = summaryParamsSchema.safeParse(params);
+
+    if (!parsed.success) {
+        throwValidationError(parsed.error);
+    }
+
+    return parsed.data;
+}
+
+/**
  * Validates merge-guest-cart-into-user input.
  * @param {object} data
  * @returns {{ userId: number, sessionToken: string }}
@@ -314,5 +342,6 @@ export {
     validateCatalogItemId,
     validateUserId,
     validateSortParams,
+    validateSummaryParams,
     validateMergeGuestCart,
 };

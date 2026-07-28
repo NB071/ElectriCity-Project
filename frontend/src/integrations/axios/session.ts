@@ -1,33 +1,44 @@
-// Axios session management (in-memory).
+// In-memory client session (browser-visible state; auth stays in httpOnly cookies).
+// Guest cart token is also mirrored to sessionStorage so SPA reloads can still send
+// X-Cart-Session when the httpOnly cart_session cookie is missing/cross-origin.
 
-let accessToken: string | null = null;
-let cartSession: string | null = null;
+const CART_STORAGE_KEY = "electricity.cart_session";
 
-export function getAccessToken(): string | null {
-    return accessToken;
+function readStoredCartToken(): string | null {
+    try {
+        const value = sessionStorage.getItem(CART_STORAGE_KEY);
+        return value && value.length > 0 ? value : null;
+    } catch {
+        return null;
+    }
 }
 
-export function setAccessToken(token: string | null): void {
-    accessToken = token;
+function writeStoredCartToken(token: string | null): void {
+    try {
+        if (token) sessionStorage.setItem(CART_STORAGE_KEY, token);
+        else sessionStorage.removeItem(CART_STORAGE_KEY);
+    } catch {
+        // ignore quota / private-mode failures
+    }
 }
 
-export function clearAccessToken(): void {
-    accessToken = null;
-}
+let cartToken: string | null = readStoredCartToken();
 
-export function getCartSession(): string | null {
-    return cartSession;
-}
-
-export function setCartSession(sessionToken: string | null): void {
-    cartSession = sessionToken;
-}
-
-export function clearCartSession(): void {
-    cartSession = null;
-}
-
-export function clearClientSession(): void {
-    clearAccessToken();
-    clearCartSession();
-}
+export const session = {
+    cart: {
+        get(): string | null {
+            return cartToken;
+        },
+        set(token: string | null): void {
+            cartToken = token;
+            writeStoredCartToken(token);
+        },
+        clear(): void {
+            cartToken = null;
+            writeStoredCartToken(null);
+        },
+    },
+    clear(): void {
+        session.cart.clear();
+    },
+};

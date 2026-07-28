@@ -1,10 +1,5 @@
 // Axios integration constants
 
-export const AUTH_HEADERS = {
-    AUTHORIZATION: "Authorization",
-    BEARER_PREFIX: "Bearer ",
-} as const;
-
 export const AUTH_COOKIES = {
     ACCESS_TOKEN: "access_token",
     REFRESH_TOKEN: "refresh_token",

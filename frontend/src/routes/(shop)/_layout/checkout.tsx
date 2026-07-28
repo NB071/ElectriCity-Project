@@ -10,7 +10,7 @@ import { ArrowUpRight, Circle, CheckCircle2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStatus } from "@/hooks/use-me";
 import { useCheckoutDraftStore } from "@/stores";
 import { CreditCardVisual } from "@/components/ui/credit-card";
 import { MOCK_ITEMS, resolveUnitPrice } from "@/lib/mock-cart";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/(shop)/_layout/checkout")({
 
 function CheckoutPage() {
     const navigate = useNavigate();
-    const isGuest = useAuthStore((s) => s.status) === "guest";
+    const isGuest = useAuthStatus().status === "guest";
     const setDraft = useCheckoutDraftStore((s) => s.setDraft);
     const setCheckoutProgress = useCheckoutDraftStore((s) => s.setCheckoutProgress);
     const activeStep = useCheckoutDraftStore((s) => s.activeStep);

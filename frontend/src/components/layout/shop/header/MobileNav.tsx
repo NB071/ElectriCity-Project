@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStatus } from "@/hooks/use-me";
+import { useLogout } from "@/hooks/api/iam/use-auth";
 import { useUiStore } from "@/stores/ui-store";
 import { headerNav, type NavItem } from "@/components/layout/data/header-data";
 
@@ -20,9 +21,8 @@ export function MobileNav({ search, onSearchChange, onSearchSubmit }: MobileNavP
     const setMobileNavOpen = useUiStore((s) => s.setMobileNavOpen);
     const [activeGroup, setActiveGroup] = useState<NavItem | null>(null);
 
-    const user = useAuthStore((s) => s.user);
-    const status = useAuthStore((s) => s.status);
-    const clear = useAuthStore((s) => s.clear);
+    const { user, status } = useAuthStatus();
+    const logout = useLogout();
     const signedIn = status === "authenticated" && user != null;
 
     return (
@@ -60,7 +60,10 @@ export function MobileNav({ search, onSearchChange, onSearchSubmit }: MobileNavP
                                 variant="ghost"
                                 size="icon"
                                 aria-label="Sign out"
-                                onClick={() => clear()}
+                                disabled={logout.isPending}
+                                onClick={() => {
+                                    logout.mutate({}, { onSettled: () => setMobileNavOpen(false) });
+                                }}
                                 className="text-white hover:bg-white/10 hover:text-white/90"
                             >
                                 <User className="size-5" />

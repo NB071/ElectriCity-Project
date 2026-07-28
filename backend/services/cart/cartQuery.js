@@ -6,6 +6,7 @@ import CartRegistry from "./ownership/cartRegistry.js";
 import {
     validateCartOwner,
     validateSortParams,
+    validateSummaryParams,
     validateUserId,
 } from "./cartValidator.js";
 import { resolveCartKind } from "./helpers/resolveCartKind.js";
@@ -15,6 +16,7 @@ import {
     validatePaginationParams,
     paginationMeta,
 } from "../../utils/pagination.js";
+import { toCartSummaryDTO } from "./DTOs/cartSummaryDTO.js";
 import log from "../../utils/logger.js";
 
 const cartRegistry = new CartRegistry({ cartDAO });
@@ -34,6 +36,21 @@ function emptyAnonymousCart(sort, pagination) {
         session_token: null,
         is_guest: true,
     };
+}
+
+/**
+ * This function returns an empty guest cart summary for the shop header.
+ * @param {number} previewLimit
+ * @returns {object}
+ */
+function emptyAnonymousCartSummary(previewLimit) {
+    return toCartSummaryDTO({
+        cartId: null,
+        aggregates: { item_count: 0, quantity_total: 0, subtotal: 0 },
+        preview: [],
+        previewLimit,
+        ownerMeta: { session_token: null, is_guest: true },
+    });
 }
 
 /**
@@ -92,4 +109,48 @@ async function viewCart(ownerOrUserId, queryParams = {}) {
     }
 }
 
-export { viewCart };
+/**
+ * This function returns a lite cart summary for the shop header dropdown
+ * (item counts, subtotal, and a small preview list).
+ * @param {{ userId?: number|null, sessionToken?: string|null }|number|string} ownerOrUserId
+ * @param {object} [queryParams] Raw query params (limit)
+ * @returns {Promise<object>}
+ */
+async function viewCartSummary(ownerOrUserId, queryParams = {}) {
+    try {
+        const owner =
+            typeof ownerOrUserId === "object" && ownerOrUserId !== null
+                ? validateCartOwner({
+                      userId:
+                          ownerOrUserId.userId != null
+                              ? validateUserId(ownerOrUserId.userId)
+                              : null,
+                      sessionToken: ownerOrUserId.sessionToken,
+                  })
+                : validateCartOwner({ userId: validateUserId(ownerOrUserId) });
+
+        const { limit: previewLimit } = validateSummaryParams(queryParams);
+
+        if (owner.userId == null) {
+            if (owner.sessionToken == null) {
+                return emptyAnonymousCartSummary(previewLimit);
+            }
+
+            const activeGuest = await cartDAO.findActiveGuestCartBySessionToken(
+                owner.sessionToken,
+            );
+
+            if (!activeGuest) {
+                return emptyAnonymousCartSummary(previewLimit);
+            }
+        }
+
+        const handler = cartRegistry.get(resolveCartKind(owner));
+        return handler.viewCartSummary(owner, { previewLimit });
+    } catch (err) {
+        log.error("Cart", "viewCartSummary", "viewCartSummary failed", err);
+        throw err;
+    }
+}
+
+export { viewCart, viewCartSummary };

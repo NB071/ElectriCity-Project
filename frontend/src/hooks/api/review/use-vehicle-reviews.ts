@@ -1,9 +1,13 @@
-import { useApiQuery, useApiMutation, usePaginatedQuery, useInfiniteApiQuery } from "@/hooks/use-api";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
+import { usePaginatedQuery } from "@/hooks/use-api";
+import { reviewKeys, type CatalogReviewDTO } from "./types";
 
-    // Endpoints: [GET] /api/shop/catalog/:cid/reviews
-
-export const useGetVehicleReviews = () => {
-    // TODO: implement paginated
+// Endpoint: [GET] /api/shop/catalog/:cid/reviews
+export const useGetVehicleReviews = (cid: string | number | undefined, page: number = 1, limit: number = 10) => {
+    return usePaginatedQuery<CatalogReviewDTO>({
+        queryKey: reviewKeys.vehicle(cid ?? ""),
+        url: `/api/shop/catalog/${cid}/reviews`,
+        page,
+        limit,
+        enabled: cid != null && cid !== "",
+    });
 };
-

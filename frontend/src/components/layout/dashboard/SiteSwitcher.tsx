@@ -1,6 +1,7 @@
 import { Store, LayoutDashboard, ChevronsUpDown } from "lucide-react";
 import { useNavigate, useLocation } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import { useMe } from "@/hooks/use-me";
+import { dashboardHomeFor } from "@/lib/auth";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
@@ -9,7 +10,7 @@ export function SiteSwitcher() {
     const { isMobile } = useSidebar();
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuthStore();
+    const { data: user } = useMe();
 
     const roleLabel = user?.role === "admin" ? "Admin Portal" : "Customer Portal";
 
@@ -18,7 +19,7 @@ export function SiteSwitcher() {
             name: "Dashboard",
             plan: roleLabel,
             logo: LayoutDashboard,
-            url: user?.role === "admin" ? "/dashboard/admin" : "/dashboard/customer",
+            url: dashboardHomeFor(user),
         },
         {
             name: "Storefront",

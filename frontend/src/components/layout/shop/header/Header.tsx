@@ -6,7 +6,7 @@ import { useScroll } from "@/hooks/use-scroll";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
-import { CartSection, SAMPLE_CART } from "./CartSection";
+import { CartSection } from "./CartSection";
 import { UserSection } from "./UserSection";
 
 function Header() {
@@ -56,7 +56,7 @@ function Header() {
                     <DesktopNav />
 
                     <div className="flex items-center gap-4">
-                        <CartSection count={SAMPLE_CART.count} items={SAMPLE_CART.items} />
+                        <CartSection />
                         <UserSection />
 
                         <MobileNav search={search} onSearchChange={setSearch} onSearchSubmit={onSearchSubmit} />

@@ -118,6 +118,83 @@ class CartDAO extends BaseDAO {
   }
 
   /**
+   * This method returns aggregate totals for a cart (line count, unit sum, subtotal).
+   * Used by the header cart summary endpoint.
+   * @param {number} cart_id
+   * @returns {Promise<{ item_count: number, quantity_total: number, subtotal: number }>}
+   * @throws {DatabaseError} On database failures
+   */
+  async summarizeCartById(cart_id) {
+    const [rows] = await this._query(
+      `SELECT
+                COUNT(*) AS item_count,
+                COALESCE(SUM(ci.quantity), 0) AS quantity_total,
+                COALESCE(
+                    SUM(
+                        ci.quantity * CASE
+                            WHEN ci.config_id IS NOT NULL THEN COALESCE(cfg.total_price, 0)
+                            ELSE cat.base_price
+                        END
+                    ),
+                    0
+                ) AS subtotal
+             FROM cart_items ci
+             JOIN catalog_items cat ON cat.cid = ci.cid
+             LEFT JOIN configurations cfg ON cfg.config_id = ci.config_id
+             WHERE ci.cart_id = ?`,
+      [cart_id],
+      { suppressNotFound: true },
+    );
+
+    const row = rows[0] ?? {};
+    return {
+      item_count: Number(row.item_count ?? 0),
+      quantity_total: Number(row.quantity_total ?? 0),
+      subtotal: Number(row.subtotal ?? 0),
+    };
+  }
+
+  /**
+   * This method returns a lite preview of the most recently added cart lines
+   * (no option / promotion joins) for the header dropdown.
+   * @param {number} cart_id
+   * @param {number} limit
+   * @returns {Promise<object[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findSummaryPreviewByCartId(cart_id, limit) {
+    const safeLimit = Number(limit);
+
+    const [rows] = await this._query(
+      `SELECT
+                ci.cart_item_id,
+                ci.cid,
+                ci.config_id,
+                ci.quantity,
+                ci.added_at,
+                cat.base_price,
+                b.name AS brand_name,
+                m.name AS model_name,
+                cfg.total_price AS config_total_price,
+                pm.url AS primary_image_url
+             FROM cart_items ci
+             JOIN catalog_items cat ON cat.cid = ci.cid
+             JOIN models m ON m.model_id = cat.model_id
+             JOIN brands b ON b.brand_id = m.brand_id
+             LEFT JOIN configurations cfg ON cfg.config_id = ci.config_id
+             LEFT JOIN catalog_images cat_img
+                ON cat_img.cid = ci.cid AND cat_img.is_primary = TRUE
+             LEFT JOIN media pm ON pm.media_id = cat_img.media_id
+             WHERE ci.cart_id = ?
+             ORDER BY ci.added_at DESC, ci.cart_item_id DESC
+             LIMIT ${safeLimit}`,
+      [cart_id],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+
+  /**
    * This method returns paginated cart items with catalog and configuration details.
    * @param {number} cart_id
    * @param {number} limit

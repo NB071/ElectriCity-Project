@@ -3,9 +3,10 @@
 import { getApiBaseUrl } from "@/lib/env";
 
 import axios, { type AxiosError, type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
-import { AUTH_HEADERS, AUTH_PATHS, CART_HEADERS } from "./constants";
-import { clearAccessToken, clearClientSession, getAccessToken, getCartSession, setCartSession } from "./session";
+import { AUTH_PATHS, CART_HEADERS } from "./constants";
+import { session } from "./session";
 import { ApiError, type ApiErrorBody, type ApiResponse } from "./types";
+import { handleSessionExpiry, markAsGuest } from "@/lib/auth";
 
 type RetryConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
@@ -50,15 +51,10 @@ const apiClient: AxiosInstance = axios.create({
     },
 });
 
-// This interceptor adds the authorization token and cart session to the request headers.
+// Auth uses httpOnly cookies (withCredentials). This interceptor only attaches the guest cart session.
 // ref: https://axios.rest/pages/advanced/interceptors
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const token = getAccessToken();
-    if (token) {
-        config.headers.set(AUTH_HEADERS.AUTHORIZATION, `${AUTH_HEADERS.BEARER_PREFIX}${token}`);
-    }
-
-    const cartSession = getCartSession();
+    const cartSession = session.cart.get();
     if (cartSession) {
         config.headers.set(CART_HEADERS.SESSION, cartSession);
     }
@@ -66,7 +62,7 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     return config;
 });
 
-// This is a promise that is used to refresh the access token.
+// Single-flight refresh of the httpOnly access cookie.
 let refreshPromise: Promise<void> | null = null;
 
 // This function refreshes the access token.
@@ -92,27 +88,27 @@ apiClient.interceptors.response.use(
 
         // Login merges guest cart server-side and clears the cart_session cookie.
         if (requestUrl.includes(AUTH_PATHS.LOGIN)) {
-            setCartSession(null);
-        }
-
-        if (requestUrl.includes(AUTH_PATHS.LOGOUT) || requestUrl.includes(AUTH_PATHS.LOGOUT_ALL)) {
-            clearAccessToken();
+            session.cart.clear();
         }
 
         const sessionFromHeader = readCartSessionHeader(response.headers);
         if (sessionFromHeader) {
-            setCartSession(sessionFromHeader);
+            session.cart.set(sessionFromHeader);
         }
 
-        const payload = response.data as ApiResponse<unknown> | undefined;
-        const body = payload && typeof payload === "object" && "data" in payload ? payload.data : null;
+        // Only cart payloads own session_token / is_guest
+        const isCartCall = requestUrl.includes("/api/shop/cart");
+        if (isCartCall) {
+            const payload = response.data as ApiResponse<unknown> | undefined;
+            const body = payload && typeof payload === "object" && "data" in payload ? payload.data : null;
 
-        if (body && typeof body === "object") {
-            const cart = body as { session_token?: unknown; is_guest?: unknown };
-            if (typeof cart.session_token === "string" && cart.session_token.length > 0) {
-                setCartSession(cart.session_token);
-            } else if (cart.is_guest === false) {
-                setCartSession(null);
+            if (body && typeof body === "object") {
+                const cart = body as { session_token?: unknown; is_guest?: unknown };
+                if (typeof cart.session_token === "string" && cart.session_token.length > 0) {
+                    session.cart.set(cart.session_token);
+                } else if (cart.is_guest === false) {
+                    session.cart.clear();
+                }
             }
         }
 
@@ -125,6 +121,8 @@ apiClient.interceptors.response.use(
 
         const isAuthRefreshCall = url.includes(AUTH_PATHS.REFRESH);
         const isLoginCall = url.includes(AUTH_PATHS.LOGIN);
+        const requestPath = url.split("?")[0] ?? "";
+        const isMeCall = requestPath === AUTH_PATHS.ME || requestPath.endsWith(AUTH_PATHS.ME);
 
         if (status === 401 && original && !original._retry && !isAuthRefreshCall && !isLoginCall) {
             original._retry = true;
@@ -136,13 +134,18 @@ apiClient.interceptors.response.use(
                 await refreshPromise;
                 return apiClient.request(original);
             } catch {
-                clearAccessToken();
+                // /me 401 + failed refresh = guest (or fully expired). Public pages stay put.
+                if (isMeCall) {
+                    markAsGuest();
+                } else {
+                    handleSessionExpiry();
+                }
                 throw toApiError(error);
             }
         }
 
         if (status === 401 && isAuthRefreshCall) {
-            clearClientSession();
+            handleSessionExpiry();
         }
 
         throw toApiError(error);

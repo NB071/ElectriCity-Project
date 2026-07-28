@@ -7,6 +7,7 @@ import {
     validateLogoutContext,
     validateLogoutAllContext,
     validateListUserSessionsContext,
+    validateRevokeSessionContext,
     validateAuthorizationContext,
 } from "../../../services/iam/_access/accessValidator.js";
 import { VALIDATIONS } from "../../../services/iam/_access/constants.js";
@@ -63,6 +64,22 @@ describe("accessValidator", () => {
                 currentSessionId: SID,
             }).userId,
         ).toBe(1);
+
+        const otherSid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        expect(
+            validateRevokeSessionContext({
+                userId: 1,
+                currentSid: SID,
+                sessionId: otherSid,
+            }).sessionId,
+        ).toBe(otherSid);
+        expect(() =>
+            validateRevokeSessionContext({
+                userId: 1,
+                currentSid: SID,
+                sessionId: "short",
+            }),
+        ).toThrow(ValidationError);
     });
 
     test("authorization context role checks", () => {
