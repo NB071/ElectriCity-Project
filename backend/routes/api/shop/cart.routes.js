@@ -11,6 +11,7 @@ router.use(
 );
 
 router.get("/", cartController.getCart);
+router.get("/summary", cartController.getCartSummary);
 router.delete("/", cartController.clearCart);
 router.post(
     "/items",

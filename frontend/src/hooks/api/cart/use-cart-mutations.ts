@@ -1,6 +1,7 @@
-import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { useApiMutation } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
 import type { PaginationMeta } from "@/hooks/use-api";
+import { cartKeys } from "./use-cart-queries";
 
 // Endpoints: [GET] /api/shop/cart, [POST] /api/shop/cart/items, [PATCH] /api/shop/cart/items/:id, [DELETE] /api/shop/cart/items/:id, [DELETE] /api/shop/cart
 
@@ -80,21 +81,6 @@ export type ClearCartResponse = {
     cleared: true;
     session_token: string | null;
     is_guest: boolean;
-};
-
-const cartKeys = {
-    all: ["cart"] as const,
-    list: (params: { page: number; limit: number; sort?: string }) => [...cartKeys.all, "list", params] as const,
-};
-
-// Endpoints: [GET] /api/shop/cart
-export const useGetCart = (page: number = 1, limit: number = 10, sort?: string) => {
-    return useApiQuery<CartResponse>({
-        queryKey: cartKeys.list({ page, limit, sort }),
-        url: "/api/shop/cart",
-        method: "get",
-        params: { page, limit, ...(sort ? { sort } : {}) },
-    });
 };
 
 // Endpoints: [POST] /api/shop/cart/items

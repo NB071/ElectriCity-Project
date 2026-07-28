@@ -96,15 +96,19 @@ apiClient.interceptors.response.use(
             session.cart.set(sessionFromHeader);
         }
 
-        const payload = response.data as ApiResponse<unknown> | undefined;
-        const body = payload && typeof payload === "object" && "data" in payload ? payload.data : null;
+        // Only cart payloads own session_token / is_guest
+        const isCartCall = requestUrl.includes("/api/shop/cart");
+        if (isCartCall) {
+            const payload = response.data as ApiResponse<unknown> | undefined;
+            const body = payload && typeof payload === "object" && "data" in payload ? payload.data : null;
 
-        if (body && typeof body === "object") {
-            const cart = body as { session_token?: unknown; is_guest?: unknown };
-            if (typeof cart.session_token === "string" && cart.session_token.length > 0) {
-                session.cart.set(cart.session_token);
-            } else if (cart.is_guest === false) {
-                session.cart.clear();
+            if (body && typeof body === "object") {
+                const cart = body as { session_token?: unknown; is_guest?: unknown };
+                if (typeof cart.session_token === "string" && cart.session_token.length > 0) {
+                    session.cart.set(cart.session_token);
+                } else if (cart.is_guest === false) {
+                    session.cart.clear();
+                }
             }
         }
 
