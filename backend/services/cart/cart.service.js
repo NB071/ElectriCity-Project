@@ -1,6 +1,6 @@
 // Cart Service (Facade)
 
-import { viewCart } from "./cartQuery.js";
+import { viewCart, viewCartSummary } from "./cartQuery.js";
 import {
     addToCart,
     updateCartItemQuantity,
@@ -18,6 +18,7 @@ import {
 
 const cartService = {
     viewCart,
+    viewCartSummary,
     addToCart,
     updateCartItemQuantity,
     removeFromCart,
@@ -34,6 +35,7 @@ export default cartService;
 
 export {
     viewCart,
+    viewCartSummary,
     addToCart,
     updateCartItemQuantity,
     removeFromCart,

@@ -4,6 +4,10 @@
 import { assertConfigBelongsToCatalog } from "../helpers/assertConfigBelongsToCatalog.js";
 import { loadMappedItem } from "../helpers/loadMappedItem.js";
 import { toCartItemDTO } from "../DTOs/cartItemDTO.js";
+import {
+    toCartSummaryDTO,
+    toCartSummaryPreviewItemDTO,
+} from "../DTOs/cartSummaryDTO.js";
 import { getPromotionsForItems } from "../../catalog/_promotions/promotionsQuery.js";
 import { NotFoundError, InternalError } from "../../../utils/errors.js";
 import { VALIDATIONS } from "../constants.js";
@@ -118,6 +122,33 @@ class CartHandler {
             sort,
             ...this._ownerMeta(cart),
         };
+    }
+
+    /**
+     * Template: lite cart summary for the shop header (counts + preview lines).
+     * @param {object} owner The owner of the cart
+     * @param {object} opts
+     * @param {number} opts.previewLimit Max preview lines to return
+     * @returns {Promise<object>} The cart summary
+     */
+    async viewCartSummary(owner, { previewLimit }) {
+        const cart = await this._ensureCart(owner);
+        const aggregates = await this.cartDAO.summarizeCartById(cart.cart_id);
+        const rows =
+            aggregates.item_count === 0
+                ? []
+                : await this.cartDAO.findSummaryPreviewByCartId(
+                      cart.cart_id,
+                      previewLimit,
+                  );
+
+        return toCartSummaryDTO({
+            cartId: cart.cart_id,
+            aggregates,
+            preview: rows.map(toCartSummaryPreviewItemDTO),
+            previewLimit,
+            ownerMeta: this._ownerMeta(cart),
+        });
     }
 
     /**
