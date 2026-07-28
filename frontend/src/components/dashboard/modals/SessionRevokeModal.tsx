@@ -1,15 +1,19 @@
 import { useUiStore } from "@/stores/ui-store";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useRevokeSession, revokeSessionVariables } from "@/hooks/api/iam/use-sessions";
 
 export function SessionRevokeModal() {
     const { modals, closeModal } = useUiStore();
     const { isOpen, data } = modals.sessionRevoke;
+    const revokeSession = useRevokeSession();
 
     const handleRevoke = () => {
-        console.log("Revoking session:", data?.sessionId);
-        // Call backend mutation logic here...
-        closeModal("sessionRevoke");
+        if (!data?.sessionId) return;
+
+        revokeSession.mutate(revokeSessionVariables(data.sessionId), {
+            onSettled: () => closeModal("sessionRevoke"),
+        });
     };
 
     return (
@@ -23,11 +27,11 @@ export function SessionRevokeModal() {
                 </DialogHeader>
 
                 <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => closeModal("sessionRevoke")}>
+                    <Button variant="outline" onClick={() => closeModal("sessionRevoke")} disabled={revokeSession.isPending}>
                         Cancel
                     </Button>
-                    <Button variant="destructive" onClick={handleRevoke}>
-                        Sign Out Device
+                    <Button variant="destructive" onClick={handleRevoke} disabled={revokeSession.isPending || !data?.sessionId}>
+                        {revokeSession.isPending ? "Signing out..." : "Sign Out Device"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

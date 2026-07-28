@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStatus } from "@/hooks/use-me";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight, Minus, Plus, Trash2, Loader2 } from "lucide-react";
@@ -27,7 +27,7 @@ function getMockPagination(page: number, limit: number, total: number) {
 function CartComponent() {
     const [mockItems, setMockItems] = useState(MOCK_ITEMS);
     const [updatingItems, setUpdatingItems] = useState<Record<string, boolean>>({});
-    const authStatus = useAuthStore((state) => state.status);
+    const { status: authStatus } = useAuthStatus();
 
     const handleUpdateQuantity = async (id: string, newQuantity: number) => {
         if (newQuantity < 1) return;

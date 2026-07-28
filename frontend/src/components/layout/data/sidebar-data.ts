@@ -34,6 +34,7 @@ export const sidebarData = {
                 { title: "Overview", url: "/dashboard/admin", icon: LayoutDashboard },
                 { title: "Orders", url: "/dashboard/admin/orders", icon: ShoppingCart },
                 { title: "Users", url: "/dashboard/admin/users", icon: Users },
+                { title: "Reviews", url: "/dashboard/admin/reviews", icon: MessageCircleDashed },
                 { title: "Payments", url: "/dashboard/admin/payments", icon: Wallet },
                 { title: "Analytics", url: "/dashboard/admin/analytics", icon: BarChart },
                 { title: "Media", url: "/dashboard/admin/media", icon: Image },

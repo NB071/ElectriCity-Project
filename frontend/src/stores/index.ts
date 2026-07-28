@@ -1,4 +1,3 @@
-export { useAuthStore, type AuthStatus, type AuthUser } from "./auth-store";
 export { useChatbotStore, type ChatMessage, type ChatRole } from "./chatbot-store";
 export { useCheckoutDraftStore } from "./checkout-draft-store";
 export { useCompareStore } from "./compare-store";

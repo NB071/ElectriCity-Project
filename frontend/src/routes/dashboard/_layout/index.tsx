@@ -1,12 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import { dashboardHomeFor } from "@/lib/auth";
 
 export const Route = createFileRoute("/dashboard/_layout/")({
-    beforeLoad: () => {
-        const user = useAuthStore.getState().user;
-        if (user?.role === "admin") {
-            throw redirect({ to: "/dashboard/admin" });
-        }
-        throw redirect({ to: "/dashboard/customer" });
+    beforeLoad: ({ context }) => {
+        throw redirect({ to: dashboardHomeFor(context.user) });
     },
 });

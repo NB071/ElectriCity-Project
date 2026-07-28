@@ -1,33 +1,20 @@
-// Axios session management (in-memory).
+// In-memory client session (browser-visible state; auth stays in httpOnly cookies).
 
-let accessToken: string | null = null;
-let cartSession: string | null = null;
+let cartToken: string | null = null;
 
-export function getAccessToken(): string | null {
-    return accessToken;
-}
-
-export function setAccessToken(token: string | null): void {
-    accessToken = token;
-}
-
-export function clearAccessToken(): void {
-    accessToken = null;
-}
-
-export function getCartSession(): string | null {
-    return cartSession;
-}
-
-export function setCartSession(sessionToken: string | null): void {
-    cartSession = sessionToken;
-}
-
-export function clearCartSession(): void {
-    cartSession = null;
-}
-
-export function clearClientSession(): void {
-    clearAccessToken();
-    clearCartSession();
-}
+export const session = {
+    cart: {
+        get(): string | null {
+            return cartToken;
+        },
+        set(token: string | null): void {
+            cartToken = token;
+        },
+        clear(): void {
+            cartToken = null;
+        },
+    },
+    clear(): void {
+        session.cart.clear();
+    },
+};

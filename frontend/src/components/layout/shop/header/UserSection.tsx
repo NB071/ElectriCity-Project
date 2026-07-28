@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { User, LayoutDashboard, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,29 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStatus } from "@/hooks/use-me";
+import { useLogout } from "@/hooks/api/iam/use-auth";
+import { dashboardHomeFor } from "@/lib/auth";
 
 export function UserSection() {
-    const user = useAuthStore((s) => s.user);
-    const status = useAuthStore((s) => s.status);
-    const clear = useAuthStore((s) => s.clear);
+    const { user, status } = useAuthStatus();
+    const navigate = useNavigate();
+    const logout = useLogout();
 
-    const signedIn = status === "authenticated" && user != null && false;
+    const signedIn = status === "authenticated" && user != null;
+
+    if (status === "unknown") {
+        return <div className="hidden h-10 w-40 animate-pulse rounded-md bg-white/10 lg:block" aria-hidden />;
+    }
+
+    const handleLogout = () => {
+        logout.mutate(
+            {},
+            {
+                onSettled: () => navigate({ to: "/" }),
+            }
+        );
+    };
 
     if (signedIn) {
         return (
@@ -64,14 +79,14 @@ export function UserSection() {
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link {...({ to: user?.role === "admin" ? "/dashboard/admin" : "/dashboard/customer" } as any)}>
+                            <Link to={dashboardHomeFor(user)}>
                                 <LayoutDashboard className="mr-2 size-4" />
                                 <span>Dashboard</span>
                             </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => clear()} className="cursor-pointer text-red-500 focus:text-red-500">
+                    <DropdownMenuItem onClick={handleLogout} disabled={logout.isPending} className="cursor-pointer text-red-500 focus:text-red-500">
                         <span className="flex items-center">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -89,7 +104,7 @@ export function UserSection() {
                                 <polyline points="16 17 21 12 16 7" />
                                 <line x1="21" y1="12" x2="9" y2="12" />
                             </svg>
-                            Logout
+                            {logout.isPending ? "Logging out..." : "Logout"}
                         </span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -1,9 +1,13 @@
-import { useApiQuery, useApiMutation, usePaginatedQuery, useInfiniteApiQuery } from "@/hooks/use-api";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
+import { usePaginatedQuery } from "@/hooks/use-api";
+import { reviewKeys, type CustomerReviewDTO } from "./types";
 
-    // Endpoints: [GET] /api/dashboard/customer/reviews
-
-export const useGetCustomerReviews = () => {
-    // TODO: implement paginated
+// Endpoint: [GET] /api/dashboard/customer/reviews
+export const useGetCustomerReviews = (page: number = 1, limit: number = 10, options?: { enabled?: boolean }) => {
+    return usePaginatedQuery<CustomerReviewDTO>({
+        queryKey: reviewKeys.customer(),
+        url: "/api/dashboard/customer/reviews",
+        page,
+        limit,
+        enabled: options?.enabled ?? true,
+    });
 };
-
