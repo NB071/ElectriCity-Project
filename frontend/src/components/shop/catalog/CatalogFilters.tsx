@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useGetBrandsLite } from "@/hooks/api/catalog/use-brands";
 
 const BODY_SHAPES = ["SUV", "Sedan", "Hatchback", "Coupe", "Convertible"];
 
@@ -31,9 +32,12 @@ function AutoSubmit() {
 export function CatalogFilters() {
     const filters = useCatalogStore((state) => state.filters);
     const clearFilters = useCatalogStore((state) => state.clearFilters);
+    const { data: brandsData } = useGetBrandsLite();
+    const brands = brandsData?.items ?? [];
 
     const initialValues: BrowseCatalogFilters = {
         q: filters.q ?? "",
+        brand_id: filters.brand_id,
         condition: filters.condition,
         body_shape: filters.body_shape ?? [],
         year_min: filters.year_min,
@@ -44,7 +48,7 @@ export function CatalogFilters() {
         drivetrain: filters.drivetrain ?? "",
         promo: filters.promo,
         sort: filters.sort || "added_desc",
-    } as any;
+    };
 
     return (
         <div className="border-muted sticky top-24 w-full rounded-xl border bg-white p-5">
@@ -75,6 +79,26 @@ export function CatalogFilters() {
                                 placeholder="Search makes, models..."
                                 className="bg-muted/50"
                             />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label>Brand</Label>
+                            <Select
+                                value={values.brand_id ? String(values.brand_id) : "all"}
+                                onValueChange={(val) => setFieldValue("brand_id", val === "all" ? undefined : Number(val))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Any Brand" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Any Brand</SelectItem>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand.id} value={String(brand.id)}>
+                                            {brand.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-3">

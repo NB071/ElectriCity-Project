@@ -1,9 +1,24 @@
-import { useApiQuery, useApiMutation, usePaginatedQuery, useInfiniteApiQuery } from "@/hooks/use-api";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
+import { useApiMutation } from "@/hooks/use-api";
 
-    // Endpoints: [POST] /api/shop/chatbot
+// Endpoints: [POST] /api/shop/chatbot/message
 
-export const useChatSend = () => {
-    // TODO: implement mutation
+export type ChatTemplate = "product-inquiry" | "cart-assist" | "general-support";
+
+export type ChatSendBody = {
+    template: ChatTemplate;
+    userMessage: string;
+    vars?: Record<string, unknown>;
+    context?: string[];
 };
 
+export type ChatSendResponse = {
+    reply: string;
+};
+
+// Endpoints: [POST] /api/shop/chatbot/message
+export const useChatSend = () => {
+    return useApiMutation<ChatSendResponse, ChatSendBody>({
+        url: "/api/shop/chatbot/message",
+        method: "post",
+    });
+};
