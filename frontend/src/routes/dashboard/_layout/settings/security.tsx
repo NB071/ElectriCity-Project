@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Laptop, Smartphone } from "lucide-react";
+import { Laptop, Smartphone, RefreshCcw } from "lucide-react";
 import { useFormik } from "formik";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { ContentSection } from "@/components/dashboard/ContentSection";
 import { useUiStore } from "@/stores/ui-store";
 import { useUpdateProfile } from "@/hooks/api/iam/use-profile";
 import { useGetSessions } from "@/hooks/api/iam/use-sessions";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/_layout/settings/security")({
     component: RouteComponent,
@@ -105,7 +106,7 @@ function ChangePasswordForm() {
                 )}
             </div>
             <Button type="submit" disabled={updateProfile.isPending}>
-                {updateProfile.isPending ? "Updating…" : "Update password"}
+                {updateProfile.isPending ? "Updating..." : "Update password"}
             </Button>
         </form>
     );
@@ -113,51 +114,80 @@ function ChangePasswordForm() {
 
 function SessionManagement() {
     const { openModal } = useUiStore();
-    const { data: sessions, isPending, isError, error } = useGetSessions();
-
-    if (isPending) {
-        return <p className="text-muted-foreground text-sm">Loading your active sessions…</p>;
-    }
-
-    if (isError) {
-        return (
-            <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
-                {error.message}
-            </p>
-        );
-    }
+    const { data: sessions, isPending, isError, error, refetch, isFetching } = useGetSessions();
 
     return (
-        <div className="space-y-6">
-            {sessions.length === 0 && <p className="text-muted-foreground text-sm">No active sessions found.</p>}
-            {sessions.map((session) => (
-                <div key={session.session_id} className="border-border bg-card flex items-center justify-between rounded-md border p-4">
-                    <div className="flex items-center gap-4">
-                        {/(iPhone|Android|Mobile)/i.test(session.device_label ?? session.user_agent ?? "") ? (
-                            <Smartphone className="text-muted-foreground h-6 w-6" />
-                        ) : (
-                            <Laptop className="text-muted-foreground h-6 w-6" />
-                        )}
-                        <div>
-                            <p className="text-sm font-medium">
-                                {session.device_label || session.user_agent || "Unknown Device"}
-                                {session.is_current && <span className="text-primary ml-2 text-xs font-bold">(Current Device)</span>}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                                IP: {session.ip_address ?? "unknown"} • Last active: {new Date(session.last_seen_at).toLocaleString()}
-                            </p>
+        <div className="space-y-4">
+            <div>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-foreground text-lg font-medium">Active Sessions</h3>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        aria-label="Refresh sessions"
+                    >
+                        <RefreshCcw className={cn("size-4", isFetching && "animate-spin")} />
+                    </Button>
+                </div>
+                <p className="text-muted-foreground text-[0.8rem] font-normal">Manage the devices and locations where you are currently signed in.</p>
+            </div>
+
+            {isPending ? (
+                <p className="text-muted-foreground text-sm">Loading your active sessions...</p>
+            ) : isError ? (
+                <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                    {error.message}
+                </p>
+            ) : (
+                <div className="space-y-6">
+                    {sessions.length === 0 && <p className="text-muted-foreground text-sm">No active sessions found.</p>}
+                    {sessions.map((session) => (
+                        <div key={session.session_id} className="border-border bg-card flex items-center justify-between gap-4 rounded-md border p-4">
+                            <div className="flex min-w-0 items-center gap-4">
+                                {/(iPhone|Android|Mobile)/i.test(session.device_label ?? session.user_agent ?? "") ? (
+                                    <Smartphone className="text-muted-foreground size-6 shrink-0" />
+                                ) : (
+                                    <Laptop className="text-muted-foreground size-6 shrink-0" />
+                                )}
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">
+                                        {session.device_label || session.user_agent || "Unknown Device"}
+                                        {session.is_current && <span className="text-primary ml-2 text-xs font-bold">(Current Device)</span>}
+                                    </p>
+                                    <p className="text-muted-foreground text-xs">
+                                        IP: {session.ip_address ?? "unknown"} • Last active: {new Date(session.last_seen_at).toLocaleString()}
+                                    </p>
+                                </div>
+                            </div>
+                            {!session.is_current && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0"
+                                    onClick={() =>
+                                        openModal("sessionRevoke", {
+                                            sessionId: session.session_id,
+                                            label: session.device_label || session.user_agent || undefined,
+                                        })
+                                    }
+                                >
+                                    Sign out
+                                </Button>
+                            )}
                         </div>
+                    ))}
+                    <div className="border-t pt-4">
+                        <Button variant="destructive" className="w-full sm:w-auto" onClick={() => openModal("sessionRevokeAll")}>
+                            Sign out of all devices
+                        </Button>
+                        <p className="text-muted-foreground mt-2 text-xs">This signs you out everywhere, including this device.</p>
                     </div>
                 </div>
-            ))}
-            <div className="border-t pt-4">
-                Revoking a single other device is deliberately absent: the backend only exposes "logout" (current session) and "logout-all" (every
-                session). Sign-out-all therefore ends this session too and drops the user back on the login page.
-                <Button variant="destructive" className="w-full sm:w-auto" onClick={() => openModal("sessionRevokeAll")}>
-                    Sign out of all devices
-                </Button>
-                <p className="text-muted-foreground mt-2 text-xs">This signs you out everywhere, including this device.</p>
-            </div>
+            )}
         </div>
     );
 }
@@ -174,15 +204,7 @@ function RouteComponent() {
                     <ChangePasswordForm />
                 </div>
 
-                <div className="space-y-4">
-                    <div>
-                        <h3 className="text-foreground text-lg font-medium">Active Sessions</h3>
-                        <p className="text-muted-foreground text-[0.8rem] font-normal">
-                            Manage the devices and locations where you are currently signed in.
-                        </p>
-                    </div>
-                    <SessionManagement />
-                </div>
+                <SessionManagement />
             </div>
         </ContentSection>
     );

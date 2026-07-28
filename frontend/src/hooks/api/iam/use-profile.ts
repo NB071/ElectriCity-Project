@@ -1,8 +1,10 @@
 import { useApiMutation } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
-import { AUTH_PATHS, clearClientSession } from "@/integrations/axios";
+import { AUTH_PATHS } from "@/integrations/axios";
+import { clearAuthenticatedState } from "@/lib/auth";
 import { useMe, type AuthUser } from "@/hooks/use-me";
 import { authKeys } from "./use-auth";
+import { toast } from "sonner";
 
 // type(s)
 
@@ -33,18 +35,25 @@ export const useUpdateProfile = () => {
         method: "patch",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: authKeys.me });
+            toast.success("Profile updated");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not update profile");
         },
     });
 };
 
-// Endpoint: [DELETE] /api/auth/me (soft delete — the account is deactivated, not purged)
+// Endpoint: [DELETE] /api/auth/me (soft delete, the account is deactivated, not purged)
 export const useDeleteProfile = () => {
     return useApiMutation<{ deleted: boolean }, DeleteProfilePayload>({
         url: AUTH_PATHS.ME,
         method: "delete",
         onSuccess: () => {
-            clearClientSession();
-            queryClient.removeQueries();
+            clearAuthenticatedState();
+            toast.success("Account deactivated");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not deactivate account");
         },
     });
 };

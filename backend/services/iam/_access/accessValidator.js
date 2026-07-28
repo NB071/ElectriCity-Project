@@ -73,6 +73,12 @@ const listUserSessionsSchema = z.object({
     currentSessionId: z.string().length(VALIDATIONS.SESSION_ID.LENGTH),
 });
 
+const revokeSessionSchema = z.object({
+    userId: z.number().int().positive(),
+    currentSid: z.string().length(VALIDATIONS.SESSION_ID.LENGTH),
+    sessionId: z.string().length(VALIDATIONS.SESSION_ID.LENGTH),
+});
+
 /**
  * This function validates registration input.
  * @param {object} data
@@ -187,6 +193,27 @@ function validateListUserSessionsContext({ userId, currentSessionId }) {
 }
 
 /**
+ * This function validates revoke-other-session context from the authenticated request.
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.currentSid Session id from the access token claims
+ * @param {string} data.sessionId Session id to revoke (from the route param)
+ * @returns {object} Validated payload
+ * @throws {ValidationError} If validation fails
+ */
+function validateRevokeSessionContext({ userId, currentSid, sessionId }) {
+    const result = revokeSessionSchema.safeParse({
+        userId,
+        currentSid,
+        sessionId,
+    });
+    if (!result.success) {
+        throwValidationError(result.error);
+    }
+    return result.data;
+}
+
+/**
  * This function validates role-based authorization arguments.
  * @param {string} userRole Role from req.user (i.e. "customer", "admin")
  * @param {...string} allowedRoles Roles permitted for the route
@@ -227,5 +254,6 @@ export {
     validateLogoutContext,
     validateLogoutAllContext,
     validateListUserSessionsContext,
+    validateRevokeSessionContext,
     validateAuthorizationContext,
 };

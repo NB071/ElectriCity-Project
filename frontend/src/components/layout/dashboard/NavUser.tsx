@@ -48,7 +48,7 @@ export function NavUser() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleLogout} disabled={logout.isPending}>
                             <LogOut className="mr-2 size-4" />
-                            <span>{logout.isPending ? "Logging out…" : "Log Out"}</span>
+                            <span>{logout.isPending ? "Logging out..." : "Log Out"}</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

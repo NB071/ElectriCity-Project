@@ -1,7 +1,9 @@
 import { useApiMutation } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
-import { AUTH_PATHS, clearClientSession } from "@/integrations/axios";
+import { AUTH_PATHS } from "@/integrations/axios";
+import { meQueryOptions, clearAuthenticatedState } from "@/lib/auth";
 import type { AuthUser } from "@/hooks/use-me";
+import { toast } from "sonner";
 
 // type(s)
 
@@ -39,10 +41,6 @@ export const authKeys = {
     sessions: ["auth", "sessions"] as const,
 };
 
-function resetAuthenticatedCache() {
-    queryClient.removeQueries();
-}
-
 // hook(s)
 
 // Endpoint: [POST] /api/auth/login
@@ -50,8 +48,19 @@ export const useLogin = () => {
     return useApiMutation<LoginResponse, LoginPayload>({
         url: AUTH_PATHS.LOGIN,
         method: "post",
-        onSuccess: () => {
-            resetAuthenticatedCache();
+        onSuccess: (data) => {
+            queryClient.removeQueries();
+            queryClient.setQueryData(meQueryOptions.queryKey, data.user);
+            toast.success("Welcome back", {
+                description: data.user.first_name ? `Signed in as ${data.user.first_name}` : undefined,
+            });
+            if (data.cart_merge?.error) {
+                toast.warning("Signed in, but your guest cart could not be merged.");
+            } else if (data.cart_merge?.merged && data.cart_merge.moved_items > 0) {
+                toast.message("Cart updated", {
+                    description: `${data.cart_merge.moved_items} item(s) moved from your guest cart.`,
+                });
+            }
         },
     });
 };
@@ -61,6 +70,9 @@ export const useRegister = () => {
     return useApiMutation<RegisterResponse, RegisterPayload>({
         url: "/api/auth/register",
         method: "post",
+        onSuccess: () => {
+            toast.success("Account created");
+        },
     });
 };
 
@@ -69,9 +81,14 @@ export const useLogout = () => {
     return useApiMutation<LogoutResponse, void>({
         url: AUTH_PATHS.LOGOUT,
         method: "post",
+        onSuccess: () => {
+            toast.success("Signed out");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not sign out");
+        },
         onSettled: () => {
-            clearClientSession();
-            resetAuthenticatedCache();
+            clearAuthenticatedState();
         },
     });
 };
@@ -81,9 +98,14 @@ export const useLogoutAll = () => {
     return useApiMutation<LogoutAllResponse, void>({
         url: AUTH_PATHS.LOGOUT_ALL,
         method: "post",
+        onSuccess: () => {
+            toast.success("Signed out of all devices");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not sign out of all devices");
+        },
         onSettled: () => {
-            clearClientSession();
-            resetAuthenticatedCache();
+            clearAuthenticatedState();
         },
     });
 };

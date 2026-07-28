@@ -43,7 +43,7 @@ export function AppSidebar() {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 {group.items.map((item) =>
-                                    item.items ? (
+                                    "items" in item ? (
                                         <Collapsible
                                             key={item.title}
                                             asChild

@@ -123,7 +123,7 @@ export function AddressFormModal() {
                             Cancel
                         </Button>
                         <Button type="submit" disabled={formik.isSubmitting || activeMutation.isPending}>
-                            {activeMutation.isPending ? "Saving…" : "Save Address"}
+                            {activeMutation.isPending ? "Saving..." : "Save Address"}
                         </Button>
                     </div>
                 </form>

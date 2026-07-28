@@ -94,7 +94,7 @@ function LoginForm({ className, ...props }: Omit<React.ComponentProps<"form">, "
                 </Field>
                 <Field>
                     <Button type="submit" disabled={login.isPending}>
-                        {login.isPending ? "Logging in…" : "Login"}
+                        {login.isPending ? "Logging in..." : "Login"}
                     </Button>
                 </Field>
                 <FieldDescription className="text-center">

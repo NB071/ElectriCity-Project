@@ -31,9 +31,16 @@ function toSessionDTO(row, currentSessionId) {
  * @returns {{ sessions: object[] }}
  */
 function toSessionListDTO(rows, currentSessionId) {
-    return {
-        sessions: rows.map((row) => toSessionDTO(row, currentSessionId)),
-    };
+    const sessions = rows
+        .map((row) => toSessionDTO(row, currentSessionId))
+        .sort((a, b) => {
+            if (a.is_current !== b.is_current) {
+                return a.is_current ? -1 : 1;
+            }
+            return new Date(b.last_seen_at) - new Date(a.last_seen_at);
+        });
+
+    return { sessions };
 }
 
 export { toSessionDTO, toSessionListDTO };

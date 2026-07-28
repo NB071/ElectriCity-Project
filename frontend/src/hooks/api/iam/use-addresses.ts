@@ -1,6 +1,7 @@
 import { useApiQuery, useApiMutation, usePaginatedQuery } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
 import type { AddressFormValues } from "@/zod/address";
+import { toast } from "sonner";
 
 export type AddressResponse = AddressFormValues & {
     address_id: number;
@@ -40,6 +41,10 @@ export const useAddMyAddress = () => {
         method: "post",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: addressKeys.all });
+            toast.success("Address added");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not add address");
         },
     });
 };
@@ -52,6 +57,10 @@ export const useUpdateMyAddress = (addressId: string | number) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: addressKeys.all });
             queryClient.invalidateQueries({ queryKey: addressKeys.detail(addressId) });
+            toast.success("Address updated");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not update address");
         },
     });
 };
@@ -63,6 +72,10 @@ export const useDeleteMyAddress = (addressId: string | number) => {
         method: "delete",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: addressKeys.all });
+            toast.success("Address removed");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not remove address");
         },
     });
 };
@@ -74,6 +87,10 @@ export const useSetDefaultMyAddress = (addressId: string | number) => {
         method: "patch",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: addressKeys.all });
+            toast.success("Default address updated");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not set default address");
         },
     });
 };

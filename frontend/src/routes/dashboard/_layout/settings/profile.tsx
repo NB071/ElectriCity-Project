@@ -14,7 +14,7 @@ export const Route = createFileRoute("/dashboard/_layout/settings/profile")({
 });
 
 // --- Validation ---
-const validateWithZod = (schema: z.ZodSchema) => (values: any) => {
+const validateWithZod = (schema: z.ZodSchema) => (values: AccountFormValues) => {
     const result = schema.safeParse(values);
     if (result.success) return {};
     const errors: Record<string, string> = {};
@@ -59,7 +59,7 @@ function AccountForm() {
     });
 
     if (isPending) {
-        return <p className="text-muted-foreground text-sm">Loading your profile…</p>;
+        return <p className="text-muted-foreground text-sm">Loading your profile...</p>;
     }
 
     return (
@@ -69,7 +69,6 @@ function AccountForm() {
                     {updateProfile.error.message}
                 </p>
             )}
-            {updateProfile.isSuccess && !formik.dirty && <p className="text-sm font-medium text-green-600">Profile updated.</p>}
             <div className="grid gap-2">
                 <Label htmlFor="first_name">First Name</Label>
                 <Input id="first_name" placeholder="Your first name" {...formik.getFieldProps("first_name")} />
@@ -104,7 +103,7 @@ function AccountForm() {
             </div>
 
             <Button type="submit" disabled={updateProfile.isPending || !formik.dirty}>
-                {updateProfile.isPending ? "Saving…" : "Update account"}
+                {updateProfile.isPending ? "Saving..." : "Update account"}
             </Button>
         </form>
     );

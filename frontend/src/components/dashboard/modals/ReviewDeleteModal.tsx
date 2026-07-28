@@ -38,7 +38,7 @@ export function ReviewDeleteModal() {
                         Cancel
                     </Button>
                     <Button variant="destructive" onClick={handleDelete} disabled={deleteReview.isPending || data?.reviewId == null}>
-                        {deleteReview.isPending ? "Deleting…" : "Yes, Delete"}
+                        {deleteReview.isPending ? "Deleting..." : "Yes, Delete"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -158,7 +158,7 @@ function RegisterForm({ className, ...props }: Omit<React.ComponentProps<"form">
                 </Field>
                 <Field>
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Creating account…" : "Register"}
+                        {isSubmitting ? "Creating account..." : "Register"}
                     </Button>
                 </Field>
                 <FieldDescription className="text-center">

@@ -173,7 +173,7 @@ function RouteComponent() {
                             {activeQuery.isPending ? (
                                 <TableRow>
                                     <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                                        Loading users…
+                                        Loading users...
                                     </TableCell>
                                 </TableRow>
                             ) : table.getRowModel().rows?.length ? (

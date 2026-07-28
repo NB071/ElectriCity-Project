@@ -13,6 +13,7 @@ import {
     validateRefreshTokenInput,
     validateLogoutContext,
     validateLogoutAllContext,
+    validateRevokeSessionContext,
 } from "./accessValidator.js";
 import { JWT, DEFAULTS, VALIDATIONS } from "./constants.js";
 import env from "../../../configs/env.js";
@@ -21,6 +22,7 @@ import {
     ForbiddenError,
     NotFoundError,
     InternalError,
+    ValidationError,
 } from "../../../utils/errors.js";
 import { toRegisterResponseDTO } from "./DTOs/registerResponseDTO.js";
 import { toAuthSessionDTO } from "./DTOs/authSessionDTO.js";
@@ -310,6 +312,43 @@ async function logoutAllDevices({ userId }) {
 }
 
 /**
+ * This function revokes one of the user's other sessions (kick a specific device).
+ * The current session cannot be revoked here; use logout for that.
+ * @param {object} data
+ * @param {number} data.userId
+ * @param {string} data.currentSid Session id from the access token claims
+ * @param {string} data.sessionId Session id to revoke
+ * @returns {Promise<void>}
+ * @throws {ValidationError} If validation fails or the target is the current session
+ * @throws {UnauthorizedError} If the session does not belong to the user
+ * @throws {DatabaseError} If a database operation fails
+ */
+async function revokeSession({ userId, currentSid, sessionId }) {
+    const validated = validateRevokeSessionContext({
+        userId,
+        currentSid,
+        sessionId,
+    });
+
+    if (validated.sessionId === validated.currentSid) {
+        throw new ValidationError(
+            "Cannot revoke the current session. Use logout instead.",
+        );
+    }
+
+    const session = await accessDAO.findSessionById(validated.sessionId);
+    if (
+        !session ||
+        session.user_id !== validated.userId ||
+        session.revoked_at !== null
+    ) {
+        throw new UnauthorizedError("Session not found");
+    }
+
+    await accessDAO.endSession(validated.sessionId);
+}
+
+/**
  * This function rotates refresh tokens and issues a new access token.
  * @param {string} refreshToken Raw refresh JWT from body or cookie
  * @param {object} [context] Request context used to refresh session visibility
@@ -410,4 +449,4 @@ async function refreshTokens(
     });
 }
 
-export { register, login, logout, logoutAllDevices, refreshTokens };
+export { register, login, logout, logoutAllDevices, revokeSession, refreshTokens };

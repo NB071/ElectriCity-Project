@@ -11,18 +11,25 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useUiStore } from "@/stores/ui-store";
 import { useGetAdminReviews } from "@/hooks/api/review/use-admin-reviews";
 import type { AdminReviewListDTO } from "@/hooks/api/review/types";
+import { mediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/reviews")({
     component: RouteComponent,
 });
 
-function RouteComponent() {
-    const { openModal } = useUiStore();
-    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-    const { data, isPending, isError, error, isFetching, refetch } = useGetAdminReviews(pagination.pageIndex + 1, pagination.pageSize);
+type ReviewsTableProps = {
+    rows: AdminReviewListDTO[];
+    rowCount: number;
+    isPending: boolean;
+    isFetching: boolean;
+    pagination: { pageIndex: number; pageSize: number };
+    onPaginationChange: React.Dispatch<React.SetStateAction<{ pageIndex: number; pageSize: number }>>;
+};
 
-    const rows = data?.items ?? [];
-    const rowCount = data?.pagination.total ?? 0;
+function ReviewsTable({ rows, rowCount, isPending, isFetching, pagination, onPaginationChange }: ReviewsTableProps) {
+    "use no memo";
+
+    const { openModal } = useUiStore();
 
     const columns = useMemo<ColumnDef<AdminReviewListDTO>[]>(
         () => [
@@ -36,7 +43,11 @@ function RouteComponent() {
                             <TooltipTrigger asChild>
                                 <div className="bg-muted/50 flex h-12 w-16 items-center justify-center overflow-hidden rounded-md border">
                                     {item.primary_image_url ? (
-                                        <img src={item.primary_image_url} alt={item.name} className="h-full w-full object-cover" />
+                                        <img
+                                            src={mediaUrl(item.primary_image_url) ?? undefined}
+                                            alt={item.name}
+                                            className="h-full w-full object-cover"
+                                        />
                                     ) : (
                                         <ImageOff className="text-muted-foreground/50 h-4 w-4" />
                                     )}
@@ -55,7 +66,7 @@ function RouteComponent() {
                 cell: ({ row }) => {
                     const item = row.original.catalog_item;
                     return (
-                        <div className="flex max-w-[200px] flex-col gap-0.5">
+                        <div className="flex max-w-50 flex-col gap-0.5">
                             <span className="truncate text-sm font-semibold">{item.name}</span>
                             <div className="flex items-center gap-2 text-[10px]">
                                 <span className="text-muted-foreground truncate font-mono">{item.cid}</span>
@@ -73,7 +84,7 @@ function RouteComponent() {
                 cell: ({ row }) => {
                     const user = row.original.user;
                     return (
-                        <div className="flex max-w-[180px] flex-col gap-0.5">
+                        <div className="flex max-w-45 flex-col gap-0.5">
                             <span className="truncate text-sm font-medium">
                                 {user.first_name} {user.last_name}
                                 {user.is_deleted && <span className="text-destructive ml-1 text-[10px]">(deleted)</span>}
@@ -103,12 +114,12 @@ function RouteComponent() {
                 cell: ({ row }) => (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex max-w-[280px] flex-col gap-1 py-1 text-left">
+                            <div className="flex max-w-70 flex-col gap-1 py-1 text-left">
                                 {row.original.title && <span className="truncate text-xs font-medium">{row.original.title}</span>}
                                 {row.original.body && <span className="text-muted-foreground line-clamp-2 text-xs">{row.original.body}</span>}
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[400px] whitespace-normal">
+                        <TooltipContent className="max-w-100 whitespace-normal">
                             {row.original.title && <p className="mb-1 text-sm font-semibold">{row.original.title}</p>}
                             <p className="text-muted-foreground text-xs leading-relaxed">{row.original.body}</p>
                         </TooltipContent>
@@ -142,6 +153,7 @@ function RouteComponent() {
         [openModal]
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table opted out via "use no memo"
     const table = useReactTable({
         data: rows,
         columns,
@@ -149,8 +161,63 @@ function RouteComponent() {
         manualPagination: true,
         rowCount,
         state: { pagination },
-        onPaginationChange: setPagination,
+        onPaginationChange,
     });
+
+    return (
+        <>
+            <TooltipProvider delayDuration={300}>
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader className="bg-muted/50">
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id}>
+                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {isPending ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                        Loading reviews...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id} className={isFetching ? "opacity-60" : undefined}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        No reviews have been published yet.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </TooltipProvider>
+
+            <DataTablePagination table={table} />
+        </>
+    );
+}
+
+function RouteComponent() {
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const { data, isPending, isError, error, isFetching, refetch } = useGetAdminReviews(pagination.pageIndex + 1, pagination.pageSize);
+
+    const rows = data?.items ?? [];
+    const rowCount = data?.pagination.total ?? 0;
 
     return (
         <ContentSection title="Reviews" desc="Moderate customer feedback across the entire catalog." withRefresh RefreshFunction={() => refetch()}>
@@ -160,48 +227,14 @@ function RouteComponent() {
                         {error.message}
                     </p>
                 )}
-                <TooltipProvider delayDuration={300}>
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                        {headerGroup.headers.map((header) => (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody>
-                                {isPending ? (
-                                    <TableRow>
-                                        <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                                            Loading reviews…
-                                        </TableCell>
-                                    </TableRow>
-                                ) : table.getRowModel().rows?.length ? (
-                                    table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id} className={isFetching ? "opacity-60" : undefined}>
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                                            ))}
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={columns.length} className="h-24 text-center">
-                                            No reviews have been published yet.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </TooltipProvider>
-
-                <DataTablePagination table={table} />
+                <ReviewsTable
+                    rows={rows}
+                    rowCount={rowCount}
+                    isPending={isPending}
+                    isFetching={isFetching}
+                    pagination={pagination}
+                    onPaginationChange={setPagination}
+                />
             </div>
         </ContentSection>
     );

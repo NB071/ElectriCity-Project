@@ -20,12 +20,12 @@ export function shouldRetryAuthQuery(failureCount: number, error: ApiError): boo
     return failureCount < 2;
 }
 
-// Cached profile for the signed-in user ("GET /api/auth/me").
-// Relies on httpOnly "access_token" cookie and/or Authorization header via "apiClient".
+// Cached session probe ("GET /api/auth/me").
+// Guests get 200 + null; signed-in users get the profile. Relies on httpOnly cookies.
 export function useMe(options?: { enabled?: boolean; fields?: string }) {
     const params = options?.fields ? { fields: options.fields } : undefined;
 
-    return useApiQuery<AuthUser>({
+    return useApiQuery<AuthUser | null>({
         queryKey: ["auth", "me", options?.fields ?? null],
         url: AUTH_PATHS.ME,
         params,
@@ -35,9 +35,15 @@ export function useMe(options?: { enabled?: boolean; fields?: string }) {
 }
 
 export function useAuthStatus(): { user: AuthUser | null; status: AuthStatus; isLoading: boolean } {
-    const { data, isPending, isError } = useMe();
+    const { data, isPending, isError, isSuccess } = useMe();
 
-    const status: AuthStatus = data ? "authenticated" : isError ? "guest" : isPending ? "unknown" : "guest";
+    const status: AuthStatus = isPending
+        ? "unknown"
+        : isSuccess && data
+          ? "authenticated"
+          : isError || isSuccess
+            ? "guest"
+            : "unknown";
 
     return { user: data ?? null, status, isLoading: isPending };
 }

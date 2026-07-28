@@ -34,7 +34,7 @@ export function AddressDeleteModal() {
                         Cancel
                     </Button>
                     <Button variant="destructive" onClick={handleDelete} disabled={deleteAddress.isPending || data?.addressId == null}>
-                        {deleteAddress.isPending ? "Deleting…" : "Yes, Delete Address"}
+                        {deleteAddress.isPending ? "Deleting..." : "Yes, Delete Address"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

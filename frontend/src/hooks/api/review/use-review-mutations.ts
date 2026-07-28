@@ -1,6 +1,7 @@
 import { useApiMutation } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
 import { reviewKeys, type PublishReviewResponse } from "./types";
+import { toast } from "sonner";
 
 // type(s)
 
@@ -21,6 +22,10 @@ export const useSubmitReview = (cid: string | number) => {
             queryClient.invalidateQueries({ queryKey: reviewKeys.vehicle(cid) });
             queryClient.invalidateQueries({ queryKey: reviewKeys.customer() });
             queryClient.invalidateQueries({ queryKey: ["vehicles", String(cid)] });
+            toast.success("Review submitted");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not submit review");
         },
     });
 };
@@ -32,6 +37,10 @@ export const useDeleteAdminReview = () => {
         method: "delete",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: reviewKeys.all });
+            toast.success("Review deleted");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not delete review");
         },
     });
 };

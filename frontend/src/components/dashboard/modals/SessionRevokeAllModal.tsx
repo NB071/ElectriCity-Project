@@ -32,8 +32,8 @@ export function SessionRevokeAllModal() {
                     </div>
                     <DialogTitle>Sign out of all devices</DialogTitle>
                     <DialogDescription className="pt-2 text-center">
-                        This action will immediately invalidate all your active sessions on every browser and device — including this one. You will
-                        need to log in again to continue.
+                        This action will immediately invalidate all your active sessions on every browser and device, including the current one. You
+                        will need to log in again to continue.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -42,7 +42,7 @@ export function SessionRevokeAllModal() {
                         Cancel
                     </Button>
                     <Button variant="destructive" onClick={handleRevokeAll} disabled={logoutAll.isPending} className="flex-1">
-                        {logoutAll.isPending ? "Signing out…" : "Sign Out All"}
+                        {logoutAll.isPending ? "Signing out..." : "Sign Out All"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -7,6 +7,7 @@ import {
     ForbiddenError,
     NotFoundError,
     DatabaseError,
+    ValidationError,
 } from "../../../utils/errors.js";
 import { JWT } from "../../../services/iam/_access/constants.js";
 import env from "../../../configs/env.js";
@@ -46,9 +47,8 @@ await jest.unstable_mockModule(
     }),
 );
 
-const { login, logout, logoutAllDevices, refreshTokens } = await import(
-    "../../../services/iam/_access/accessMutation.js"
-);
+const { login, logout, logoutAllDevices, revokeSession, refreshTokens } =
+    await import("../../../services/iam/_access/accessMutation.js");
 
 function hashToken(raw) {
     return crypto.createHash("sha256").update(raw).digest("hex");
@@ -132,6 +132,72 @@ describe("accessMutation", () => {
 
         await logoutAllDevices({ userId: 1 });
         expect(mockEndAllSessionsByUserId).toHaveBeenCalledWith(1);
+    });
+
+    test("revokeSession rejects current session, missing, foreign, and already revoked", async () => {
+        const currentSid = "00000000-0000-4000-8000-000000000001";
+        const otherSid = "00000000-0000-4000-8000-000000000002";
+
+        await expect(
+            revokeSession({
+                userId: 1,
+                currentSid,
+                sessionId: currentSid,
+            }),
+        ).rejects.toBeInstanceOf(ValidationError);
+
+        mockFindSessionById.mockResolvedValueOnce(null);
+        await expect(
+            revokeSession({
+                userId: 1,
+                currentSid,
+                sessionId: otherSid,
+            }),
+        ).rejects.toBeInstanceOf(UnauthorizedError);
+
+        mockFindSessionById.mockResolvedValueOnce({
+            session_id: otherSid,
+            user_id: 99,
+            revoked_at: null,
+        });
+        await expect(
+            revokeSession({
+                userId: 1,
+                currentSid,
+                sessionId: otherSid,
+            }),
+        ).rejects.toBeInstanceOf(UnauthorizedError);
+
+        mockFindSessionById.mockResolvedValueOnce({
+            session_id: otherSid,
+            user_id: 1,
+            revoked_at: new Date().toISOString(),
+        });
+        await expect(
+            revokeSession({
+                userId: 1,
+                currentSid,
+                sessionId: otherSid,
+            }),
+        ).rejects.toBeInstanceOf(UnauthorizedError);
+    });
+
+    test("revokeSession ends another owned active session", async () => {
+        const currentSid = "00000000-0000-4000-8000-000000000001";
+        const otherSid = "00000000-0000-4000-8000-000000000002";
+
+        mockFindSessionById.mockResolvedValue({
+            session_id: otherSid,
+            user_id: 1,
+            revoked_at: null,
+        });
+
+        await revokeSession({
+            userId: 1,
+            currentSid,
+            sessionId: otherSid,
+        });
+        expect(mockEndSession).toHaveBeenCalledWith(otherSid);
     });
 
     test("refreshTokens rejects invalid jwt", async () => {
