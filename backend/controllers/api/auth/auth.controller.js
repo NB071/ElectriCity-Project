@@ -138,13 +138,36 @@ export const getMySessions = tryCatch(async (req, res, _) => {
 });
 
 /**
- * This controller returns the authenticated user's profile for frontend caching.
- * Optional ?fields=email,first_name limits the response payload.
+ * This controller revokes one of the authenticated user's other sessions.
+ * The current session cannot be revoked here; use POST /api/auth/logout instead.
  * @required_role Customer/Admin
+ * @route DELETE /api/auth/me/sessions/:sessionId
+ * @services_used IAM (access_management)
+ */
+export const revokeMySession = tryCatch(async (req, res, _) => {
+    await iamService.access_management.revokeSession({
+        userId: req.user.user_id,
+        currentSid: req.user.sid,
+        sessionId: req.params.sessionId,
+    });
+    return apiResponse(res, { revoked: true }, 200);
+});
+
+/**
+ * This controller returns the current session profile for frontend caching.
+ * Guests (no access cookie) receive 200 with "data: null" so public pages
+ * can probe auth without triggering refresh. Invalid/expired cookies still 401 so
+ * the client can refresh.
+ * Optional ?fields=email,first_name limits the response payload.
+ * @required_role Customer/Admin when authenticated; public when guest
  * @route GET /api/auth/me
  * @services_used IAM (identity_management)
  */
 export const getMe = tryCatch(async (req, res, _) => {
+    if (req.user == null) {
+        return apiResponse(res, null, 200);
+    }
+
     const responseData = await iamService.identity_management.getUserById(
         req.user.user_id,
         { fields: req.query.fields },

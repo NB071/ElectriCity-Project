@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStatus } from "@/hooks/use-me";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight, Minus, Plus, Trash2, Loader2, ShoppingCart } from "lucide-react";
@@ -14,9 +14,9 @@ export const Route = createFileRoute("/(shop)/_layout/cart")({
 });
 
 function CartComponent() {
-    const [page, setPage] = useState(1);
-    const [updatingItems, setUpdatingItems] = useState<Record<number, boolean>>({});
-    const authStatus = useAuthStore((state) => state.status);
+    const [mockItems, setMockItems] = useState(MOCK_ITEMS);
+    const [updatingItems, setUpdatingItems] = useState<Record<string, boolean>>({});
+    const { status: authStatus } = useAuthStatus();
 
     // the visible, paginated list
     const { data: cartData, isLoading, isError, error } = useGetCart(page, PAGE_LIMIT);
@@ -92,9 +92,7 @@ function CartComponent() {
                 <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
                     {/* Main Cart Area */}
                     <div className="w-full flex-1">
-                        {mutationError && (
-                            <p className="text-destructive mb-4 text-sm">{mutationError.message}</p>
-                        )}
+                        {mutationError && <p className="text-destructive mb-4 text-sm">{mutationError.message}</p>}
 
                         {/* Header */}
                         <div className="text-primary hidden grid-cols-[3fr_1fr_1fr_1fr_auto] items-center gap-4 rounded-lg bg-blue-100/60 p-5 text-sm font-medium md:grid dark:bg-blue-900/10 dark:text-blue-400">
@@ -274,7 +272,10 @@ function CartComponent() {
                                 <Button asChild className="bg-primary text-primary-foreground group h-12 w-full rounded-md text-base font-medium">
                                     <Link to="/checkout">
                                         Proceed to Checkout
-                                        <ArrowUpRight className="ml-2 h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100" strokeWidth={2.5} />
+                                        <ArrowUpRight
+                                            className="ml-2 h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100"
+                                            strokeWidth={2.5}
+                                        />
                                     </Link>
                                 </Button>
                             ) : (

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
@@ -10,86 +10,58 @@ import { useUiStore } from "@/stores/ui-store";
 import { Input } from "@/components/ui/input";
 import { Search, ShieldCheck, Ban, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGetAdminUsers, useSearchAdminUsers, type AdminUserListDTO } from "@/hooks/api/iam/use-admin-users";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/users")({
     component: RouteComponent,
 });
 
-type AdminUserListDTO = {
-    user_id: number;
-    full_name: string;
-    email: string;
-    phone_number: string | null;
-    role: string;
-    is_deleted: boolean;
-    created_at: string;
-};
-
-const MOCK_ADMIN_USERS: AdminUserListDTO[] = [
-    {
-        user_id: 1,
-        full_name: "Admin User",
-        email: "admin@electricity.com",
-        phone_number: "+1(555)999-9999",
-        role: "admin",
-        is_deleted: false,
-        created_at: new Date(Date.now() - 86400000 * 365).toISOString(),
-    },
-    {
-        user_id: 42,
-        full_name: "Sarah Connor",
-        email: "sarahc@example.com",
-        phone_number: null,
-        role: "customer",
-        is_deleted: false,
-        created_at: new Date(Date.now() - 86400000 * 42).toISOString(),
-    },
-    {
-        user_id: 88,
-        full_name: "John Smith",
-        email: "jsmith@business.com",
-        phone_number: "+1(555)222-1111",
-        role: "customer",
-        is_deleted: true,
-        created_at: new Date(Date.now() - 86400000 * 180).toISOString(),
-    },
-    {
-        user_id: 104,
-        full_name: "Emma Davis",
-        email: "edavis_99@xyz.com",
-        phone_number: "+1(555)123-4567",
-        role: "customer",
-        is_deleted: false,
-        created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
-    },
-];
+const SEARCH_DEBOUNCE_MS = 300;
 
 function RouteComponent() {
     const { openModal } = useUiStore();
-    const [data] = useState<AdminUserListDTO[]>(MOCK_ADMIN_USERS);
     const [globalFilter, setGlobalFilter] = useState("");
+    const [debouncedFilter, setDebouncedFilter] = useState("");
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
-    const columns = useMemo(
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedFilter(globalFilter.trim()), SEARCH_DEBOUNCE_MS);
+        return () => clearTimeout(timer);
+    }, [globalFilter]);
+
+    useEffect(() => {
+        setPagination((prev) => (prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 }));
+    }, [debouncedFilter]);
+
+    const isSearching = debouncedFilter.length > 0;
+    const listQuery = useGetAdminUsers(pagination.pageIndex + 1, pagination.pageSize, { enabled: !isSearching });
+    const searchQuery = useSearchAdminUsers(debouncedFilter, pagination.pageIndex + 1, pagination.pageSize);
+    const activeQuery = isSearching ? searchQuery : listQuery;
+
+    const rows = activeQuery.data?.items ?? [];
+    const rowCount = activeQuery.data?.pagination.total ?? 0;
+
+    const columns = useMemo<ColumnDef<AdminUserListDTO>[]>(
         () => [
             {
                 accessorKey: "user_id",
                 header: "ID",
-                cell: (info: any) => <span className="text-muted-foreground font-mono">{info.getValue()}</span>,
+                cell: (info) => <span className="text-muted-foreground font-mono">{String(info.getValue())}</span>,
             },
             {
                 accessorKey: "full_name",
                 header: "Name",
-                cell: (info: any) => <span className="font-medium">{info.getValue()}</span>,
+                cell: (info) => <span className="font-medium">{String(info.getValue())}</span>,
             },
             {
                 accessorKey: "email",
                 header: "Email",
-                cell: (info: any) => <span className="text-sm">{info.getValue()}</span>,
+                cell: (info) => <span className="text-sm">{String(info.getValue())}</span>,
             },
             {
                 accessorKey: "role",
                 header: "Role",
-                cell: (info: any) => {
+                cell: (info) => {
                     const role = info.getValue() as string;
                     return (
                         <Badge
@@ -109,7 +81,7 @@ function RouteComponent() {
             {
                 accessorKey: "is_deleted",
                 header: "Status",
-                cell: (info: any) => {
+                cell: (info) => {
                     const deleted = info.getValue() as boolean;
                     if (deleted) {
                         return (
@@ -127,40 +99,32 @@ function RouteComponent() {
             },
             {
                 accessorKey: "created_at",
-                header: ({ column }: any) => <DataTableColumnHeader column={column} title="Joined" />,
-                cell: (info: any) => new Date(info.getValue()).toLocaleDateString(),
+                header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" />,
+                cell: (info) => new Date(String(info.getValue())).toLocaleDateString(),
             },
             {
                 id: "actions",
-                cell: ({ row }: any) => {
-                    return (
-                        <div className="flex justify-end pr-2">
-                            <Button variant="outline" size="sm" onClick={() => openModal("userDetail", { userData: row.original })}>
-                                View Details
-                            </Button>
-                        </div>
-                    );
-                },
+                cell: ({ row }) => (
+                    <div className="flex justify-end pr-2">
+                        <Button variant="outline" size="sm" onClick={() => openModal("userDetail", { userData: row.original })}>
+                            View Details
+                        </Button>
+                    </div>
+                ),
             },
         ],
         [openModal]
     );
 
     const table = useReactTable({
-        data,
+        data: rows,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        state: {
-            globalFilter,
-        },
-        onGlobalFilterChange: setGlobalFilter,
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
-        },
+        manualPagination: true,
+        manualFiltering: true,
+        rowCount,
+        state: { pagination },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -168,7 +132,7 @@ function RouteComponent() {
             title="Platform Users"
             desc="Manage the entire ElectriCity userbase."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Users")}
+            RefreshFunction={() => activeQuery.refetch()}
         >
             <div className="mt-4 space-y-4">
                 {/* Search Bar */}
@@ -177,13 +141,19 @@ function RouteComponent() {
                         <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                         <Input
                             type="text"
-                            placeholder="Search by name, email, or role..."
-                            value={globalFilter ?? ""}
+                            placeholder="Search by name, email, or phone..."
+                            value={globalFilter}
                             onChange={(e) => setGlobalFilter(e.target.value)}
                             className="pl-8 shadow-sm"
                         />
                     </div>
                 </div>
+
+                {activeQuery.isError && (
+                    <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm" role="alert">
+                        {activeQuery.error.message}
+                    </p>
+                )}
 
                 {/* Table */}
                 <div className="rounded-md border">
@@ -200,9 +170,15 @@ function RouteComponent() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {activeQuery.isPending ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                        Loading users...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} className={activeQuery.isFetching ? "opacity-60" : undefined}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                         ))}

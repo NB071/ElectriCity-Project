@@ -5,6 +5,7 @@ import {
     login,
     logout,
     logoutAllDevices,
+    revokeSession,
     refreshTokens,
 } from "./_access/accessMutation.js";
 import {
@@ -47,6 +48,7 @@ const access_management = {
     login,
     logout,
     logoutAllDevices,
+    revokeSession,
     refreshTokens,
 
     // queries
@@ -98,6 +100,7 @@ export {
     login,
     logout,
     logoutAllDevices,
+    revokeSession,
     refreshTokens,
 
     // Access queries

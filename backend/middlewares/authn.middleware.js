@@ -1,10 +1,10 @@
 import iamService from "../services/iam/iam.service.js";
+import { UnauthorizedError } from "../utils/errors.js";
 
 /**
- * This middleware verifies the access token
+ * This middleware verifies the access token.
  * Cookies are httpOnly and only sent to the server.
  * Authorization header is for API tools.
- * We treat a missing token (and 'optional' is true) as a guest. Otherwise, it fails with 401 'Unauthorized'.
  * @middleware
  * @param {object} [options] the options
  * @param {boolean} [options.optional=false] when true, a missing token allows the request as a guest
@@ -22,6 +22,15 @@ function authnMiddleware({ optional = false } = {}) {
             optional &&
             (authorizationHeader == null || authorizationHeader === "")
         ) {
+            const refreshToken = req.cookies?.[AUTH_COOKIES.REFRESH_TOKEN];
+            if (refreshToken) {
+                return next(
+                    new UnauthorizedError(
+                        "Access token missing; refresh required",
+                    ),
+                );
+            }
+
             req.user = null;
             return next();
         }
