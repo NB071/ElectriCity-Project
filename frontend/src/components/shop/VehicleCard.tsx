@@ -152,7 +152,7 @@ export function CardImageCarousel({ images, alt }: { images: string[]; alt: stri
 export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListItem; saved: boolean; onToggleSave: () => void }) {
     const authData = queryClient.getQueryData<any>(["user"]); 
     const userId = authData?.user_id || authData?.id || "";
-    const addToWishlist = useAddToWishlist(String(userId))
+    const addToWishlist = useAddToWishlist();
     const removeFromWishlist = useRemoveFromWishlist(String(userId));
     const { lastViewedId } = useRecentlyViewedStore();
     const compareStore = useCompareStore();
@@ -189,10 +189,14 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                         e.stopPropagation();
                         e.preventDefault();
                         if (saved){
-                            removeFromWishlist.mutate({})
-                        }
-                        else{
-                            addToWishlist.mutate({})
+                            removeFromWishlist.mutate({
+                                 url: `/api/dashboard/customer/wishlist/${item.id}`,
+                                 body: { cid: item.id }
+                            });
+                        } else {
+                            addToWishlist.mutate({
+                                body: { cid: item.id }
+                            });
                         }
                         onToggleSave();
                     }}

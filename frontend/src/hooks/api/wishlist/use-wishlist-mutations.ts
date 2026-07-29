@@ -3,9 +3,9 @@ import { queryClient } from "@/integrations/tanstack-query/query-client";
 
     // Endpoints: [POST] /api/dashboard/customer/wishlist/:id, [DELETE] /api/dashboard/customer/wishlist/:id
 
-export const useAddToWishlist = (id: string) => {
+export const useAddToWishlist = () => {
     return useApiMutation({
-        url: `/api/dashboard/customer/wishlist/${id}`,
+        url: `/api/dashboard/customer/wishlist/`,
         method: "post"
     })
 };
