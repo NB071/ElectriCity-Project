@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,32 +10,29 @@ import { useUiStore } from "@/stores/ui-store";
 import { Input } from "@/components/ui/input";
 import { Search, ShieldCheck, Ban, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useGetAdminUsers, useSearchAdminUsers, type AdminUserListDTO } from "@/hooks/api/iam/use-admin-users";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/users")({
     component: RouteComponent,
 });
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 function RouteComponent() {
     const { openModal } = useUiStore();
     const [globalFilter, setGlobalFilter] = useState("");
-    const [debouncedFilter, setDebouncedFilter] = useState("");
+    const debouncedFilter = useDebouncedValue(globalFilter.trim());
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedFilter(globalFilter.trim()), SEARCH_DEBOUNCE_MS);
-        return () => clearTimeout(timer);
-    }, [globalFilter]);
-
-    useEffect(() => {
+    const [prevDebouncedFilter, setPrevDebouncedFilter] = useState(debouncedFilter);
+    if (debouncedFilter !== prevDebouncedFilter) {
+        setPrevDebouncedFilter(debouncedFilter);
         setPagination((prev) => (prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 }));
-    }, [debouncedFilter]);
+    }
 
+    const pageIndex = debouncedFilter !== prevDebouncedFilter ? 0 : pagination.pageIndex;
     const isSearching = debouncedFilter.length > 0;
-    const listQuery = useGetAdminUsers(pagination.pageIndex + 1, pagination.pageSize, { enabled: !isSearching });
-    const searchQuery = useSearchAdminUsers(debouncedFilter, pagination.pageIndex + 1, pagination.pageSize);
+    const listQuery = useGetAdminUsers(pageIndex + 1, pagination.pageSize, { enabled: !isSearching });
+    const searchQuery = useSearchAdminUsers(debouncedFilter, pageIndex + 1, pagination.pageSize);
     const activeQuery = isSearching ? searchQuery : listQuery;
 
     const rows = activeQuery.data?.items ?? [];
@@ -123,7 +120,7 @@ function RouteComponent() {
         manualPagination: true,
         manualFiltering: true,
         rowCount,
-        state: { pagination },
+        state: { pagination: { ...pagination, pageIndex } },
         onPaginationChange: setPagination,
     });
 

@@ -6,7 +6,7 @@ const mockFindVehicles = jest.fn();
 const mockFindBaseById = jest.fn();
 const mockExistsById = jest.fn();
 const mockFindManyForCompare = jest.fn();
-const mockGetPrimaryImage = jest.fn();
+const mockGetPreviewImagesByCids = jest.fn();
 const mockGetPromotionsForItems = jest.fn();
 const mockGetForItem = jest.fn();
 const mockGetEquippedForItem = jest.fn();
@@ -28,8 +28,9 @@ await jest.unstable_mockModule(
     "../../../services/catalog/MediaAdapter.js",
     () => ({
         default: {
-            getPrimaryImage: mockGetPrimaryImage,
+            getPrimaryImage: jest.fn(),
             getItemImages: jest.fn(),
+            getPreviewImagesByCids: mockGetPreviewImagesByCids,
             getVehicleHistoryReport: jest.fn(),
         },
     }),
@@ -85,10 +86,27 @@ describe("productQuery", () => {
         mockGetPromotionsForItems.mockResolvedValue(new Map([[1, []]]));
         mockCountVehicles.mockResolvedValue(1);
         mockFindVehicles.mockResolvedValue([listRow]);
-        mockGetPrimaryImage.mockResolvedValue({
-            media_id: 1,
-            url: "https://cdn/a.jpg",
-        });
+        mockGetPreviewImagesByCids.mockResolvedValue(
+            new Map([
+                [
+                    1,
+                    [
+                        {
+                            media_id: 1,
+                            url: "https://cdn/a.jpg",
+                            is_primary: 1,
+                            display_order: 0,
+                        },
+                        {
+                            media_id: 2,
+                            url: "https://cdn/b.jpg",
+                            is_primary: 0,
+                            display_order: 1,
+                        },
+                    ],
+                ],
+            ]),
+        );
     });
 
     test("browseVehicles / searchVehicles reject bad pagination", async () => {
@@ -100,15 +118,26 @@ describe("productQuery", () => {
         );
     });
 
-    test("browseVehicles swallows NotFoundError from primary image", async () => {
-        mockGetPrimaryImage.mockRejectedValue(new NotFoundError("Media"));
+    test("browseVehicles includes up to 5 preview image urls", async () => {
+        const result = await browseVehicles({ page: 1, limit: 10 });
+        expect(result.items[0].primary_image_url).toBe("https://cdn/a.jpg");
+        expect(result.items[0].image_urls).toEqual([
+            "https://cdn/a.jpg",
+            "https://cdn/b.jpg",
+        ]);
+        expect(mockGetPreviewImagesByCids).toHaveBeenCalledWith([1], 5);
+    });
+
+    test("browseVehicles handles vehicles with no images", async () => {
+        mockGetPreviewImagesByCids.mockResolvedValue(new Map());
         const result = await browseVehicles({ page: 1, limit: 10 });
         expect(result.items).toHaveLength(1);
         expect(result.items[0].primary_image_url).toBeNull();
+        expect(result.items[0].image_urls).toEqual([]);
     });
 
-    test("browseVehicles rethrows non-NotFoundError from primary image", async () => {
-        mockGetPrimaryImage.mockRejectedValue(new DatabaseError("cdn down"));
+    test("browseVehicles rethrows DatabaseError from preview images", async () => {
+        mockGetPreviewImagesByCids.mockRejectedValue(new DatabaseError("cdn down"));
         await expect(browseVehicles({ page: 1, limit: 10 })).rejects.toBeInstanceOf(
             DatabaseError,
         );

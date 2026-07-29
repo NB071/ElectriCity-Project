@@ -6,27 +6,29 @@ import { useCatalogStore } from "@/stores";
 
 type CatalogSearch = {
     brand_id?: string;
+    q?: string;
 };
 
 export const Route = createFileRoute("/(shop)/_layout/catalog/")({
     validateSearch: (search: Record<string, unknown>): CatalogSearch => {
         return {
             brand_id: search.brand_id as string | undefined,
+            q: typeof search.q === "string" ? search.q : undefined,
         };
     },
     component: CatalogRouteComponent,
 });
 
 function CatalogRouteComponent() {
-    const { brand_id } = Route.useSearch();
+    const { brand_id, q } = Route.useSearch();
     const setFilters = useCatalogStore((state) => state.setFilters);
 
     useEffect(() => {
-        // Hydrate initial filters from search parameters if any exist
-        if (brand_id) {
-            setFilters({ brand_id: Number(brand_id) });
-        }
-    }, [brand_id, setFilters]);
+        const next: { brand_id?: number; q?: string } = {};
+        if (brand_id) next.brand_id = Number(brand_id);
+        if (q?.trim()) next.q = q.trim();
+        if (Object.keys(next).length > 0) setFilters(next);
+    }, [brand_id, q, setFilters]);
 
     return (
         <div className="bg-background min-h-screen pt-20 pb-24 md:pt-28">
@@ -36,12 +38,10 @@ function CatalogRouteComponent() {
                 </div>
 
                 <div className="flex flex-col gap-8 md:flex-row md:items-start lg:gap-10">
-                    {/* Filter Sidebar */}
                     <aside className="w-full shrink-0 md:w-[320px]">
                         <CatalogFilters />
                     </aside>
 
-                    {/* Main Catalog View */}
                     <main className="w-full min-w-0 flex-1">
                         <PaginatedCatalog />
                     </main>

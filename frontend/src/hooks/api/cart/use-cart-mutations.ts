@@ -2,6 +2,7 @@ import { useApiMutation } from "@/hooks/use-api";
 import { queryClient } from "@/integrations/tanstack-query/query-client";
 import type { PaginationMeta } from "@/hooks/use-api";
 import { cartKeys } from "./use-cart-queries";
+import { toast } from "sonner";
 
 // Endpoints: [GET] /api/shop/cart, [POST] /api/shop/cart/items, [PATCH] /api/shop/cart/items/:id, [DELETE] /api/shop/cart/items/:id, [DELETE] /api/shop/cart
 
@@ -90,6 +91,10 @@ export const useAddToCart = () => {
         method: "post",
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: cartKeys.all });
+            toast.success("Added to cart");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not add to cart");
         },
     });
 };

@@ -6,20 +6,21 @@ import getPageNumbers from "@/lib/getPageNumbers";
 type SimplePaginationProps<TData> = {
     table: Table<TData>;
     className?: string;
+    totalRows?: number;
 };
 
-export function SimplePagination<TData>({ table, className }: SimplePaginationProps<TData>) {
+export function SimplePagination<TData>({ table, className, totalRows }: SimplePaginationProps<TData>) {
     const currentPage = table.getState().pagination.pageIndex + 1;
     const totalPages = table.getPageCount();
     const pageNumbers = getPageNumbers(currentPage, totalPages);
 
     const pageSize = table.getState().pagination.pageSize || 10;
-    const totalRows = table.getFilteredRowModel().rows.length;
+    const resolvedTotal = totalRows ?? table.getFilteredRowModel().rows.length;
 
-    const startRow = Math.min((currentPage - 1) * pageSize + 1, totalRows);
-    const endRow = Math.min(currentPage * pageSize, totalRows);
+    const startRow = resolvedTotal === 0 ? 0 : Math.min((currentPage - 1) * pageSize + 1, resolvedTotal);
+    const endRow = Math.min(currentPage * pageSize, resolvedTotal);
 
-    if (totalRows === 0) return null;
+    if (resolvedTotal === 0) return null;
 
     return (
         <div className={cn("flex flex-col items-center gap-6", className)}>
@@ -63,7 +64,7 @@ export function SimplePagination<TData>({ table, className }: SimplePaginationPr
             </div>
 
             <p className="text-muted-foreground text-xs font-medium">
-                Showing results {startRow}-{endRow} of {totalRows}
+                Showing results {startRow}-{endRow} of {resolvedTotal}
             </p>
         </div>
     );

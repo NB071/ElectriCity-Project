@@ -3,15 +3,18 @@ import { MessageSquare, Scale, Globe, Share2, Camera, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { footerLinks } from "@/components/layout/data/header-data";
+import { useGetBrandsLite } from "@/hooks/api/catalog/use-brands";
 
 export function Footer() {
     const [height, setHeight] = useState(0);
     const ref = useRef<HTMLDivElement>(null);
+    const { data: brandsData } = useGetBrandsLite();
+    const brands = brandsData?.items ?? [];
 
     useEffect(() => {
         if (!ref.current) return;
         const observer = new ResizeObserver((entries) => {
-            for (let entry of entries) {
+            for (const entry of entries) {
                 setHeight(entry.contentRect.height);
             }
         });
@@ -78,10 +81,14 @@ export function Footer() {
                             <div className="flex flex-col gap-4">
                                 <h3 className="font-semibold text-white">Our Brands</h3>
                                 <ul className="flex flex-col gap-3 text-sm text-white/60">
-                                    {footerLinks.brands.map((link) => (
-                                        <li key={link.label}>
-                                            <Link to={link.to} className="transition-colors hover:text-white">
-                                                {link.label}
+                                    {brands.map((brand) => (
+                                        <li key={brand.id}>
+                                            <Link
+                                                to="/catalog"
+                                                search={{ brand_id: brand.id } as never}
+                                                className="transition-colors hover:text-white"
+                                            >
+                                                {brand.name}
                                             </Link>
                                         </li>
                                     ))}

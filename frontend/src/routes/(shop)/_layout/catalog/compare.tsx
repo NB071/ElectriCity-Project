@@ -1,129 +1,67 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-    Car,
-    Gauge,
-    Fuel,
-    Calendar,
-    Settings,
-    Activity,
-    ShieldCheck,
-    Wrench,
-    DoorOpen,
-    Settings2,
-    Palette,
-    Trash2,
-    ChevronRight,
-    Loader2,
-} from "lucide-react";
+import { Car, Gauge, Calendar, DollarSign, ShieldCheck, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { QueryError } from "@/components/common/QueryError";
 import { useCompareStore } from "@/stores/compare-store";
-import { MOCK_VEHICLES } from "@/components/shop/catalog/mockVehicles";
-import { formatMileage } from "@/components/shop/VehicleCard";
+import { useCompareCatalogItems, type CompareCell } from "@/hooks/api/catalog/use-compare";
+import { formatMileage, formatPrice } from "@/components/shop/VehicleCard";
+import { mediaUrl } from "@/lib/media";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/(shop)/_layout/catalog/compare")({
     component: RouteComponent,
 });
 
-const FIELD_ICONS: Record<string, any> = {
-    Body: Car,
-    Mileage: Gauge,
-    "Fuel Type": Fuel,
-    Year: Calendar,
-    Transmission: Settings,
-    "Drive Type": Activity,
-    Condition: ShieldCheck,
-    "Engine Size": Wrench,
-    Doors: DoorOpen,
-    Cylinders: Settings2,
-    Color: Palette,
+const FIELD_META: Record<string, { label: string; icon: typeof Car }> = {
+    price: { label: "Price", icon: DollarSign },
+    year: { label: "Year", icon: Calendar },
+    mileage: { label: "Mileage", icon: Gauge },
+    condition: { label: "Condition", icon: ShieldCheck },
 };
 
+function formatCellValue(field: string, value: unknown): string {
+    if (value == null || value === "") return "—";
+
+    if (field === "price" && typeof value === "number") {
+        return formatPrice(value);
+    }
+    if (field === "mileage" && typeof value === "number") {
+        return formatMileage(value);
+    }
+    if (field === "year") {
+        return String(value);
+    }
+    if (field === "condition" && typeof value === "string") {
+        return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    return String(value);
+}
+
+function cellClassName(cell: CompareCell): string {
+    if (cell.isBest) return "bg-emerald-50 text-emerald-800 font-semibold";
+    if (cell.isTied) return "bg-amber-50 text-amber-900 font-medium";
+    if (cell.isWorse) return "text-slate-500";
+    return "text-slate-900";
+}
+
 function RouteComponent() {
-    const cids = useCompareStore((s) => s.cids);
+    const items = useCompareStore((s) => s.items);
     const removeVehicle = useCompareStore((s) => s.remove);
 
-    const { data: vehicles = [], isLoading } = useQuery({
-        queryKey: ["compare-vehicles", cids],
-        queryFn: async () => {
-            if (cids.length === 0) return [];
-            await new Promise((r) => setTimeout(r, 400));
+    const numericCids = items.map((item) => Number(item.cid)).filter((id) => Number.isFinite(id) && id > 0);
+    const imageByCid = new Map(items.map((item) => [item.cid, item.primary_image_url]));
 
-            return cids
-                .map((cid) => {
-                    const mockMatch = MOCK_VEHICLES.find((v) => String(v.id) === cid);
-                    if (mockMatch) {
-                        return {
-                            id: mockMatch.id,
-                            name: `${mockMatch.vehicle.year} ${mockMatch.brand.name} ${mockMatch.model.name}`,
-                            vehicle: mockMatch.vehicle,
-                            images: mockMatch.primary_image_url ? [{ url: mockMatch.primary_image_url }] : [],
-                        };
-                    }
-                    return null;
-                })
-                .filter((v): v is NonNullable<typeof v> => v !== null);
-        },
-    });
+    const { data, isLoading, isError, error, refetch, isFetching } = useCompareCatalogItems(numericCids);
 
-    const columns = vehicles.map((v) => ({
-        id: v.id,
-        label: v.name,
-        image: v.images?.[0]?.url || "",
-    }));
-
-    const rows = [
-        {
-            field: "Body",
-            cells: vehicles.map((v) => ({ value: v.vehicle.body_shape || "N/A" })),
-        },
-        {
-            field: "Mileage",
-            cells: vehicles.map((v) => ({ value: formatMileage(v.vehicle.mileage ?? 0) })),
-        },
-        {
-            field: "Fuel Type",
-            cells: vehicles.map(() => ({ value: "Electric" })), // Assuming EVs
-        },
-        {
-            field: "Year",
-            cells: vehicles.map((v) => ({ value: String(v.vehicle.year) })),
-        },
-        {
-            field: "Transmission",
-            cells: vehicles.map(() => ({ value: "Automatic" })),
-        },
-        {
-            field: "Drive Type",
-            cells: vehicles.map((v) => ({ value: v.vehicle.drivetrain || "N/A" })),
-        },
-        {
-            field: "Condition",
-            cells: vehicles.map((v) => ({ value: v.vehicle.condition.toUpperCase() })),
-        },
-        {
-            field: "Engine Size",
-            cells: vehicles.map(() => ({ value: "Dual Motor" })),
-        },
-        {
-            field: "Doors",
-            cells: vehicles.map((v) => ({ value: `${v.vehicle.door_count || "N/A"}-door` })),
-        },
-        {
-            field: "Cylinders",
-            cells: vehicles.map(() => ({ value: "N/A (EV)" })),
-        },
-        {
-            field: "Color",
-            cells: vehicles.map((v) => ({ value: v.vehicle.exterior_color || "N/A" })),
-        },
-    ];
+    const columns = data?.columns ?? [];
+    const rows = data?.rows ?? [];
+    const canCompare = numericCids.length >= 2;
 
     return (
         <div className="min-h-screen bg-white pt-20 pb-16 lg:pt-24 lg:pb-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                {/* Breadcrumb Context */}
-                <div className="animate-in fade-in slide-in-from-bottom-4 mb-4 flex items-center text-sm font-medium text-slate-500 duration-500">
+                <div className="mb-4 flex items-center text-sm font-medium text-slate-500">
                     <Link to="/" className="text-primary hover:underline">
                         Home
                     </Link>
@@ -135,73 +73,130 @@ function RouteComponent() {
                     <span className="text-slate-900">Compare</span>
                 </div>
 
-                <div className="animate-in fade-in slide-in-from-bottom-4 fill-mode-both mb-12 delay-100 duration-500">
+                <div className="mb-12">
                     <h1 className="text-left text-3xl font-extrabold tracking-tight text-slate-900 lg:text-4xl">Compare Vehicle</h1>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Side-by-side specs for {numericCids.length} selected vehicle{numericCids.length === 1 ? "" : "s"}.
+                    </p>
                 </div>
 
-                {isLoading ? (
+                {!canCompare ? (
+                    <div className="flex h-64 flex-col items-center justify-center gap-4 text-slate-500">
+                        <Car className="h-12 w-12 text-slate-300" />
+                        <h2 className="text-xl font-medium">
+                            {numericCids.length === 0 ? "No vehicles to compare" : "Add at least one more vehicle"}
+                        </h2>
+                        <p className="max-w-sm text-center text-sm text-slate-400">
+                            {numericCids.length === 0
+                                ? "Select vehicles from the catalog using Compare, then open this page."
+                                : "Comparison needs at least two vehicles. Keep browsing and add another to your list."}
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+                            {numericCids.length === 1 ? (
+                                <div className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800">
+                                    Selected: #{numericCids[0]}
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="ml-2 h-7 text-slate-500"
+                                        onClick={() => removeVehicle(String(numericCids[0]))}
+                                    >
+                                        Remove
+                                    </Button>
+                                </div>
+                            ) : null}
+                            <Link to="/catalog">
+                                <Button variant="outline">Browse Catalog</Button>
+                            </Link>
+                        </div>
+                    </div>
+                ) : isLoading ? (
                     <div className="flex h-64 items-center justify-center">
                         <Loader2 className="h-10 w-10 animate-spin text-slate-300" />
                     </div>
-                ) : cids.length === 0 ? (
-                    <div className="flex h-64 flex-col items-center justify-center gap-4 text-slate-500">
-                        <Car className="h-12 w-12 text-slate-300" />
-                        <h2 className="text-xl font-medium">No vehicles to compare</h2>
-                        <Link to="/catalog">
-                            <Button variant="outline" className="mt-4">
-                                Browse Catalog
-                            </Button>
-                        </Link>
-                    </div>
+                ) : isError ? (
+                    <QueryError title="Could not load comparison" error={error} onRetry={() => void refetch()} isRetrying={isFetching} />
                 ) : (
                     <div className="hide-scrollbar w-full overflow-x-auto pb-8">
                         <div className="min-w-200">
                             <div
-                                className="mb-8 grid items-end gap-6"
+                                className="mb-10 grid items-stretch gap-6"
                                 style={{ gridTemplateColumns: `200px repeat(${columns.length}, minmax(0, 1fr))` }}
                             >
-                                <div />
+                                <div className="flex items-end pb-2 text-sm font-semibold text-slate-400">Vehicle</div>
 
-                                {columns.map((col, idx) => (
-                                    <div
-                                        key={col.id}
-                                        className={`animate-in fade-in slide-in-from-bottom-8 fill-mode-both relative flex flex-col items-center justify-center rounded-2xl bg-slate-100 p-8 shadow-sm transition-all duration-300 hover:shadow-md delay-[${(idx + 2) * 100}ms]`}
-                                    >
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => removeVehicle(String(col.id))}
-                                            className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white text-slate-400 shadow-sm transition-all hover:border-red-200 hover:text-red-500"
-                                            aria-label="Remove vehicle"
+                                {columns.map((col) => {
+                                    const imageSrc = mediaUrl(imageByCid.get(String(col.id)));
+
+                                    return (
+                                        <div
+                                            key={col.id}
+                                            className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm transition-shadow duration-300 hover:shadow-md"
                                         >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                            <div className="relative h-40 w-full overflow-hidden bg-slate-200 sm:h-44">
+                                                {imageSrc ? (
+                                                    <img
+                                                        src={imageSrc}
+                                                        alt={col.label}
+                                                        className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                                        <Car className="size-10" />
+                                                    </div>
+                                                )}
 
-                                        <img src={col.image} alt={col.label} className="mb-4 h-28 w-28 object-contain mix-blend-multiply" />
+                                                <div className="to-transparent-md pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/55 via-black/20 mask-[linear-gradient(to_top,black,transparent)]" />
 
-                                        <h3 className="text-center font-bold text-slate-900">{col.label}</h3>
-                                    </div>
-                                ))}
+                                                <Button
+                                                    variant="secondary"
+                                                    size="icon"
+                                                    onClick={() => removeVehicle(String(col.id))}
+                                                    className="absolute top-2.5 right-2.5 size-7 rounded-full bg-white/95 text-slate-500 shadow-sm transition-colors hover:bg-white hover:text-red-500"
+                                                    aria-label={`Remove ${col.label} from compare`}
+                                                >
+                                                    <Trash2 className="size-3.5" />
+                                                </Button>
+                                            </div>
+
+                                            <div className="border-t border-slate-200 bg-white px-3 py-2.5">
+                                                <Link
+                                                    to="/catalog/$cid"
+                                                    params={{ cid: String(col.id) }}
+                                                    className="line-clamp-2 text-center text-sm font-bold text-slate-900 hover:underline"
+                                                >
+                                                    {col.label}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
-                            <div className="animate-in fade-in slide-in-from-bottom-8 fill-mode-both flex flex-col delay-500 duration-700">
+                            <div className="flex flex-col">
                                 {rows.map((row, rowIdx) => {
-                                    const Icon = FIELD_ICONS[row.field] || ChevronRight;
+                                    const meta = FIELD_META[row.field];
+                                    const Icon = meta?.icon ?? Car;
+                                    const label = meta?.label ?? row.field;
 
                                     return (
                                         <div
                                             key={row.field}
-                                            className={`grid items-center gap-6 py-4 ${rowIdx !== rows.length - 1 ? "border-b border-slate-100" : ""}`}
+                                            className={cn("grid items-stretch gap-6 py-3", rowIdx !== rows.length - 1 && "border-b border-slate-100")}
                                             style={{ gridTemplateColumns: `200px repeat(${columns.length}, minmax(0, 1fr))` }}
                                         >
                                             <div className="flex items-center gap-3 text-sm font-semibold text-slate-700">
                                                 <Icon className="h-4 w-4 shrink-0 text-slate-400" />
-                                                {row.field}
+                                                {label}
                                             </div>
 
                                             {row.cells.map((cell, cellIdx) => (
-                                                <div key={`${row.field}-${cellIdx}`} className="px-4 text-sm font-medium text-slate-900">
-                                                    {cell.value || "-"}
+                                                <div
+                                                    key={`${row.field}-${columns[cellIdx]?.id ?? cellIdx}`}
+                                                    className={cn("flex items-center rounded-lg px-4 py-3 text-sm font-medium", cellClassName(cell))}
+                                                >
+                                                    {formatCellValue(row.field, cell.value)}
                                                 </div>
                                             ))}
                                         </div>

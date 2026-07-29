@@ -45,7 +45,7 @@ function DealsRouteComponent() {
                 <div className="flex flex-col gap-8 md:flex-row md:items-start lg:gap-10">
                     {/* Filter Sidebar */}
                     <aside className="w-full shrink-0 md:w-[320px]">
-                        <CatalogFilters />
+                        <CatalogFilters preserveOnClear={{ promo: promo || "hot_deal" }} />
                     </aside>
 
                     {/* Main Catalog View */}
