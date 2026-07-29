@@ -153,7 +153,7 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
     const authData = queryClient.getQueryData<any>(["user"]); 
     const userId = authData?.user_id || authData?.id || "";
     const addToWishlist = useAddToWishlist();
-    const removeFromWishlist = useRemoveFromWishlist(String(userId));
+    const removeFromWishlist = useRemoveFromWishlist(String(item.id));
     const { lastViewedId } = useRecentlyViewedStore();
     const compareStore = useCompareStore();
     const isComparing = compareStore.has(String(item.id));

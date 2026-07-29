@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, type PaginationState } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
@@ -10,6 +10,7 @@ import { Trash2 } from "lucide-react";
 import { ImageOff } from "lucide-react";
 import { useUiStore } from "@/stores/ui-store";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useGetWishlist } from "@/hooks/api/wishlist/use-wishlist";
 
 export const Route = createFileRoute("/dashboard/_layout/customer/wishlist")({
     component: RouteComponent,
@@ -31,7 +32,7 @@ type WishlistItemDTO = {
     catalog_item: WishlistCatalogItemDTO;
 };
 
-const MOCK_WISHLIST: WishlistItemDTO[] = [
+/*const MOCK_WISHLIST: WishlistItemDTO[] = [
     {
         cid: "cat_101",
         added_at: new Date(Date.now() - 86400000 * 5).toISOString(),
@@ -71,11 +72,17 @@ const MOCK_WISHLIST: WishlistItemDTO[] = [
             primary_image_url: null,
         },
     },
-];
+];*/
 
 function RouteComponent() {
     const { openModal } = useUiStore();
-    const [data] = useState<WishlistItemDTO[]>(MOCK_WISHLIST);
+    const [pagination, setPagination] = useState<PaginationState>({
+            pageIndex: 0,
+            pageSize: 10,
+        });
+    
+        const { data: queryData, isLoading, refetch } = useGetWishlist(pagination.pageIndex + 1, pagination.pageSize);
+        const data = (queryData?.items as WishlistItemDTO[]) || [];
 
     const columns = useMemo(
         () => [
@@ -203,11 +210,12 @@ function RouteComponent() {
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
+        manualPagination: true,
+        rowCount: queryData?.pagination?.total || -1,
+        state: {
+            pagination,
         },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -215,7 +223,7 @@ function RouteComponent() {
             title="My Wishlist"
             desc="Keep track of products, configurations, and vehicles you're planning to purchase."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Wishlist")}
+            RefreshFunction={() => refetch()}
         >
             <div className="mt-4 space-y-4">
                 <TooltipProvider delayDuration={300}>
@@ -233,7 +241,13 @@ function RouteComponent() {
                                 ))}
                             </TableHeader>
                             <TableBody>
-                                {table.getRowModel().rows?.length ? (
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                            Loading wishlist...
+                                        </TableCell>
+                                    </TableRow>
+                                ) : table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
                                         <TableRow key={row.id}>
                                             {row.getVisibleCells().map((cell) => (
