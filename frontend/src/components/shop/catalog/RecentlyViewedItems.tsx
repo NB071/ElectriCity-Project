@@ -3,7 +3,11 @@ import { MOCK_VEHICLES } from "@/components/shop/catalog/mockVehicles";
 import { VehicleCard } from "@/components/shop/VehicleCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-export function RecentlyViewedItems({ currentCid }: { currentCid?: string }) {
+type RecentlyViewedItemsProps = {
+    currentCid?: string;
+};
+
+export function RecentlyViewedItems({ currentCid }: RecentlyViewedItemsProps) {
     const { cids } = useRecentlyViewedStore();
 
     const displayedCids = cids.filter((id) => id !== currentCid);
@@ -11,6 +15,8 @@ export function RecentlyViewedItems({ currentCid }: { currentCid?: string }) {
     if (displayedCids.length === 0) return null;
 
     const items = displayedCids.map((id) => MOCK_VEHICLES.find((v) => String(v.id) === id)).filter(Boolean) as typeof MOCK_VEHICLES;
+
+    if (items.length === 0) return null;
 
     return (
         <section className="mt-24 border-t pt-16">

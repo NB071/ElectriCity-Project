@@ -51,14 +51,6 @@ export const footerLinks = {
         { label: "AI Assistant", to: "/chatbot" },
         { label: "Sign In", to: "/auth/login" },
     ],
-    brands: [
-        { label: "Tesla", to: "/catalog?brand=Tesla" },
-        { label: "BMW", to: "/catalog?brand=BMW" },
-        { label: "Audi", to: "/catalog?brand=Audi" },
-        { label: "Hyundai", to: "/catalog?brand=Hyundai" },
-        { label: "Nissan", to: "/catalog?brand=Nissan" },
-        { label: "Volkswagen", to: "/catalog?brand=Volkswagen" },
-    ],
     vehicleTypes: [
         { label: "SUV", to: "/catalog?type=SUV" },
         { label: "Sedan", to: "/catalog?type=Sedan" },

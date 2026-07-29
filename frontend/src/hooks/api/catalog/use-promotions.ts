@@ -1,9 +1,7 @@
-import { useApiQuery, useApiMutation, usePaginatedQuery, useInfiniteApiQuery } from "@/hooks/use-api";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
-
-    // Endpoints: [GET] /api/shop/catalog/promotions
+// No standalone [GET] /api/shop/catalog/promotions endpoint exists.
+// Promotions only come embedded on catalog items and cart lines.
+// Needs a real backend route before this can be implemented.
 
 export const useGetPromotions = () => {
-    // TODO: implement paginated
+    throw new Error("No backend endpoint exists for a standalone promotions list.");
 };
-

@@ -3,40 +3,75 @@ import { persist } from "zustand/middleware";
 
 const MAX_COMPARE = 4;
 
+export type CompareEntry = {
+    cid: string;
+    primary_image_url: string | null;
+};
+
 type CompareState = {
-    cids: string[];
+    items: CompareEntry[];
     showLimitWarning: boolean;
-    add: (cid: string) => void;
+    add: (entry: CompareEntry) => void;
     remove: (cid: string) => void;
     clear: () => void;
     has: (cid: string) => boolean;
 };
 
+type PersistedCompareV1 = {
+    cids?: string[];
+    items?: CompareEntry[];
+    showLimitWarning?: boolean;
+};
+
 export const useCompareStore = create<CompareState>()(
     persist(
         (set, get) => ({
-            cids: [],
+            items: [],
             showLimitWarning: false,
 
-            add: (cid) => {
-                const { cids } = get();
-                if (cids.includes(cid)) return;
+            add: (entry) => {
+                const { items } = get();
+                if (items.some((item) => item.cid === entry.cid)) return;
 
-                if (cids.length >= MAX_COMPARE) {
+                if (items.length >= MAX_COMPARE) {
                     set({ showLimitWarning: true });
                     setTimeout(() => set({ showLimitWarning: false }), 2500);
                     return;
                 }
 
-                set({ cids: [...cids, cid], showLimitWarning: false });
+                set({
+                    items: [...items, { cid: entry.cid, primary_image_url: entry.primary_image_url ?? null }],
+                    showLimitWarning: false,
+                });
             },
 
-            remove: (cid) => set({ cids: get().cids.filter((id) => id !== cid) }),
+            remove: (cid) => set({ items: get().items.filter((item) => item.cid !== cid) }),
 
-            clear: () => set({ cids: [] }),
+            clear: () => set({ items: [] }),
 
-            has: (cid) => get().cids.includes(cid),
+            has: (cid) => get().items.some((item) => item.cid === cid),
         }),
-        { name: "electricity:compare" }
+        {
+            name: "electricity:compare",
+            version: 2,
+            partialize: (state) => ({ items: state.items }),
+            migrate: (persisted, version) => {
+                const state = (persisted ?? {}) as PersistedCompareV1;
+
+                if (version < 2) {
+                    const fromCids = (state.cids ?? []).map((cid) => ({
+                        cid: String(cid),
+                        primary_image_url: null as string | null,
+                    }));
+                    return {
+                        items: state.items?.length ? state.items : fromCids,
+                    };
+                }
+
+                return {
+                    items: state.items ?? [],
+                };
+            },
+        }
     )
 );

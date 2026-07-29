@@ -1,13 +1,14 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useCompareStore } from "@/stores/compare-store";
 import { Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function CompareItemsFAB() {
-    const compareCount = useCompareStore((s) => s.cids.length);
+    const location = useLocation();
+    const compareCount = useCompareStore((s) => s.items.length);
     const showLimitWarning = useCompareStore((s) => s.showLimitWarning);
 
-    if (compareCount < 2) return null;
+    if (compareCount < 2 || location.pathname.startsWith("/catalog/compare")) return null;
 
     return (
         <Link

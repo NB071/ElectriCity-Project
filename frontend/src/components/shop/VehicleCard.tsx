@@ -210,8 +210,14 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        if (isComparing) compareStore.remove(String(item.id));
-                        else compareStore.add(String(item.id));
+                        if (isComparing) {
+                            compareStore.remove(String(item.id));
+                        } else {
+                            compareStore.add({
+                                cid: String(item.id),
+                                primary_image_url: item.primary_image_url ?? item.image_urls[0] ?? null,
+                            });
+                        }
                     }}
                     className="absolute top-12 right-3 z-10 size-8 rounded-full bg-white/95 shadow-sm hover:bg-white"
                 >

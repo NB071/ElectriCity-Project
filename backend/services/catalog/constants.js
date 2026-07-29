@@ -48,6 +48,8 @@ const VALIDATIONS = {
 const DEFAULTS = {
     SORT: "added_desc",
     ITEM_TYPE: ITEM_TYPES.VEHICLE,
+    /** Max images attached to each browse/search list card */
+    LIST_IMAGE_LIMIT: 5,
 };
 
 const PROMO_NAME_MATCH = {

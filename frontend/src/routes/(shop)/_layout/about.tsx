@@ -89,7 +89,7 @@ function RouteComponent() {
                 <About />
             </div>
 
-            <Brands />
+            <Brands overlap={false} />
 
             <TeamSection />
 

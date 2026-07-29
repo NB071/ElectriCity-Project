@@ -4,6 +4,7 @@ import {
   resolveMediaById,
   resolveMediaByCid,
   resolvePrimaryCatalogImage,
+  resolvePreviewImagesByCids,
   viewAllMedia,
 } from "./mediaQuery.js";
 import {
@@ -20,6 +21,7 @@ export {
   resolveMediaById,
   resolveMediaByCid,
   resolvePrimaryCatalogImage,
+  resolvePreviewImagesByCids,
   viewAllMedia,
 
   // Mutations
