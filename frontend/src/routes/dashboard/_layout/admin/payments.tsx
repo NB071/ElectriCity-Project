@@ -102,14 +102,7 @@ function RouteComponent() {
             {
                 accessorKey: "attempt_id",
                 header: "Attempt ID",
-                cell: (info: any) => {
-                    const val = info.getValue();
-                    return (
-                        <span className="font-mono text-xs opacity-70" title={val}>
-                            {val.substring(0, 16)}...
-                        </span>
-                    );
-                },
+                cell: (info: any) => <span className="font-mono text-xs opacity-80">{info.getValue()}</span>,
             },
             {
                 accessorKey: "order_id",
