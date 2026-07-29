@@ -48,8 +48,7 @@ export const useGetBrands = (page: number = 1, limit: number = 20) => {
     });
 };
 
-// Featured brands only, no pagination. Same query key everywhere, so About Us,
-// catalog filters, and the footer all share one cached request.
+// Featured brands only, no pagination. Shared cache for landing + about strips.
 export const useGetFeaturedBrands = () => {
     return useApiQuery<{ items: Brand[] }>({
         queryKey: brandKeys.featured(),

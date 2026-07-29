@@ -99,7 +99,7 @@ export function CartSection() {
                         })}
                         {hasMore && (
                             <p className="text-muted-foreground px-2 py-1.5 text-center text-xs">
-                                +{count - items.length} older item{count - items.length === 1 ? "" : "s"} — view full cart
+                                +{count - items.length} older item{count - items.length === 1 ? "" : "s"} - view full cart
                             </p>
                         )}
                     </div>

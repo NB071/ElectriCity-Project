@@ -5,6 +5,7 @@ import {
     resolveMediaById,
     resolveMediaByCid,
     resolvePrimaryCatalogImage,
+    resolvePreviewImagesByCids,
 } from "../media/media.service.js";
 import { VALIDATIONS as MEDIA_VALIDATIONS } from "../media/constants.js";
 
@@ -35,6 +36,18 @@ class MediaAdapter {
      */
     async getPrimaryImage(cid) {
         return resolvePrimaryCatalogImage(cid);
+    }
+
+    /**
+     * Preview images for browse/search cards (first N per item by display_order).
+     * @dependency Media Service
+     * @param {number[]} cids
+     * @param {number} [limitPerCid=5]
+     * @returns {Promise<Map<number, object[]>>}
+     * @throws {DatabaseError} On database failures
+     */
+    async getPreviewImagesByCids(cids, limitPerCid = 5) {
+        return resolvePreviewImagesByCids(cids, limitPerCid);
     }
 
     /**

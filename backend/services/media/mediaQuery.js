@@ -6,9 +6,9 @@ import getStrategy from "./strategies/index.js";
 import { VALIDATIONS } from "./constants.js";
 import { toAdminMediaListDTO } from "./DTOs/adminMediaListDTO.js";
 import {
-  parsePaginationQuery,
-  paginationMeta,
-  validatePaginationParams,
+    parsePaginationQuery,
+    paginationMeta,
+    validatePaginationParams,
 } from "../../utils/pagination.js";
 import { ValidationError } from "../../utils/errors.js";
 import log from "../../utils/logger.js";
@@ -21,9 +21,9 @@ import log from "../../utils/logger.js";
  * @throws {DatabaseError} On database failures
  */
 async function resolveMediaById(media_id) {
-  const media = await mediaDAO.findById(media_id);
+    const media = await mediaDAO.findById(media_id);
 
-  return media;
+    return media;
 }
 
 /**
@@ -37,16 +37,16 @@ async function resolveMediaById(media_id) {
  * @throws {DatabaseError} On database failures
  */
 async function resolveMediaByCid(cid, mediaType = null) {
-  if (mediaType) {
-    return getStrategy(mediaType).resolve(cid);
-  }
+    if (mediaType) {
+        return getStrategy(mediaType).resolve(cid);
+    }
 
-  const [images, pdfs] = await Promise.all([
-    getStrategy(VALIDATIONS.MEDIA_TYPES.IMAGE).resolve(cid),
-    getStrategy(VALIDATIONS.MEDIA_TYPES.PDF).resolve(cid),
-  ]);
+    const [images, pdfs] = await Promise.all([
+        getStrategy(VALIDATIONS.MEDIA_TYPES.IMAGE).resolve(cid),
+        getStrategy(VALIDATIONS.MEDIA_TYPES.PDF).resolve(cid),
+    ]);
 
-  return { images, pdfs };
+    return { images, pdfs };
 }
 
 /**
@@ -58,7 +58,18 @@ async function resolveMediaByCid(cid, mediaType = null) {
  * @throws {DatabaseError} On database failures
  */
 async function resolvePrimaryCatalogImage(cid) {
-  return mediaDAO.findPrimaryByCid(cid);
+    return mediaDAO.findPrimaryByCid(cid);
+}
+
+/**
+ * This function resolves preview images for many catalog items (first N per catalog item by display_order).
+ * @param {number[]} cids
+ * @param {number} [limitPerCid=5]
+ * @returns {Promise<Map<number, object[]>>}
+ * @throws {DatabaseError} On database failures
+ */
+async function resolvePreviewImagesByCids(cids, limitPerCid = 5) {
+    return mediaDAO.findImagesByCids(cids, { limitPerCid });
 }
 
 /**
@@ -69,39 +80,45 @@ async function resolvePrimaryCatalogImage(cid) {
  * @throws {DatabaseError} On database failures
  */
 async function viewAllMedia(queryParams = {}) {
-  if (!validatePaginationParams(queryParams)) {
-    throw new ValidationError("Invalid pagination parameters.");
-  }
-  const pagination = parsePaginationQuery(queryParams);
-
-  try {
-    const total = await mediaDAO.countAllMedia();
-    if (total === 0) {
-      return {
-        items: [],
-        pagination: paginationMeta({ ...pagination, total: 0 }),
-      };
+    if (!validatePaginationParams(queryParams)) {
+        throw new ValidationError("Invalid pagination parameters.");
     }
+    const pagination = parsePaginationQuery(queryParams);
 
-    const rows = await mediaDAO.findAllMedia(
-      pagination.limit,
-      pagination.offset,
-    );
-    const items = rows.map(toAdminMediaListDTO);
+    try {
+        const total = await mediaDAO.countAllMedia();
+        if (total === 0) {
+            return {
+                items: [],
+                pagination: paginationMeta({ ...pagination, total: 0 }),
+            };
+        }
 
-    return {
-      items,
-      pagination: paginationMeta({ ...pagination, total }),
-    };
-  } catch (err) {
-    log.error("Media", "viewAllMedia", "Failed to retrieve media list", err);
-    throw err;
-  }
+        const rows = await mediaDAO.findAllMedia(
+            pagination.limit,
+            pagination.offset,
+        );
+        const items = rows.map(toAdminMediaListDTO);
+
+        return {
+            items,
+            pagination: paginationMeta({ ...pagination, total }),
+        };
+    } catch (err) {
+        log.error(
+            "Media",
+            "viewAllMedia",
+            "Failed to retrieve media list",
+            err,
+        );
+        throw err;
+    }
 }
 
 export {
-  resolveMediaById,
-  resolveMediaByCid,
-  resolvePrimaryCatalogImage,
-  viewAllMedia,
+    resolveMediaById,
+    resolveMediaByCid,
+    resolvePrimaryCatalogImage,
+    resolvePreviewImagesByCids,
+    viewAllMedia,
 };

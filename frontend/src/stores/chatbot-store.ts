@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { CHAT_WELCOME } from "@/components/shop/chatbot/chat-constants";
 
 export type ChatRole = "user" | "assistant" | "system";
 
@@ -7,6 +8,13 @@ export type ChatMessage = {
     role: ChatRole;
     content: string;
     createdAt: string;
+};
+
+const WELCOME_MESSAGE: ChatMessage = {
+    id: "welcome",
+    role: "assistant",
+    content: CHAT_WELCOME,
+    createdAt: new Date(0).toISOString(),
 };
 
 type ChatbotState = {
@@ -19,14 +27,7 @@ type ChatbotState = {
 };
 
 export const useChatbotStore = create<ChatbotState>((set) => ({
-    messages: [
-        {
-            id: "welcome",
-            role: "assistant",
-            content: "Hi, ask me about vehicles, financing, or checkout.",
-            createdAt: new Date(0).toISOString(),
-        },
-    ],
+    messages: [WELCOME_MESSAGE],
     isSending: false,
 
     addMessage: (message) =>
@@ -46,7 +47,7 @@ export const useChatbotStore = create<ChatbotState>((set) => ({
 
     clear: () =>
         set({
-            messages: [],
+            messages: [{ ...WELCOME_MESSAGE, createdAt: new Date().toISOString() }],
             isSending: false,
         }),
 }));

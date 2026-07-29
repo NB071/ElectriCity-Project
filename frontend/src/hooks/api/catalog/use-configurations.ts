@@ -1,4 +1,5 @@
 import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { toast } from "sonner";
 
 // Endpoints: [POST] /api/shop/catalog/configurations, [GET] /api/shop/catalog/configurations/:configId
 
@@ -34,6 +35,9 @@ export const useCreateConfiguration = () => {
     return useApiMutation<Configuration, CreateConfigurationBody>({
         url: "/api/shop/catalog/configurations",
         method: "post",
+        onError: (error) => {
+            toast.error(error.message || "Could not save configuration");
+        },
     });
 };
 

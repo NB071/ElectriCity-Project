@@ -22,6 +22,7 @@ import {
 import { toCatalogListItemDTO } from "./DTOs/catalogListItemDTO.js";
 import { getForItem as getOptionsForItem, getEquippedForItem } from "../_options/optionsQuery.js";
 import { getPromotionsForItems } from "../_promotions/promotionsQuery.js";
+import { DEFAULTS } from "../constants.js";
 
 const detailsRegistry = new DetailsRegistry({
     productDAO,
@@ -45,26 +46,18 @@ const compareRegistry = new CompareRegistry({
  * @returns {Promise<object[]>}
  */
 async function mapListRows(rows) {
-    const promotionsByCid = await getPromotionsForItems(rows.map((row) => row.cid));
+    const cids = rows.map((row) => row.cid);
+    const [promotionsByCid, imagesByCid] = await Promise.all([
+        getPromotionsForItems(cids),
+        mediaAdapter.getPreviewImagesByCids(cids, DEFAULTS.LIST_IMAGE_LIMIT),
+    ]);
 
-    return Promise.all(
-        rows.map(async (row) => {
-            let primaryImage = null;
-
-            try {
-                primaryImage = await mediaAdapter.getPrimaryImage(row.cid);
-            } catch (error) {
-                if (!(error instanceof NotFoundError)) {
-                    throw error;
-                }
-            }
-
-            return toCatalogListItemDTO(
-                row,
-                primaryImage,
-                promotionsByCid.get(row.cid) ?? [],
-            );
-        }),
+    return rows.map((row) =>
+        toCatalogListItemDTO(
+            row,
+            imagesByCid.get(row.cid) ?? [],
+            promotionsByCid.get(row.cid) ?? [],
+        ),
     );
 }
 

@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
+import { useCatalogStore } from "@/stores";
+import { useUiStore } from "@/stores/ui-store";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
@@ -13,6 +15,8 @@ function Header() {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const scrolled = useScroll(10);
+    const setFilters = useCatalogStore((s) => s.setFilters);
+    const setMobileNavOpen = useUiStore((s) => s.setMobileNavOpen);
 
     const location = useLocation();
     const isLanding = location.pathname === "/";
@@ -21,7 +25,13 @@ function Header() {
         event.preventDefault();
         const q = search.trim();
         if (!q) return;
-        void navigate({ to: "/catalog" });
+
+        setFilters({ q });
+        setMobileNavOpen(false);
+        void navigate({
+            to: "/catalog",
+            search: { q },
+        });
     }
 
     return (

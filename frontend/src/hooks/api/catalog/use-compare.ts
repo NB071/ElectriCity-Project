@@ -10,6 +10,8 @@ export type CompareColumn = {
 export type CompareCell = {
     value: unknown;
     isBest: boolean;
+    isTied: boolean;
+    isWorse: boolean;
 };
 
 export type CompareRow = {

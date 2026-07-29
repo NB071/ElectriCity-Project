@@ -21,7 +21,7 @@ export const useSubmitReview = (cid: string | number) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: reviewKeys.vehicle(cid) });
             queryClient.invalidateQueries({ queryKey: reviewKeys.customer() });
-            queryClient.invalidateQueries({ queryKey: ["vehicles", String(cid)] });
+            queryClient.invalidateQueries({ queryKey: ["vehicles", "detail", Number(cid)] });
             toast.success("Review submitted");
         },
         onError: (error) => {

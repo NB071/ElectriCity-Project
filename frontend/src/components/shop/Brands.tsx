@@ -6,15 +6,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
+import { QueryError } from "@/components/common/QueryError";
 import { UnderlineLinkButton } from "../common/underline-link-button";
 import { useGetFeaturedBrands } from "@/hooks/api/catalog/use-brands";
 
-function Brands() {
-    const { data, isLoading } = useGetFeaturedBrands();
+type BrandsProps = {
+    /** Landing overlaps the hero; about and other pages should use a flat section. */
+    overlap?: boolean;
+};
+
+function Brands({ overlap = true }: BrandsProps) {
+    const { data, isLoading, isError, error, refetch, isFetching } = useGetFeaturedBrands();
     const brands = data?.items ?? [];
 
     return (
-        <section className="bg-background relative -mt-6 rounded-t-[2rem] pt-12 pb-16 md:-mt-10 md:rounded-t-[3rem] md:pt-16 md:pb-20">
+        <section
+            className={cn(
+                "bg-background relative pt-12 pb-16 md:pt-16 md:pb-20",
+                overlap && "-mt-6 rounded-t-[2rem] md:-mt-10 md:rounded-t-[3rem]"
+            )}
+        >
             <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-3">
                     <Badge variant="outline" className="text-foreground h-7 rounded-full bg-white px-3 text-xs font-medium">
@@ -22,7 +33,7 @@ function Brands() {
                     </Badge>
                     <div className="flex items-end justify-between gap-4">
                         <h2 className="font-heading text-xl font-semibold tracking-tight md:text-2xl">Explore Our Premium Brands</h2>
-                        <UnderlineLinkButton to="/catalog" lineOffset="after:bottom-1">
+                        <UnderlineLinkButton to="/brands" lineOffset="after:bottom-1">
                             Show All Brands
                         </UnderlineLinkButton>
                     </div>
@@ -32,6 +43,16 @@ function Brands() {
                     <div className="flex h-36 w-full items-center justify-center">
                         <Loader2 className="text-muted-foreground size-6 animate-spin" />
                     </div>
+                ) : isError ? (
+                    <QueryError
+                        title="Couldn't load brands"
+                        message="We couldn't load premium brands right now."
+                        error={error}
+                        onRetry={() => void refetch()}
+                        isRetrying={isFetching}
+                    />
+                ) : brands.length === 0 ? (
+                    <p className="text-muted-foreground py-10 text-center text-sm">No premium brands to show yet.</p>
                 ) : (
                     <ScrollArea className="w-full" scrollHideDelay={100} about="Featured brands">
                         <ul className="flex w-max gap-4 pb-3" aria-label="Featured brands">
