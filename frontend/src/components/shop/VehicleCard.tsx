@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { UnderlineLinkButton } from "@/components/common/underline-link-button";
 import { useRecentlyViewedStore, useCompareStore } from "@/stores";
 import { useAddToWishlist, useRemoveFromWishlist } from "@/hooks/api/wishlist/use-wishlist-mutations";
-import { queryClient } from "@/integrations/tanstack-query/query-client";
 
 export type CatalogListItem = {
     id: number;
@@ -149,9 +148,7 @@ export function CardImageCarousel({ images, alt }: { images: string[]; alt: stri
     );
 }
 
-export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListItem; saved: boolean; onToggleSave: () => void }) {
-    const authData = queryClient.getQueryData<any>(["user"]); 
-    const userId = authData?.user_id || authData?.id || "";
+export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListItem; saved: boolean; onToggleSave: () => void }) { 
     const addToWishlist = useAddToWishlist();
     const removeFromWishlist = useRemoveFromWishlist(String(item.id));
     const { lastViewedId } = useRecentlyViewedStore();
