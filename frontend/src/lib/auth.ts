@@ -34,6 +34,9 @@ export async function ensureAuthUser(queryClient: QueryClient): Promise<AuthUser
 export function clearAuthenticatedState(): void {
     session.clear();
     appQueryClient.removeQueries();
+    void import("@/integrations/sentry").then(({ clearSentryUser }) => {
+        clearSentryUser();
+    });
 }
 
 /**
