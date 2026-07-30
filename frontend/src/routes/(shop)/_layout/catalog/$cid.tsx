@@ -6,7 +6,6 @@ import {
     Calendar,
     Gauge,
     Settings2,
-    Share,
     Bookmark,
     ChevronLeft,
     Car,
@@ -42,6 +41,7 @@ import { useAuthStatus } from "@/hooks/use-me";
 import { mediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import SharePopover from "@/components/popover4";
 
 export const Route = createFileRoute("/(shop)/_layout/catalog/$cid")({
     component: VehicleDetailsRoute,
@@ -251,10 +251,7 @@ function VehicleDetailsRoute() {
 
                     <div className="flex flex-col items-start gap-3 md:items-end">
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" size="sm" className="h-9 rounded-full px-4 text-xs font-semibold">
-                                <Share className="mr-2 h-3.5 w-3.5" />
-                                Share
-                            </Button>
+                            <SharePopover title={`Check out ${vehicle.name} on ElectriCity`} />
                             <Button
                                 variant="outline"
                                 size="sm"

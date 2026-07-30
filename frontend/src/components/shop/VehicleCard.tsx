@@ -3,11 +3,13 @@ import Autoplay from "embla-carousel-autoplay";
 import { Bookmark, Car, Gauge, GitBranch, DoorOpen, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mediaUrl } from "@/lib/media";
+import formatNumber from "@/lib/formatNumber";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, useCarousel } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UnderlineLinkButton } from "@/components/common/underline-link-button";
 import { useRecentlyViewedStore, useCompareStore } from "@/stores";
 import { useAddToWishlist, useRemoveFromWishlist, addToWishlistVariables, removeFromWishlistVariables } from "@/hooks/api/wishlist/use-wishlist-mutations";
@@ -264,7 +266,16 @@ export function VehicleCard({ item }: { item: CatalogListItem }) {
                 <ul className="text-muted-foreground flex flex-wrap items-center justify-between py-1 text-xs">
                     <li className="mx-1 flex flex-col items-center gap-0.5">
                         <Gauge className="size-3.5 shrink-0" aria-hidden />
-                        {formatMileage(item.vehicle.mileage)}
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="cursor-help" tabIndex={0}>
+                                        {formatNumber(item.vehicle.mileage)} miles
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent>{formatMileage(item.vehicle.mileage)}</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </li>
                     <li className="mx-1 flex flex-col items-center gap-0.5">
                         <Car className="size-3.5 shrink-0" aria-hidden />
