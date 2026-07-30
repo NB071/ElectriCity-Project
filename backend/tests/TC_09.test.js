@@ -117,4 +117,36 @@ describe("TC_09 Cart Service - Add to Cart (UC10)", () => {
             await deleteConfiguration(configId);
         }
     });
+
+    test("guest cart summary returns lite preview without full line DTOs", async () => {
+        const added = await cartService.addToCart({
+            userId: null,
+            sessionToken: null,
+            cid: ACTIVE_CID,
+            quantity: 2,
+        });
+
+        try {
+            const summary = await cartService.viewCartSummary(
+                { userId: null, sessionToken: added.session_token },
+                { limit: 5 },
+            );
+
+            expect(summary.is_guest).toBe(true);
+            expect(summary.item_count).toBe(1);
+            expect(summary.quantity_total).toBe(2);
+            expect(summary.subtotal).toBeGreaterThan(0);
+            expect(summary.preview_limit).toBe(5);
+            expect(summary.preview).toHaveLength(1);
+            expect(summary.preview[0]).toMatchObject({
+                cart_item_id: added.cart_item_id,
+                cid: ACTIVE_CID,
+                quantity: 2,
+            });
+            expect(summary.preview[0]).not.toHaveProperty("catalog_item");
+            expect(summary.preview[0]).not.toHaveProperty("configuration");
+        } finally {
+            await deleteGuestCart(added.session_token);
+        }
+    });
 });

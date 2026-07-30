@@ -31,6 +31,8 @@ describe("TC_01 Catalog Service - Vehicle Browsing (UC1)", () => {
             ).toBeTruthy();
             expect(Array.isArray(item.promotions)).toBe(true);
             expect(item.base_price).toEqual(expect.any(Number));
+            expect(Array.isArray(item.image_urls)).toBe(true);
+            expect(item.image_urls.length).toBeLessThanOrEqual(5);
             // images may be represented as primary_image_url on browse cards
             expect(
                 item.primary_image_url === null ||

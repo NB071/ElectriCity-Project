@@ -38,9 +38,16 @@ const REPORT_DEFAULTS = {
     MAX_RANGE_DAYS: 366,
 };
 
+const EVENT_LIST = {
+    SEARCH: {
+        MIN_LENGTH: 1,
+        MAX_LENGTH: 100,
+    },
+};
+
 // Redis related constants
 const REDIS = {
     CACHE_CHANNEL: "analytics:event-type:invalidate",
 };
 
-export { EVENT_DEFINITIONS, REPORT_DEFAULTS, EVENT_IDS, REDIS };
+export { EVENT_DEFINITIONS, REPORT_DEFAULTS, EVENT_LIST, EVENT_IDS, REDIS };

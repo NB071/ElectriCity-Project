@@ -52,7 +52,20 @@ describe("wishlistDAO", () => {
         await expect(wishlistDAO.countByUserId(1)).resolves.toBe(4);
     });
 
-    test("findEntry throws when missing", async () => {
+    test("findCidsByUserId returns empty array when wishlist is empty", async () => {
+    execute.mockResolvedValueOnce([[], []]);
+    await expect(wishlistDAO.findCidsByUserId(1)).resolves.toEqual([]);
+  });
+
+  test("findCidsByUserId returns cid rows", async () => {
+    execute.mockResolvedValueOnce([[{ cid: 2 }, { cid: 5 }], []]);
+    await expect(wishlistDAO.findCidsByUserId(1)).resolves.toEqual([
+      { cid: 2 },
+      { cid: 5 },
+    ]);
+  });
+
+  test("findEntry throws when missing", async () => {
         execute.mockResolvedValueOnce([[], []]);
         await expect(wishlistDAO.findEntry(1, 99)).rejects.toBeInstanceOf(
             NotFoundError,

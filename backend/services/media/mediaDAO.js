@@ -2,7 +2,8 @@ import BaseDAO from "../../utils/BaseDAO.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 
 /**
- * This class is used to interact with the media database.
+ * This class is used to interact with the database.
+ * @touches_tables: media, catalog_images
  * @class
  * @extends BaseDAO
  */
@@ -70,6 +71,44 @@ class MediaDAO extends BaseDAO {
     }
 
     /**
+     * This method finds preview images for many catalog items (display_order ascending, capped per cid).
+     * @param {number[]} cids
+     * @param {{ limitPerCid?: number }} [options]
+     * @returns {Promise<Map<number, object[]>>} cid → image rows
+     * @throws {DatabaseError} On database failures
+     */
+    async findImagesByCids(cids, { limitPerCid = 5 } = {}) {
+        const uniqueCids = [
+            ...new Set(cids.filter((cid) => Number.isFinite(cid))),
+        ];
+        if (uniqueCids.length === 0) {
+            return new Map();
+        }
+
+        const placeholders = uniqueCids.map(() => "?").join(",");
+        const [rows] = await this._query(
+            `SELECT m.media_id, m.url, m.file_type, m.alt_text,
+                    ci.cid, ci.display_order, ci.is_primary
+             FROM catalog_images ci
+             JOIN media m ON m.media_id = ci.media_id
+             WHERE ci.cid IN (${placeholders})
+             ORDER BY ci.cid ASC, ci.display_order ASC`,
+            uniqueCids,
+            { suppressNotFound: true },
+        );
+
+        const imagesByCid = new Map();
+        for (const row of rows) {
+            const list = imagesByCid.get(row.cid) ?? [];
+            if (list.length < limitPerCid) {
+                list.push(row);
+                imagesByCid.set(row.cid, list);
+            }
+        }
+        return imagesByCid;
+    }
+
+    /**
      * This method finds all media records linked to a catalog item by its file_type.
      * @param {number} cid catalog item ID
      * @param {string} file_type file type of the media record
@@ -89,6 +128,42 @@ class MediaDAO extends BaseDAO {
         );
         return rows;
     }
+
+    /**
+     * This method counts all media records across the platform.
+     * @returns {Promise<number>}
+     * @throws {DatabaseError} On database failures
+     */
+    async countAllMedia() {
+        const [rows] = await this._query(`SELECT COUNT(*) AS total FROM media`);
+        return Number(rows[0].total);
+    }
+
+    /**
+     * This method returns a paginated admin list of all media assets.
+     * It outer-joins with catalog_images to reveal linked CIDs.
+     * @param {number} limit
+     * @param {number} offset
+     * @returns {Promise<object[]>}
+     * @throws {DatabaseError} On database failures
+     */
+    async findAllMedia(limit, offset) {
+        const safeLimit = Number(limit);
+        const safeOffset = Number(offset);
+        const [rows] = await this._query(
+            `SELECT 
+         m.media_id, m.url, m.file_type, m.alt_text, m.uploaded_at,
+         ci.cid, ci.is_primary
+       FROM media m
+       LEFT JOIN catalog_images ci ON m.media_id = ci.media_id
+       ORDER BY m.uploaded_at DESC
+       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+            [],
+            { suppressNotFound: true },
+        );
+        return rows;
+    }
+
     // #########################
     // Write operations
     // #########################

@@ -6,11 +6,11 @@ import accountDAO from "./accountDAO.js";
 import addressDAO from "./addressDAO.js";
 import emailAdapter from "../EmailAdaptor.js";
 import {
-    validateUpdateProfile,
-    validateDeleteProfile,
-    validateCreateAddress,
-    validateUpdateAddress,
-    validateAddressRef,
+  validateUpdateProfile,
+  validateDeleteProfile,
+  validateCreateAddress,
+  validateUpdateAddress,
+  validateAddressRef,
 } from "./identityValidator.js";
 import { DEFAULTS, USER_FIELDS } from "./constants.js";
 import { getUserById } from "./identityQuery.js";
@@ -36,80 +36,75 @@ import log from "../../../utils/logger.js";
  * @throws {DatabaseError} On database failures
  */
 async function updateProfile({
-    userId,
-    firstName,
-    lastName,
-    email,
-    phoneNumber,
-    currentPassword,
-    newPassword,
+  userId,
+  firstName,
+  lastName,
+  email,
+  phoneNumber,
+  currentPassword,
+  newPassword,
 }) {
-    try {
-        const valid = validateUpdateProfile({
-            userId,
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            currentPassword,
-            newPassword,
-        });
+  try {
+    const valid = validateUpdateProfile({
+      userId,
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      currentPassword,
+      newPassword,
+    });
 
-        const updates = {};
+    const updates = {};
 
-        if (valid.firstName !== undefined) {
-            updates.first_name = valid.firstName;
-        }
-
-        if (valid.lastName !== undefined) {
-            updates.last_name = valid.lastName;
-        }
-
-        if (valid.email !== undefined) {
-            const taken = await accountDAO.emailExists(
-                valid.email,
-                valid.userId,
-            );
-
-            if (taken) {
-                throw new ConflictError(
-                    "Email is already registered to another account.",
-                    { email: valid.email },
-                );
-            }
-
-            updates.email = valid.email;
-        }
-
-        if (valid.phoneNumber !== undefined) {
-            updates.phone_number = valid.phoneNumber;
-        }
-
-        if (valid.newPassword !== undefined) {
-            const passwordHash = await accountDAO.findPasswordHashById(
-                valid.userId,
-            );
-            const passwordMatches = await bcrypt.compare(
-                valid.currentPassword,
-                passwordHash,
-            );
-
-            if (!passwordMatches) {
-                throw new UnauthorizedError("Current password is incorrect.");
-            }
-
-            updates.password_hash = await bcrypt.hash(
-                valid.newPassword,
-                DEFAULTS.BCRYPT_SALT_ROUNDS,
-            );
-        }
-
-        await accountDAO.updateById(valid.userId, updates);
-        return getUserById(valid.userId);
-    } catch (err) {
-        log.error("IAM", "updateProfile", "updateProfile failed", err);
-        throw err;
+    if (valid.firstName !== undefined) {
+      updates.first_name = valid.firstName;
     }
+
+    if (valid.lastName !== undefined) {
+      updates.last_name = valid.lastName;
+    }
+
+    if (valid.email !== undefined) {
+      const taken = await accountDAO.emailExists(valid.email, valid.userId);
+
+      if (taken) {
+        throw new ConflictError(
+          "Email is already registered to another account.",
+          { email: valid.email },
+        );
+      }
+
+      updates.email = valid.email;
+    }
+
+    if (valid.phoneNumber !== undefined) {
+      updates.phone_number = valid.phoneNumber;
+    }
+
+    if (valid.newPassword !== undefined) {
+      const passwordHash = await accountDAO.findPasswordHashById(valid.userId);
+      const passwordMatches = await bcrypt.compare(
+        valid.currentPassword,
+        passwordHash,
+      );
+
+      if (!passwordMatches) {
+        throw new UnauthorizedError("Current password is incorrect.");
+      }
+
+      updates.password_hash = await bcrypt.hash(
+        valid.newPassword,
+        DEFAULTS.BCRYPT_SALT_ROUNDS,
+      );
+    }
+
+    await accountDAO.updateById(valid.userId, updates);
+    return getUserById(valid.userId);
+  } catch (err) {
+    log.error("IAM", "updateProfile", "updateProfile failed", err);
+    throw err;
+  }
 }
 
 /**
@@ -124,45 +119,40 @@ async function updateProfile({
  * @throws {DatabaseError} On database failures
  */
 async function deleteProfile({ userId, currentPassword }) {
-    try {
-        // validate the user id and current password
-        const valid = validateDeleteProfile({ userId, currentPassword });
+  try {
+    // validate the user id and current password
+    const valid = validateDeleteProfile({ userId, currentPassword });
 
-        // find the password hash by the user id
-        const passwordHash = await accountDAO.findPasswordHashById(
-            valid.userId,
-        );
-        // compare the current password with the password hash
-        const passwordMatches = await bcrypt.compare(
-            valid.currentPassword,
-            passwordHash,
-        );
+    // find the password hash by the user id
+    const passwordHash = await accountDAO.findPasswordHashById(valid.userId);
+    // compare the current password with the password hash
+    const passwordMatches = await bcrypt.compare(
+      valid.currentPassword,
+      passwordHash,
+    );
 
-        // if the password does not match, throw an unauthorized error
-        if (!passwordMatches) {
-            throw new UnauthorizedError("Current password is incorrect.");
-        }
-
-        // find the user by the user id
-        const user = await accountDAO.findById(valid.userId, [
-            USER_FIELDS.FIRST_NAME,
-            USER_FIELDS.EMAIL,
-        ]);
-
-        // soft delete the user by the user id
-        await accountDAO.softDeleteById(valid.userId);
-
-        // send the account deletion email
-        await emailAdapter.sendAccountDeletionEmail(
-            user.email,
-            user.first_name,
-        );
-
-        return { deleted: true };
-    } catch (err) {
-        log.error("IAM", "deleteProfile", "deleteProfile failed", err);
-        throw err;
+    // if the password does not match, throw an unauthorized error
+    if (!passwordMatches) {
+      throw new UnauthorizedError("Current password is incorrect.");
     }
+
+    // find the user by the user id
+    const user = await accountDAO.findById(valid.userId, [
+      USER_FIELDS.FIRST_NAME,
+      USER_FIELDS.EMAIL,
+    ]);
+
+    // soft delete the user by the user id
+    await accountDAO.softDeleteById(valid.userId);
+
+    // send the account deletion email
+    await emailAdapter.sendAccountDeletionEmail(user.email, user.first_name);
+
+    return { deleted: true };
+  } catch (err) {
+    log.error("IAM", "deleteProfile", "deleteProfile failed", err);
+    throw err;
+  }
 }
 
 /**
@@ -182,40 +172,47 @@ async function deleteProfile({ userId, currentPassword }) {
  * @throws {DatabaseError} On database failures
  */
 async function addAddress({
-    userId,
-    street,
-    city,
-    province,
-    country,
-    postalCode,
-    isDefault,
+  userId,
+  street,
+  city,
+  province,
+  country,
+  postalCode,
+  isDefault,
 }) {
-    try {
-        const valid = validateCreateAddress({
-            userId,
-            street,
-            city,
-            province,
-            country,
-            postalCode,
-            isDefault,
-        });
+  try {
+    const valid = validateCreateAddress({
+      userId,
+      street,
+      city,
+      province,
+      country,
+      postalCode,
+      isDefault,
+    });
 
-        const row = await addressDAO.insert({
-            user_id: valid.userId,
-            street: valid.street,
-            city: valid.city,
-            province: valid.province,
-            country: valid.country,
-            postal_code: valid.postalCode,
-            is_default: valid.isDefault,
-        });
-
-        return toAddressDTO(row);
-    } catch (err) {
-        log.error("IAM", "addAddress", "addAddress failed", err);
-        throw err;
+    const addressCount = await addressDAO.countByUserId(valid.userId);
+    if (addressCount >= DEFAULTS.MAX_ADDRESSES_PER_USER) {
+      throw new ConflictError(
+        `Maximum number of addresses (${DEFAULTS.MAX_ADDRESSES_PER_USER}) reached.`,
+      );
     }
+
+    const row = await addressDAO.insert({
+      user_id: valid.userId,
+      street: valid.street,
+      city: valid.city,
+      province: valid.province,
+      country: valid.country,
+      postal_code: valid.postalCode,
+      is_default: valid.isDefault,
+    });
+
+    return toAddressDTO(row);
+  } catch (err) {
+    log.error("IAM", "addAddress", "addAddress failed", err);
+    throw err;
+  }
 }
 
 /**
@@ -237,45 +234,42 @@ async function addAddress({
  * @throws {DatabaseError} On database failures
  */
 async function updateAddress({
-    userId,
-    addressId,
-    street,
-    city,
-    province,
-    country,
-    postalCode,
-    isDefault,
+  userId,
+  addressId,
+  street,
+  city,
+  province,
+  country,
+  postalCode,
+  isDefault,
 }) {
-    try {
-        const valid = validateUpdateAddress({
-            userId,
-            addressId,
-            street,
-            city,
-            province,
-            country,
-            postalCode,
-            isDefault,
-        });
+  try {
+    const valid = validateUpdateAddress({
+      userId,
+      addressId,
+      street,
+      city,
+      province,
+      country,
+      postalCode,
+      isDefault,
+    });
 
-        await addressDAO.updateById(valid.addressId, valid.userId, {
-            street: valid.street,
-            city: valid.city,
-            province: valid.province,
-            country: valid.country,
-            postal_code: valid.postalCode,
-            is_default: valid.isDefault,
-        });
+    await addressDAO.updateById(valid.addressId, valid.userId, {
+      street: valid.street,
+      city: valid.city,
+      province: valid.province,
+      country: valid.country,
+      postal_code: valid.postalCode,
+      is_default: valid.isDefault,
+    });
 
-        const row = await addressDAO.findByIdForUser(
-            valid.addressId,
-            valid.userId,
-        );
-        return toAddressDTO(row);
-    } catch (err) {
-        log.error("IAM", "updateAddress", "updateAddress failed", err);
-        throw err;
-    }
+    const row = await addressDAO.findByIdForUser(valid.addressId, valid.userId);
+    return toAddressDTO(row);
+  } catch (err) {
+    log.error("IAM", "updateAddress", "updateAddress failed", err);
+    throw err;
+  }
 }
 
 /**
@@ -291,14 +285,14 @@ async function updateAddress({
  * @throws {DatabaseError} On database failures
  */
 async function deleteAddress({ userId, addressId }) {
-    try {
-        const valid = validateAddressRef({ userId, addressId });
-        await addressDAO.deleteById(valid.addressId, valid.userId);
-        return { address_id: valid.addressId };
-    } catch (err) {
-        log.error("IAM", "deleteAddress", "deleteAddress failed", err);
-        throw err;
-    }
+  try {
+    const valid = validateAddressRef({ userId, addressId });
+    await addressDAO.deleteById(valid.addressId, valid.userId);
+    return { address_id: valid.addressId };
+  } catch (err) {
+    log.error("IAM", "deleteAddress", "deleteAddress failed", err);
+    throw err;
+  }
 }
 
 /**
@@ -315,25 +309,22 @@ async function deleteAddress({ userId, addressId }) {
  * @throws {DatabaseError} On database failures
  */
 async function setDefaultAddress({ userId, addressId }) {
-    try {
-        const valid = validateAddressRef({ userId, addressId });
-        await addressDAO.setDefault(valid.addressId, valid.userId);
-        const row = await addressDAO.findByIdForUser(
-            valid.addressId,
-            valid.userId,
-        );
-        return toAddressDTO(row);
-    } catch (err) {
-        log.error("IAM", "setDefaultAddress", "setDefaultAddress failed", err);
-        throw err;
-    }
+  try {
+    const valid = validateAddressRef({ userId, addressId });
+    await addressDAO.setDefault(valid.addressId, valid.userId);
+    const row = await addressDAO.findByIdForUser(valid.addressId, valid.userId);
+    return toAddressDTO(row);
+  } catch (err) {
+    log.error("IAM", "setDefaultAddress", "setDefaultAddress failed", err);
+    throw err;
+  }
 }
 
 export {
-    updateProfile,
-    deleteProfile,
-    addAddress,
-    updateAddress,
-    deleteAddress,
-    setDefaultAddress,
+  updateProfile,
+  deleteProfile,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
 };

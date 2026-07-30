@@ -18,6 +18,23 @@ export const getCart = tryCatch(async (req, res, _) => {
 });
 
 /**
+ * This controller returns a lite cart summary for the shop header
+ * (counts, subtotal, and a small preview list without full line DTOs).
+ * @route GET /api/shop/cart/summary
+ * @services_used Cart
+ */
+export const getCartSummary = tryCatch(async (req, res, _) => {
+    const responseData = attachCartSession(
+        res,
+        await cartService.viewCartSummary(
+            cartOwnerFromRequest(req),
+            req.query,
+        ),
+    );
+    return apiResponse(res, responseData, 200);
+});
+
+/**
  * This controller adds a catalog item to the caller's cart (customer JWT or guest session).
  * @route POST /api/shop/cart/items
  * @services_used Cart

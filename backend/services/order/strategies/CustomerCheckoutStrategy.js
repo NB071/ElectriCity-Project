@@ -27,6 +27,7 @@ class CustomerCheckoutStrategy extends CheckoutStrategy {
         billing_address,
         payment_method,
         payment_details,
+        additional_information,
     }) {
         // find the cart by the user id
         const cart = await cartDAO.findCartByUserId(userId);
@@ -44,6 +45,7 @@ class CustomerCheckoutStrategy extends CheckoutStrategy {
             billing_address,
             payment_method,
             payment_details,
+            additional_information,
         });
     }
 }

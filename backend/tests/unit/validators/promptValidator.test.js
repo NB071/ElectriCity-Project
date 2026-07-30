@@ -175,6 +175,29 @@ describe("promptValidator", () => {
             });
             expect(byQuery.query).toBe("checkout");
         });
+
+        test("list_brands accepts empty args", () => {
+            expect(validateToolArgs(TOOLS.LIST_BRANDS, {})).toEqual({});
+        });
+
+        test("get_vehicle_facets accepts filters and fields", () => {
+            expect(validateToolArgs(TOOLS.GET_VEHICLE_FACETS, {})).toEqual({});
+
+            const args = validateToolArgs(TOOLS.GET_VEHICLE_FACETS, {
+                condition: "used",
+                body_shape: "SUV",
+                fields: ["body_shape", "condition"],
+            });
+            expect(args.condition).toBe("used");
+            expect(args.body_shape).toBe("SUV");
+            expect(args.fields).toEqual(["body_shape", "condition"]);
+
+            expect(() =>
+                validateToolArgs(TOOLS.GET_VEHICLE_FACETS, {
+                    drivetrain: "xdrive",
+                }),
+            ).toThrow(ValidationError);
+        });
     });
 
     describe("encodeToolResult", () => {

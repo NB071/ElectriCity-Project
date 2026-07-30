@@ -72,17 +72,26 @@ class EmailDirector {
      * @returns {EmailTemplate} The order confirmation email.
      */
     #buildOrderConfirm(to, { fname, orderId, items, total }) {
-        return this.#builder
+        const itemLines = items.map((item) => {
+            const lineTotal = Number(item.quantity) * Number(item.price);
+            return `${item.quantity} × ${item.name} @ $${Number(item.price).toFixed(2)} = $${lineTotal.toFixed(2)}`;
+        });
+
+        let builder = this.#builder
             .setRecipient(to)
             .setSubject(`${SUBJECT_PREFIX.ORDER_CONFIRM}${orderId}`)
             .setHeaderText("Thank you for your order!")
             .addBodyParagraph(`Hello ${fname},`)
             .addBodyParagraph("Your order has been placed successfully.")
             .addBodyParagraph(`Order ID: ${orderId}`)
-            .addBodyParagraph(`Order Total: $${total}`)
-            .addBodyParagraph(
-                `Order Items: ${items.map((item) => item.name).join(", ")}`,
-            )
+            .addBodyParagraph("Order items:");
+
+        for (const line of itemLines) {
+            builder = builder.addBodyParagraph(line);
+        }
+
+        return builder
+            .addBodyParagraph(`Order Total: $${Number(total).toFixed(2)}`)
             .setCTA(CTA_LABELS.VIEW_ORDER, CTA_URLS.order(orderId))
             .build();
     }

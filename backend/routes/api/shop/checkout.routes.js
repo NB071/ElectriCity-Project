@@ -4,6 +4,16 @@ import { authnMiddleware } from "../../../middlewares/index.js";
 
 const router = Router();
 
-router.post("/", authnMiddleware({ optional: true }), checkoutController.checkout);
+router.post(
+    "/calculate",
+    authnMiddleware({ optional: true }),
+    checkoutController.calculate,
+);
+
+router.post(
+    "/",
+    authnMiddleware({ optional: true }),
+    checkoutController.checkout,
+);
 
 export default router;

@@ -6,6 +6,12 @@ import { EVENT_DEFINITIONS } from "../../../services/analytics/constants.js";
 const router = Router();
 
 router.get(
+    "/wishlist/ids",
+    authnMiddleware(),
+    authzMiddleware("customer"),
+    customerWishlistController.getWishlistIds,
+);
+router.get(
     "/wishlist",
     authnMiddleware(),
     authzMiddleware("customer"),

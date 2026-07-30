@@ -10,7 +10,12 @@ router.post("/refresh", authController.refresh);
 router.post("/logout", authnMiddleware(), authController.logout);
 router.post("/logout-all", authnMiddleware(), authController.logoutAll);
 router.get("/me/sessions", authnMiddleware(), authController.getMySessions);
-router.get("/me", authnMiddleware(), authController.getMe);
+router.delete(
+    "/me/sessions/:sessionId",
+    authnMiddleware(),
+    authController.revokeMySession,
+);
+router.get("/me", authnMiddleware({ optional: true }), authController.getMe);
 router.patch("/me", authnMiddleware(), authController.updateMe);
 router.delete("/me", authnMiddleware(), authController.deleteMe);
 

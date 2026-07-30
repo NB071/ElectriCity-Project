@@ -3,10 +3,12 @@
 import {
     browseVehicles,
     searchVehicles,
+    getVehicleFacets,
     getCatalogItemDetails,
     compareCatalogItems,
     ensureCatalogItemExists,
 } from "./_product/productQuery.js";
+import { listBrands, getBrandById, listBrandModels } from "./_brand/brandQuery.js";
 import { createConfiguration } from "./_configurations/configurationsMutation.js";
 import { getConfigurationById } from "./_configurations/configurationsQuery.js";
 import {
@@ -21,10 +23,14 @@ const catalogService = {
     // Query functions
     browseVehicles,
     searchVehicles,
+    getVehicleFacets,
     getCatalogItemDetails,
     compareCatalogItems,
     ensureCatalogItemExists,
     getConfigurationById,
+    listBrands,
+    getBrandById,
+    listBrandModels,
 
     // Mutation functions
     createConfiguration,
@@ -43,10 +49,14 @@ export {
     // Query functions
     browseVehicles,
     searchVehicles,
+    getVehicleFacets,
     getCatalogItemDetails,
     compareCatalogItems,
     ensureCatalogItemExists,
     getConfigurationById,
+    listBrands,
+    getBrandById,
+    listBrandModels,
 
     // Mutation functions
     createConfiguration,

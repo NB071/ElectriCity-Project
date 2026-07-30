@@ -4,6 +4,14 @@
 import mediaDAO from "./mediaDAO.js";
 import getStrategy from "./strategies/index.js";
 import { VALIDATIONS } from "./constants.js";
+import { toAdminMediaListDTO } from "./DTOs/adminMediaListDTO.js";
+import {
+    parsePaginationQuery,
+    paginationMeta,
+    validatePaginationParams,
+} from "../../utils/pagination.js";
+import { ValidationError } from "../../utils/errors.js";
+import log from "../../utils/logger.js";
 
 /**
  * This function resolves a single media record by its media ID.
@@ -53,4 +61,64 @@ async function resolvePrimaryCatalogImage(cid) {
     return mediaDAO.findPrimaryByCid(cid);
 }
 
-export { resolveMediaById, resolveMediaByCid, resolvePrimaryCatalogImage };
+/**
+ * This function resolves preview images for many catalog items (first N per catalog item by display_order).
+ * @param {number[]} cids
+ * @param {number} [limitPerCid=5]
+ * @returns {Promise<Map<number, object[]>>}
+ * @throws {DatabaseError} On database failures
+ */
+async function resolvePreviewImagesByCids(cids, limitPerCid = 5) {
+    return mediaDAO.findImagesByCids(cids, { limitPerCid });
+}
+
+/**
+ * This function returns a paginated list of all media for the admin dashboard.
+ * @param {object} [queryParams] Raw query params (page, limit)
+ * @returns {Promise<{ items: object[], pagination: object }>}
+ * @throws {ValidationError} If validation fails
+ * @throws {DatabaseError} On database failures
+ */
+async function viewAllMedia(queryParams = {}) {
+    if (!validatePaginationParams(queryParams)) {
+        throw new ValidationError("Invalid pagination parameters.");
+    }
+    const pagination = parsePaginationQuery(queryParams);
+
+    try {
+        const total = await mediaDAO.countAllMedia();
+        if (total === 0) {
+            return {
+                items: [],
+                pagination: paginationMeta({ ...pagination, total: 0 }),
+            };
+        }
+
+        const rows = await mediaDAO.findAllMedia(
+            pagination.limit,
+            pagination.offset,
+        );
+        const items = rows.map(toAdminMediaListDTO);
+
+        return {
+            items,
+            pagination: paginationMeta({ ...pagination, total }),
+        };
+    } catch (err) {
+        log.error(
+            "Media",
+            "viewAllMedia",
+            "Failed to retrieve media list",
+            err,
+        );
+        throw err;
+    }
+}
+
+export {
+    resolveMediaById,
+    resolveMediaByCid,
+    resolvePrimaryCatalogImage,
+    resolvePreviewImagesByCids,
+    viewAllMedia,
+};

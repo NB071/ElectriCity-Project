@@ -33,6 +33,17 @@ await jest.unstable_mockModule("../../../services/order/orderQuery.js", () => ({
     validateOrderForPayment: mockValidateOrderForPayment,
 }));
 
+const mockGetUserById = jest.fn();
+const mockSendOrderConfirmationEmail = jest.fn();
+
+await jest.unstable_mockModule("../../../services/iam/iam.service.js", () => ({
+    getUserById: mockGetUserById,
+}));
+
+await jest.unstable_mockModule("../../../services/order/EmailAdaptor.js", () => ({
+    default: { sendOrderConfirmationEmail: mockSendOrderConfirmationEmail },
+}));
+
 const { runCheckout } = await import(
     "../../../services/order/strategies/checkoutHelpers.js"
 );
@@ -51,7 +62,15 @@ const createdOrder = {
     subtotal: 200,
     tax: 26,
     total: 226,
-    resolvedItems: [{ cid: 1, quantity: 1, unit_price: 200 }],
+    resolvedItems: [
+        {
+            cid: 1,
+            config_id: null,
+            quantity: 1,
+            unit_price: 200,
+            name: "Test Vehicle",
+        },
+    ],
     cartId: 5,
     clearedCartLines: [{ cid: 1, config_id: null, quantity: 1 }],
 };
@@ -69,6 +88,14 @@ describe("runCheckout", () => {
         mockRestoreCartItems.mockResolvedValue(undefined);
         mockUpdateOrderStatus.mockResolvedValue(undefined);
         mockValidateOrderForPayment.mockResolvedValue(undefined);
+        mockGetUserById.mockResolvedValue({
+            email: "customer@test.com",
+            first_name: "Ada",
+        });
+        mockSendOrderConfirmationEmail.mockResolvedValue({
+            jobId: "1",
+            queueName: "email",
+        });
     });
 
     test("rejects invalid province before creating order", async () => {
@@ -101,11 +128,28 @@ describe("runCheckout", () => {
         });
 
         expect(result.order_status).toBe(VALIDATIONS.ORDER_STATUS.CONFIRMED);
+        expect(result.items).toEqual([
+            {
+                cid: 1,
+                config_id: null,
+                name: "Test Vehicle",
+                quantity: 1,
+                unit_price: 200,
+                line_total: 200,
+            },
+        ]);
         expect(mockValidateOrderForPayment).not.toHaveBeenCalled();
         expect(mockUpdateOrderStatus).toHaveBeenCalledWith(
             100,
             VALIDATIONS.ORDER_STATUS.CONFIRMED,
         );
+        expect(mockSendOrderConfirmationEmail).toHaveBeenCalledWith({
+            to: "guest@test.com",
+            fname: "Test",
+            orderId: 100,
+            items: [{ name: "Test Vehicle", quantity: 1, price: 200 }],
+            total: 226,
+        });
     });
 
     test("customer checkout validates ownership before charging", async () => {
@@ -128,6 +172,14 @@ describe("runCheckout", () => {
             user_id: 9,
             amount: 226,
         });
+        expect(mockGetUserById).toHaveBeenCalled();
+        expect(mockSendOrderConfirmationEmail).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: "customer@test.com",
+                fname: "Ada",
+                orderId: 100,
+            }),
+        );
     });
 
     test("declined payment compensates and throws ConflictError", async () => {

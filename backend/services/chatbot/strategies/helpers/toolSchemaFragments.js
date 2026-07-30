@@ -31,11 +31,11 @@ const vehicleFilterProperties = {
     },
     price_min: {
         type: Type.NUMBER,
-        description: "Minimum base price in USD.",
+        description: "Minimum base price in CAD.",
     },
     price_max: {
         type: Type.NUMBER,
-        description: "Maximum base price in USD.",
+        description: "Maximum base price in CAD.",
     },
     mileage_max: {
         type: Type.INTEGER,
@@ -43,11 +43,13 @@ const vehicleFilterProperties = {
     },
     body_shape: {
         type: Type.STRING,
-        description: "Body style such as sedan, suv, or hatchback.",
+        description: "Body style filter.",
+        enum: VALIDATIONS.TOOL_ARGS.BODY_SHAPES,
     },
     drivetrain: {
         type: Type.STRING,
-        description: "Drivetrain such as awd, fwd, or rwd.",
+        description: "Drivetrain filter.",
+        enum: VALIDATIONS.TOOL_ARGS.DRIVETRAINS,
     },
     sort: {
         type: Type.STRING,

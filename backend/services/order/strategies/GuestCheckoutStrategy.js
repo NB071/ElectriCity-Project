@@ -31,6 +31,7 @@ class GuestCheckoutStrategy extends CheckoutStrategy {
         billing_address,
         payment_method,
         payment_details,
+        additional_information,
     }) {
         // if the session token is provided, find the active guest cart by the session token
         if (sessionToken) {
@@ -50,6 +51,7 @@ class GuestCheckoutStrategy extends CheckoutStrategy {
                 billing_address,
                 payment_method,
                 payment_details,
+                additional_information,
             });
         }
         // if the session token is not provided, run the checkout with the items
@@ -61,6 +63,7 @@ class GuestCheckoutStrategy extends CheckoutStrategy {
             billing_address,
             payment_method,
             payment_details,
+            additional_information,
         });
     }
 }

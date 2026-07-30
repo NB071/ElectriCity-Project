@@ -8,6 +8,7 @@ import CompareRegistry from "./compare/compareRegistry.js";
 import CompareMatrixAssembler from "./compare/compareMatrixAssembler.js";
 import {
     validateBrowseFilters,
+    validateFacetsQuery,
     validateSortParams,
     validateSearchQuery,
     validateCompareQuery,
@@ -20,8 +21,10 @@ import {
     validatePaginationParams,
 } from "../../../utils/pagination.js";
 import { toCatalogListItemDTO } from "./DTOs/catalogListItemDTO.js";
+import { toVehicleFacetsDTO } from "./DTOs/vehicleFacetsDTO.js";
 import { getForItem as getOptionsForItem, getEquippedForItem } from "../_options/optionsQuery.js";
 import { getPromotionsForItems } from "../_promotions/promotionsQuery.js";
+import { DEFAULTS, VALIDATIONS } from "../constants.js";
 
 const detailsRegistry = new DetailsRegistry({
     productDAO,
@@ -45,26 +48,18 @@ const compareRegistry = new CompareRegistry({
  * @returns {Promise<object[]>}
  */
 async function mapListRows(rows) {
-    const promotionsByCid = await getPromotionsForItems(rows.map((row) => row.cid));
+    const cids = rows.map((row) => row.cid);
+    const [promotionsByCid, imagesByCid] = await Promise.all([
+        getPromotionsForItems(cids),
+        mediaAdapter.getPreviewImagesByCids(cids, DEFAULTS.LIST_IMAGE_LIMIT),
+    ]);
 
-    return Promise.all(
-        rows.map(async (row) => {
-            let primaryImage = null;
-
-            try {
-                primaryImage = await mediaAdapter.getPrimaryImage(row.cid);
-            } catch (error) {
-                if (!(error instanceof NotFoundError)) {
-                    throw error;
-                }
-            }
-
-            return toCatalogListItemDTO(
-                row,
-                primaryImage,
-                promotionsByCid.get(row.cid) ?? [],
-            );
-        }),
+    return rows.map((row) =>
+        toCatalogListItemDTO(
+            row,
+            imagesByCid.get(row.cid) ?? [],
+            promotionsByCid.get(row.cid) ?? [],
+        ),
     );
 }
 
@@ -134,6 +129,56 @@ async function searchVehicles(queryParams = {}) {
     };
 }
 
+/**
+ * This function returns facet counts for the vehicle catalog.
+ * With no query params, counts cover the full active inventory against
+ * canonical facet values. Browse filters narrow the base set; each facet
+ * dimension ignores its own selected value so unchecked buckets stay visible.
+ * @param {object} [queryParams] Same browse filters, plus optional `fields`
+ * @returns {Promise<object>}
+ * @throws {ValidationError} If filters or fields are invalid
+ * @throws {DatabaseError} On database failures
+ */
+async function getVehicleFacets(queryParams = {}) {
+    const { filters, fields } = validateFacetsQuery(queryParams);
+    const total = await productDAO.countVehicles(filters);
+
+    const result = { total };
+
+    if (fields.includes("body_shape")) {
+        result.body_shape = await productDAO.countVehiclesByFacet(filters, {
+            excludeKey: "body_shape",
+            columnSql: "vm.body_shape",
+            allowedValues: VALIDATIONS.BODY_SHAPES,
+        });
+    }
+
+    if (fields.includes("condition")) {
+        result.condition = await productDAO.countVehiclesByFacet(filters, {
+            excludeKey: "condition",
+            columnSql: "v.`condition`",
+            allowedValues: VALIDATIONS.VEHICLE_CONDITIONS,
+        });
+    }
+
+    if (fields.includes("drivetrain")) {
+        result.drivetrain = await productDAO.countVehiclesByFacet(filters, {
+            excludeKey: "drivetrain",
+            columnSql: "vm.drivetrain",
+            allowedValues: VALIDATIONS.DRIVETRAINS,
+        });
+    }
+
+    if (fields.includes("promo")) {
+        result.promo = await productDAO.countVehiclesByPromoFacet(
+            filters,
+            VALIDATIONS.PROMO_TYPES,
+        );
+    }
+
+    return toVehicleFacetsDTO(result);
+}
+
 async function getCatalogItemDetails(cid) {
     const id = validateCatalogItemId(cid);
     const base = await productDAO.findBaseById(id);
@@ -179,6 +224,7 @@ async function ensureCatalogItemExists(cid, { requireActive = false } = {}) {
 export {
     browseVehicles,
     searchVehicles,
+    getVehicleFacets,
     getCatalogItemDetails,
     compareCatalogItems,
     ensureCatalogItemExists,

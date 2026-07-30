@@ -5,6 +5,33 @@ import { cartSessionFromRequest } from "../../../services/cart/helpers/attachCar
 import { clearCartSessionCookie } from "../../../services/cart/helpers/cartSessionCookie.js";
 
 /**
+ * This controller calculates checkout totals (subtotal, tax breakdown, total) without placing an order.
+ * @route POST /api/shop/checkout/calculate
+ * @services_used Order, Cart
+ */
+export const calculate = tryCatch(async (req, res, _) => {
+    const { items, shipping_address } = req.body;
+
+    const userId = req.user?.user_id ?? null;
+    const actor =
+        userId != null
+            ? orderService.CHECKOUT_ACTORS.CUSTOMER
+            : orderService.CHECKOUT_ACTORS.GUEST;
+
+    const sessionToken = cartSessionFromRequest(req);
+
+    const responseData = await orderService.calculateCheckoutTotals({
+        actor,
+        userId,
+        sessionToken,
+        items,
+        shipping_address,
+    });
+
+    return apiResponse(res, responseData, 200);
+});
+
+/**
  * This controller checks out the caller's cart (customer) or guest cart / items (guest).
  * @route POST /api/shop/checkout
  * @services_used Order, Cart
@@ -17,6 +44,7 @@ export const checkout = tryCatch(async (req, res, _) => {
         billing_address,
         payment_method,
         payment_details,
+        additional_information,
     } = req.body;
 
     // resolve the checkout actor
@@ -39,6 +67,7 @@ export const checkout = tryCatch(async (req, res, _) => {
         billing_address,
         payment_method,
         payment_details,
+        additional_information,
     });
 
     if (actor === orderService.CHECKOUT_ACTORS.GUEST && sessionToken) {

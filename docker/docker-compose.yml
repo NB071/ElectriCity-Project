@@ -73,13 +73,16 @@ services:
         restart: unless-stopped
         env_file:
             - ../backend/.env
+            - ../frontend/.env
         environment:
-            PORT: "80"
+            PORT: "3000"
+            CHOKIDAR_USEPOLLING: "true"
+            WATCHPACK_POLLING: "true"
         ports:
-            - "3000:80"
+            - "3000:3000"
         volumes:
-            - ../frontend/public:/usr/share/nginx/html:ro
-            - ../frontend/nginx/local-proxy.conf:/etc/nginx/templates/default.conf.template:ro
+            - ../frontend:/app
+            - frontend_node_modules:/app/node_modules
         depends_on:
             - backend
 
@@ -87,3 +90,4 @@ volumes:
     mysql_data:
     redis_data:
     backend_node_modules:
+    frontend_node_modules:

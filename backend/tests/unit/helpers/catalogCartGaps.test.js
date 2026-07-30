@@ -31,9 +31,7 @@ await jest.unstable_mockModule(
 
 // concrete strategies still load; registry uses validatePromoType mock
 const PromoStrategyRegistry = (
-    await import(
-        "../../../services/catalog/_promotions/strategies/PromoStrategyRegistry.js"
-    )
+    await import("../../../services/catalog/_promotions/strategies/PromoStrategyRegistry.js")
 ).default;
 
 describe("promotionDTO", () => {
@@ -126,7 +124,6 @@ describe("CatalogDetailsHandler", () => {
             optionsQuery: {},
             mediaAdapter: {},
         });
-        // InternalError is referenced but not imported in source — assert throw.
         await expect(handler._fetchSubtype(1)).rejects.toThrow();
         expect(() => handler._assemble({})).toThrow();
         await expect(handler._fetchHistory(1)).resolves.toBeNull();
@@ -151,7 +148,9 @@ describe("CartRegistry / CartHandler", () => {
         };
         const stub = new Stub({ cartDAO: dao });
 
-        await expect(stub._ensureCart({})).rejects.toBeInstanceOf(InternalError);
+        await expect(stub._ensureCart({})).rejects.toBeInstanceOf(
+            InternalError,
+        );
 
         stub._ensureCart = jest.fn().mockResolvedValue({ cart_id: 1 });
         await expect(

@@ -2,6 +2,18 @@ import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import analyticsService from "../../../services/analytics/analytics.service.js";
 import { parsePaginationQuery } from "../../../utils/pagination.js";
+import { ValidationError } from "../../../utils/errors.js";
+
+/**
+ * This controller fetches the overview KPIs for the admin dashboard.
+ * @route GET /api/dashboard/admin/analytics/overview
+ * @required_role admin
+ * @services_used Analytics
+ */
+export const getOverview = tryCatch(async (req, res, _) => {
+  const responseData = await analyticsService.getAdminOverview();
+  return apiResponse(res, responseData, 200);
+});
 
 /**
  * This controller fetches the breakdown of event types.
@@ -10,12 +22,12 @@ import { parsePaginationQuery } from "../../../utils/pagination.js";
  * @services_used Analytics
  */
 export const getEventTypeBreakdown = tryCatch(async (req, res, _) => {
-    const { limit } = parsePaginationQuery(req.query);
-    const responseData = await analyticsService.eventTypeBreakdown({
-        ...req.query,
-        limit,
-    });
-    return apiResponse(res, responseData, 200);
+  const { limit } = parsePaginationQuery(req.query);
+  const responseData = await analyticsService.eventTypeBreakdown({
+    ...req.query,
+    limit,
+  });
+  return apiResponse(res, responseData, 200);
 });
 
 /**
@@ -25,11 +37,11 @@ export const getEventTypeBreakdown = tryCatch(async (req, res, _) => {
  * @services_used Analytics
  */
 export const getTrend = tryCatch(async (req, res, _) => {
-    const responseData = await analyticsService.trend(
-        req.params.eventTypeId,
-        req.query,
-    );
-    return apiResponse(res, responseData, 200);
+  const responseData = await analyticsService.trend(
+    req.params.eventTypeId,
+    req.query,
+  );
+  return apiResponse(res, responseData, 200);
 });
 
 /**
@@ -39,12 +51,23 @@ export const getTrend = tryCatch(async (req, res, _) => {
  * @services_used Analytics
  */
 export const getTopCatalogItems = tryCatch(async (req, res, _) => {
-    const { limit } = parsePaginationQuery(req.query);
-    const responseData = await analyticsService.topCatalogItems(
-        req.params.eventTypeId,
-        { ...req.query, limit },
-    );
-    return apiResponse(res, responseData, 200);
+  const { limit } = parsePaginationQuery(req.query);
+  const responseData = await analyticsService.topCatalogItems(
+    req.params.eventTypeId,
+    { ...req.query, limit },
+  );
+  return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller fetches a paginated list of event logs.
+ * @route GET /api/dashboard/admin/analytics/events
+ * @required_role admin
+ * @services_used Analytics
+ */
+export const listEvents = tryCatch(async (req, res, _) => {
+  const responseData = await analyticsService.listEvents(req.query);
+  return apiResponse(res, responseData, 200);
 });
 
 /**
@@ -54,8 +77,19 @@ export const getTopCatalogItems = tryCatch(async (req, res, _) => {
  * @services_used Analytics
  */
 export const getEventDetail = tryCatch(async (req, res, _) => {
-    const responseData = await analyticsService.eventDetail(req.params.eventId);
-    return apiResponse(res, responseData, 200);
+  const responseData = await analyticsService.eventDetail(req.params.eventId);
+  return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller lists all event types with tracking status.
+ * @route GET /api/dashboard/admin/analytics/event-types
+ * @required_role admin
+ * @services_used Analytics
+ */
+export const listEventTypes = tryCatch(async (req, res, _) => {
+  const responseData = await analyticsService.listEventTypes();
+  return apiResponse(res, responseData, 200);
 });
 
 /**
@@ -65,18 +99,18 @@ export const getEventDetail = tryCatch(async (req, res, _) => {
  * @services_used Analytics
  */
 export const setEventTypeActive = tryCatch(async (req, res, _) => {
-    const { is_active: isActive } = req.body;
+  const { is_active: isActive } = req.body;
 
-    if (typeof isActive !== "boolean") {
-        const error = new ValidationError("is_active must be a boolean.");
-        throw error;
-    }
+  if (typeof isActive !== "boolean") {
+    const error = new ValidationError("is_active must be a boolean.");
+    throw error;
+  }
 
-    await analyticsService.setEventTypeActive(req.params.eventTypeId, isActive);
+  await analyticsService.setEventTypeActive(req.params.eventTypeId, isActive);
 
-    const responseData = {
-        event_type_id: Number(req.params.eventTypeId),
-        is_active: isActive,
-    };
-    return apiResponse(res, responseData, 200);
+  const responseData = {
+    event_type_id: Number(req.params.eventTypeId),
+    is_active: isActive,
+  };
+  return apiResponse(res, responseData, 200);
 });

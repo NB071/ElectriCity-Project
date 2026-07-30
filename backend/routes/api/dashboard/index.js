@@ -1,4 +1,5 @@
 import { Router } from "express";
+import customerAnalyticsRoutes from "./customer.analytics.routes.js";
 import customerReviewsRoutes from "./customer.reviews.routes.js";
 import customerOrdersRoutes from "./customer.orders.routes.js";
 import customerPaymentsRoutes from "./customer.payments.routes.js";
@@ -13,6 +14,7 @@ import adminUsersRoutes from "./admin.users.routes.js";
 
 const router = Router();
 
+router.use("/customer", customerAnalyticsRoutes);
 router.use("/customer", customerReviewsRoutes);
 router.use("/customer", customerOrdersRoutes);
 router.use("/customer", customerPaymentsRoutes);
