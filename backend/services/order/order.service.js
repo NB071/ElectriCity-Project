@@ -7,6 +7,7 @@ import {
     getOrderDetailsForUser,
     listAllOrders,
     getOrderDetailsForAdmin,
+    calculateCheckoutTotals,
 } from "./orderQuery.js";
 import {
     updatePaymentStatus,
@@ -18,6 +19,7 @@ import {
     DEFAULTS,
     CHECKOUT_ACTORS,
     TAX_RATES_BY_PROVINCE,
+    TAX_BREAKDOWN_BY_PROVINCE,
 } from "./constants.js";
 
 const orderService = {
@@ -28,6 +30,7 @@ const orderService = {
     getOrderDetailsForUser,
     listAllOrders,
     getOrderDetailsForAdmin,
+    calculateCheckoutTotals,
 
     // Mutations
     updatePaymentStatus,
@@ -39,6 +42,7 @@ const orderService = {
     DEFAULTS,
     CHECKOUT_ACTORS,
     TAX_RATES_BY_PROVINCE,
+    TAX_BREAKDOWN_BY_PROVINCE,
 };
 
 export default orderService;
@@ -51,6 +55,7 @@ export {
     getOrderDetailsForUser,
     listAllOrders,
     getOrderDetailsForAdmin,
+    calculateCheckoutTotals,
 
     // Mutations
     updatePaymentStatus,
@@ -62,4 +67,5 @@ export {
     DEFAULTS,
     CHECKOUT_ACTORS,
     TAX_RATES_BY_PROVINCE,
+    TAX_BREAKDOWN_BY_PROVINCE,
 };

@@ -200,6 +200,37 @@ const guestCheckoutSchema = z
     }
   });
 
+const customerCalculateSchema = z.object({
+  userId: z.coerce
+    .number({ required_error: "userId is required." })
+    .int("userId must be an integer.")
+    .positive("userId must be a positive integer."),
+  shipping_address: z.object({
+    province: addressSchema.shape.province,
+  }),
+});
+
+const guestCalculateSchema = z
+  .object({
+    sessionToken: optionalSessionTokenSchema.optional(),
+    items: z.array(checkoutItemSchema).min(1).optional(),
+    shipping_address: z.object({
+      province: addressSchema.shape.province,
+    }),
+  })
+  .superRefine((data, ctx) => {
+    const hasItems = data.items && data.items.length > 0;
+    const hasSession = data.sessionToken != null;
+    if (!hasItems && !hasSession) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Guest checkout calculate requires items or an X-Cart-Session cart.",
+        path: ["items"],
+      });
+    }
+  });
+
 /**
  * This function validates an order primary key.
  * @param {number|string} orderId
@@ -321,6 +352,43 @@ function validateGuestCheckoutInput(data) {
   };
 }
 
+/**
+ * This function validates checkout calculate input for the authenticated customer.
+ * userId must come from req.user.user_id, not the request body.
+ * Only shipping province is required (full address is validated on checkout).
+ * @param {object} data
+ * @returns {object} Validated calculate input
+ * @throws {ValidationError} If the calculate data is invalid
+ */
+function validateCustomerCalculateInput(data) {
+  const parsed = customerCalculateSchema.safeParse(data);
+
+  if (!parsed.success) {
+    throwValidationError(parsed.error);
+  }
+
+  return parsed.data;
+}
+
+/**
+ * This function validates checkout calculate input for a guest.
+ * @param {object} data
+ * @returns {object} Validated calculate input
+ * @throws {ValidationError} If the calculate data is invalid
+ */
+function validateGuestCalculateInput(data) {
+  const parsed = guestCalculateSchema.safeParse(data);
+
+  if (!parsed.success) {
+    throwValidationError(parsed.error);
+  }
+
+  return {
+    ...parsed.data,
+    sessionToken: parsed.data.sessionToken ?? null,
+  };
+}
+
 export {
   validateOrderId,
   validateOrderPaymentStatus,
@@ -328,4 +396,6 @@ export {
   validateOrderStatus,
   validateCustomerCheckoutInput,
   validateGuestCheckoutInput,
+  validateCustomerCalculateInput,
+  validateGuestCalculateInput,
 };

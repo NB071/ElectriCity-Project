@@ -139,7 +139,7 @@ describe("orderDAO", () => {
     test("createOrderWithItems creates order from body items without config", async () => {
         connExecute
             .mockResolvedValueOnce([
-                [{ cid: 10, base_price: "100.00", quantity: 5, is_active: 1 }],
+                [{ cid: 10, name: "EV Sedan", base_price: "100.00", quantity: 5, is_active: 1 }],
                 [],
             ])
             .mockResolvedValueOnce([{ affectedRows: 1 }, []])
@@ -157,6 +157,7 @@ describe("orderDAO", () => {
         expect(created.order_id).toBe(500);
         expect(created.subtotal).toBe(200);
         expect(created.resolvedItems[0].unit_price).toBe(100);
+        expect(created.resolvedItems[0].name).toBe("EV Sedan");
         expect(created.cartId).toBeNull();
         expect(created.clearedCartLines).toBeNull();
     });

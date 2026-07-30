@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import { Bookmark, Car, Gauge, GitBranch, DoorOpen, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Separator } from "@/components/ui/separator";
 import { UnderlineLinkButton } from "@/components/common/underline-link-button";
 import { useRecentlyViewedStore, useCompareStore } from "@/stores";
+import { useAddToWishlist, useRemoveFromWishlist, addToWishlistVariables, removeFromWishlistVariables } from "@/hooks/api/wishlist/use-wishlist-mutations";
+import { useIsInWishlist } from "@/hooks/api/wishlist/use-wishlist";
+import { useAuthStatus } from "@/hooks/use-me";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 export type CatalogListItem = {
     id: number;
@@ -33,7 +38,7 @@ export type CatalogListItem = {
         door_count: number;
         drivetrain: string;
     };
-    category: "hot_deal" | "seasonal" | "clearance" | "featured";
+    category: "hot_deal" | "seasonal" | "clearance" | "featured" | null;
 };
 
 export function formatPrice(value: number) {
@@ -53,7 +58,9 @@ export function salePrice(item: CatalogListItem) {
     return Math.max(0, item.base_price - discount);
 }
 
-export function cardBadge(item: CatalogListItem): { label: string; bg: string } {
+export function cardBadge(item: CatalogListItem): { label: string; bg: string } | null {
+    if (!item.category) return null;
+
     let label = item.category as string;
     let bg = "bg-primary";
     switch (item.category) {
@@ -147,7 +154,12 @@ export function CardImageCarousel({ images, alt }: { images: string[]; alt: stri
     );
 }
 
-export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListItem; saved: boolean; onToggleSave: () => void }) {
+export function VehicleCard({ item }: { item: CatalogListItem }) {
+    const navigate = useNavigate();
+    const { status, user } = useAuthStatus();
+    const { saved } = useIsInWishlist(item.id);
+    const addToWishlist = useAddToWishlist();
+    const removeFromWishlist = useRemoveFromWishlist();
     const { lastViewedId } = useRecentlyViewedStore();
     const compareStore = useCompareStore();
     const isComparing = compareStore.has(String(item.id));
@@ -155,12 +167,39 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
     const badge = cardBadge(item);
     const current = salePrice(item);
     const hasDiscount = current < item.base_price;
+    const isSoldOut = item.stock <= 0;
     const subtitle = `${item.vehicle.year} ${item.model.name} · ${item.vehicle.condition} · ${item.vehicle.exterior_color}`;
+    const wishlistPending = addToWishlist.isPending || removeFromWishlist.isPending;
+
+    function handleWishlistToggle(e: MouseEvent) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (status !== "authenticated" || user?.role !== "customer") {
+            toast.info("Sign in to save vehicles to your wishlist");
+            void navigate({ to: "/auth/login", search: { redirect: `/catalog/${item.id}` } });
+            return;
+        }
+
+        if (saved) {
+            removeFromWishlist.mutate(removeFromWishlistVariables(item.id));
+        } else {
+            addToWishlist.mutate(addToWishlistVariables(Number(item.id)));
+        }
+    }
 
     return (
         <Card className="group ring-border relative flex h-full flex-col gap-0 overflow-hidden py-0 shadow-sm transition-all duration-300 hover:shadow-md">
             <div className="bg-muted relative aspect-4/3 shrink-0 overflow-hidden">
                 <CardImageCarousel images={item.image_urls} alt={`${item.brand.name} ${item.model.name}`} />
+
+                {isSoldOut ? (
+                    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+                        <Badge className="border border-white/30 bg-black/80 px-4 py-1.5 text-sm font-bold tracking-wider text-white uppercase shadow-lg hover:bg-black/80">
+                            Sold Out
+                        </Badge>
+                    </div>
+                ) : null}
 
                 {isLastViewed && (
                     <Badge
@@ -171,7 +210,9 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                     </Badge>
                 )}
 
-                <Badge className={cn("absolute top-3 left-3 z-10 animate-pulse border-none text-white shadow-sm", badge.bg)}>{badge.label}</Badge>
+                {badge ? (
+                    <Badge className={cn("absolute top-3 left-3 z-10 animate-pulse border-none text-white shadow-sm", badge.bg)}>{badge.label}</Badge>
+                ) : null}
 
                 <Button
                     type="button"
@@ -179,11 +220,8 @@ export function VehicleCard({ item, saved, onToggleSave }: { item: CatalogListIt
                     variant="secondary"
                     aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
                     aria-pressed={saved}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        onToggleSave();
-                    }}
+                    disabled={wishlistPending}
+                    onClick={handleWishlistToggle}
                     className="absolute top-3 right-3 z-10 size-8 rounded-full bg-white/95 shadow-sm hover:bg-white"
                 >
                     <Bookmark className={cn("size-4", saved && "fill-foreground")} />

@@ -361,6 +361,130 @@ class OrderDAO extends BaseDAO {
   }
 
   /**
+   * This method resolves priced checkout lines without locking stock or writing orders.
+   * Used by checkout calculate (preview totals). Validates active catalog items,
+   * configuration ownership, and available stock the same way createOrderWithItems does.
+   * @param {object} input
+   * @param {number|null} [input.cartId] Cart ID
+   * @param {object[]} [input.items] Items array required when cartId is null [{ cid, config_id, quantity }]
+   * @returns {Promise<object[]>} [{ cid, config_id, quantity, unit_price }]
+   * @throws {NotFoundError} If the cart, catalog item, or configuration is not found
+   * @throws {ValidationError} If the cart is empty, stock is insufficient, or config/cid mismatch
+   * @throws {DatabaseError} On database failures
+   */
+  async resolvePricedCheckoutLines({ cartId = null, items = null }) {
+    let lines;
+
+    if (cartId != null) {
+      const [cartRows] = await this._query(
+        `SELECT cart_id FROM carts WHERE cart_id = ?`,
+        [cartId],
+        { suppressNotFound: true },
+      );
+      if (!cartRows[0]) {
+        throw new NotFoundError("Cart");
+      }
+
+      const [cartLines] = await this._query(
+        `SELECT cid, config_id, quantity
+                 FROM cart_items
+                 WHERE cart_id = ?
+                 ORDER BY added_at ASC, cart_item_id ASC`,
+        [cartId],
+        { suppressNotFound: true },
+      );
+      if (cartLines.length === 0) {
+        throw new ValidationError("Your cart is empty.");
+      }
+
+      lines = cartLines.map((row) => ({
+        cid: Number(row.cid),
+        config_id: row.config_id == null ? null : Number(row.config_id),
+        quantity: Number(row.quantity),
+      }));
+    } else {
+      if (!items?.length) {
+        throw new ValidationError(
+          "items must contain at least one line item.",
+        );
+      }
+      lines = items.map((item) => ({
+        cid: Number(item.cid),
+        config_id: item.config_id == null ? null : Number(item.config_id),
+        quantity: Number(item.quantity),
+      }));
+    }
+
+    const qtyByCid = new Map();
+    for (const line of lines) {
+      qtyByCid.set(line.cid, (qtyByCid.get(line.cid) ?? 0) + line.quantity);
+    }
+
+    const catalogByCid = new Map();
+    for (const cid of qtyByCid.keys()) {
+      const [rows] = await this._query(
+        `SELECT cid, base_price, quantity, is_active
+                 FROM catalog_items
+                 WHERE cid = ?`,
+        [cid],
+        { suppressNotFound: true },
+      );
+
+      const catalog = rows[0];
+      if (!catalog) {
+        throw new NotFoundError("Catalog item");
+      }
+
+      if (!catalog.is_active) {
+        throw new ValidationError(`Catalog item ${cid} is not available.`);
+      }
+
+      const needed = qtyByCid.get(cid);
+      if (needed > Number(catalog.quantity)) {
+        throw new ValidationError(
+          `Insufficient stock for catalog item ${cid}. Requested ${needed}, available ${catalog.quantity}.`,
+        );
+      }
+      catalogByCid.set(cid, catalog);
+    }
+
+    const resolvedItems = [];
+    for (const line of lines) {
+      let unit_price;
+      if (line.config_id == null) {
+        unit_price = Number(catalogByCid.get(line.cid).base_price);
+      } else {
+        const [cfgRows] = await this._query(
+          `SELECT config_id, cid, total_price
+                     FROM configurations
+                     WHERE config_id = ?`,
+          [line.config_id],
+          { suppressNotFound: true },
+        );
+        const configuration = cfgRows[0];
+        if (!configuration) {
+          throw new NotFoundError("Configuration");
+        }
+        if (Number(configuration.cid) !== line.cid) {
+          throw new ValidationError(
+            `config_id ${line.config_id} does not belong to cid ${line.cid}.`,
+          );
+        }
+        unit_price = Number(configuration.total_price);
+      }
+
+      resolvedItems.push({
+        cid: line.cid,
+        config_id: line.config_id,
+        quantity: line.quantity,
+        unit_price,
+      });
+    }
+
+    return resolvedItems;
+  }
+
+  /**
    * This method creates an order with stock checks/decrements under row locks.
    * @param {object} input Input object
    * @param {object} input.order { user_id, guest_email, additional_information } Order object
@@ -368,6 +492,7 @@ class OrderDAO extends BaseDAO {
    * @param {number|null} [input.cartId] Cart ID
    * @param {object[]} [input.items] Items array required when cartId is null [{ cid, config_id, quantity }]
    * @param {number} input.taxRate Tax rate
+   * @param {string|null} [input.province] Canonical province code for tax breakdown
    * @returns {Promise<{ order_id: number, subtotal: number, tax: number, total: number, resolvedItems: object[], cartId: number|null, clearedCartLines: object[]|null }>}
    * @throws {DatabaseError} On database failures
    * @throws {NotFoundError} If the cart is not found
@@ -379,6 +504,7 @@ class OrderDAO extends BaseDAO {
     cartId = null,
     items = null,
     taxRate,
+    province = null,
   }) {
     return this._transaction(async (conn) => {
       let lines;
@@ -438,9 +564,16 @@ class OrderDAO extends BaseDAO {
       for (const cid of qtyByCid.keys()) {
         // load and lock the catalog item
         const [rows] = await conn.execute(
-          `SELECT cid, base_price, quantity, is_active
-                     FROM catalog_items
-                     WHERE cid = ?
+          `SELECT
+                       ci.cid,
+                       CONCAT(b.name, ' ', m.name) AS name,
+                       ci.base_price,
+                       ci.quantity,
+                       ci.is_active
+                     FROM catalog_items ci
+                     JOIN models m ON m.model_id = ci.model_id
+                     JOIN brands b ON b.brand_id = m.brand_id
+                     WHERE ci.cid = ?
                      FOR UPDATE`,
           [cid],
         );
@@ -490,11 +623,13 @@ class OrderDAO extends BaseDAO {
         }
 
         // add the resolved item to the resolved items array
+        const catalog = catalogByCid.get(line.cid);
         resolvedItems.push({
           cid: line.cid,
           config_id: line.config_id,
           quantity: line.quantity,
           unit_price,
+          name: catalog.name,
         });
       }
 
@@ -508,10 +643,11 @@ class OrderDAO extends BaseDAO {
         );
       }
 
-      // compute the order totals
+      // compute the order totals (province drives GST/PST/HST breakdown when present)
       const { subtotal, tax, total } = computeOrderTotals(
         resolvedItems,
         taxRate,
+        province,
       );
 
       // insert the order

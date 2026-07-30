@@ -9,8 +9,7 @@ export type CheckoutDraftValues = Omit<CheckoutFormValues, "card_number" | "expi
 const initialDraft: CheckoutDraftValues = {
     firstName: "",
     lastName: "",
-    companyName: "",
-    country: "",
+    country: "Canada",
     street: "",
     apartment: "",
     city: "",
@@ -20,12 +19,14 @@ const initialDraft: CheckoutDraftValues = {
     email: "",
     additional_information: "",
     paymentMethod: "credit",
-    shipping_country: "",
+    shipping_country: "Canada",
     shipping_street: "",
     shipping_city: "",
     shipping_province: "",
     shipping_postal_code: "",
     sameAsPersonal: true,
+    billing_address_id: null,
+    shipping_address_id: null,
 };
 
 import { env } from "@/lib/env";

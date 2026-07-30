@@ -8,21 +8,33 @@ const ADDRESS_TYPES = {
     BILLING: "billing",
 };
 
-const TAX_RATES_BY_PROVINCE = {
-    AB: 0.05,
-    BC: 0.12,
-    MB: 0.12,
-    NB: 0.15,
-    NL: 0.15,
-    NS: 0.15,
-    NT: 0.05,
-    NU: 0.05,
-    ON: 0.13,
-    PE: 0.15,
-    QC: 0.14975,
-    SK: 0.11,
-    YT: 0.05,
+/**
+ * Canadian sales-tax components by province/territory.
+ * `pst` includes QST for Quebec. `type` describes which components apply.
+ * `applicable` is derived as gst + pst + hst.
+ */
+const TAX_BREAKDOWN_BY_PROVINCE = {
+    AB: { type: "gst", gst: 0.05, pst: 0, hst: 0 },
+    BC: { type: "gst_pst", gst: 0.05, pst: 0.07, hst: 0 },
+    MB: { type: "gst_pst", gst: 0.05, pst: 0.07, hst: 0 },
+    NB: { type: "hst", gst: 0, pst: 0, hst: 0.15 },
+    NL: { type: "hst", gst: 0, pst: 0, hst: 0.15 },
+    NS: { type: "hst", gst: 0, pst: 0, hst: 0.15 },
+    NT: { type: "gst", gst: 0.05, pst: 0, hst: 0 },
+    NU: { type: "gst", gst: 0.05, pst: 0, hst: 0 },
+    ON: { type: "hst", gst: 0, pst: 0, hst: 0.13 },
+    PE: { type: "hst", gst: 0, pst: 0, hst: 0.15 },
+    QC: { type: "gst_pst", gst: 0.05, pst: 0.09975, hst: 0 },
+    SK: { type: "gst_pst", gst: 0.05, pst: 0.06, hst: 0 },
+    YT: { type: "gst", gst: 0.05, pst: 0, hst: 0 },
 };
+
+const TAX_RATES_BY_PROVINCE = Object.fromEntries(
+    Object.entries(TAX_BREAKDOWN_BY_PROVINCE).map(([code, parts]) => [
+        code,
+        Number((parts.gst + parts.pst + parts.hst).toFixed(5)),
+    ]),
+);
 
 const VALIDATIONS = {
     ORDER_STATUS: {
@@ -87,11 +99,13 @@ const VALIDATIONS = {
 
 const DEFAULTS = {
     TAX_RATE: TAX_RATES_BY_PROVINCE.ON,
+    TAX_PROVINCE: "ON",
 };
 
 export {
     CHECKOUT_ACTORS,
     ADDRESS_TYPES,
+    TAX_BREAKDOWN_BY_PROVINCE,
     TAX_RATES_BY_PROVINCE,
     VALIDATIONS,
     DEFAULTS,

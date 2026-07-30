@@ -4,11 +4,21 @@
 import orderDAO from "../orderDAO.js";
 import { validateOrderForPayment } from "../orderQuery.js";
 import paymentService from "../../payment/payment.service.js";
+import { getUserById } from "../../iam/iam.service.js";
+import emailAdaptor from "../EmailAdaptor.js";
+import {
+    toCheckoutResultDTO,
+    toOrderConfirmEmailItems,
+} from "../DTOs/checkoutResultDTO.js";
 import { ADDRESS_TYPES, VALIDATIONS } from "../constants.js";
-import { resolveTaxRate } from "../helpers/resolveTaxRate.js";
+import {
+    resolveTaxRate,
+    normalizeCanadianProvince,
+} from "../helpers/resolveTaxRate.js";
 import { roundCurrency, computeOrderTotals } from "../helpers/orderTotals.js";
 import { ConflictError, ValidationError } from "../../../utils/errors.js";
 import log from "../../../utils/logger.js";
+import { USER_FIELDS } from "../../iam/_identity/constants.js";
 
 /**
  * This function builds the shipping + billing order_addresses records to persist.
@@ -91,6 +101,44 @@ async function compensateCheckout(created) {
 }
 
 /**
+ * Resolves confirmation email recipient for guest or authenticated checkout.
+ * @param {object} input
+ * @param {number|null} input.userId
+ * @param {string|null} [input.guest_email]
+ * @param {object} input.shipping_address
+ * @returns {Promise<{ to: string, fname: string }|null>}
+ */
+async function resolveConfirmationRecipient({
+    userId,
+    guest_email,
+    shipping_address,
+}) {
+    const fallbackName =
+        String(shipping_address?.full_name ?? "")
+            .trim()
+            .split(/\s+/)[0] || "Customer";
+
+    if (userId != null) {
+        const user = await getUserById(userId, {
+            fields: [USER_FIELDS.EMAIL, USER_FIELDS.FIRST_NAME],
+        });
+        if (!user?.email) {
+            return null;
+        }
+        return {
+            to: user.email,
+            fname: user.first_name?.trim() || fallbackName,
+        };
+    }
+
+    if (!guest_email) {
+        return null;
+    }
+
+    return { to: guest_email, fname: fallbackName };
+}
+
+/**
  * Creates an order (cart or body items), charges payment, confirms on success.
  * @param {object} input Checkout input
  * @param {number|null} input.userId User ID
@@ -100,7 +148,8 @@ async function compensateCheckout(created) {
  * @param {object} input.shipping_address Shipping address
  * @param {object} [input.billing_address] Billing address
  * @param {string} input.payment_method Payment method
- * @param {object} [input.payment_details] Payment details JSON
+ * @param {object} [input.payment_details] Payment details
+ * @param {string|null} [input.additional_information] Order notes
  * @returns {Promise<object>} Checkout result
  * @throws {ConflictError} If payment was declined or validation fails
  * @throws {ValidationError} If validation fails
@@ -114,10 +163,12 @@ async function runCheckout({
     billing_address,
     payment_method,
     payment_details,
+    additional_information = null,
 }) {
     // resolve the tax rate and build the address records
+    const province = normalizeCanadianProvince(shipping_address?.province);
     const taxRate = resolveTaxRate(shipping_address?.province);
-    if (taxRate == null) {
+    if (taxRate == null || province == null) {
         throw new ValidationError(
             "province must be a Canadian province or territory.",
         );
@@ -129,11 +180,13 @@ async function runCheckout({
         order: {
             user_id: userId,
             guest_email: userId == null ? guest_email : null,
+            additional_information: additional_information ?? null,
         },
         addresses,
         cartId,
         items,
         taxRate,
+        province,
     });
 
     // initialize the paid flag
@@ -182,8 +235,7 @@ async function runCheckout({
             VALIDATIONS.ORDER_STATUS.CONFIRMED,
         );
 
-        // return the created order
-        return {
+        const result = toCheckoutResultDTO({
             order_id: created.order_id,
             order_status: VALIDATIONS.ORDER_STATUS.CONFIRMED,
             payment_status: paymentResult.payment_status,
@@ -195,7 +247,35 @@ async function runCheckout({
                 status: paymentResult.status,
                 payment_method: paymentResult.payment_method,
             },
-        };
+            items: created.resolvedItems,
+        });
+
+        // Best-effort confirmation email - never undo a paid order if mail fails
+        try {
+            const recipient = await resolveConfirmationRecipient({
+                userId,
+                guest_email,
+                shipping_address,
+            });
+            if (recipient) {
+                await emailAdaptor.sendOrderConfirmationEmail({
+                    to: recipient.to,
+                    fname: recipient.fname,
+                    orderId: created.order_id,
+                    items: toOrderConfirmEmailItems(created.resolvedItems),
+                    total: created.total,
+                });
+            }
+        } catch (err) {
+            log.error(
+                "Order",
+                "runCheckout",
+                "order confirmation email failed",
+                err,
+            );
+        }
+
+        return result;
     } catch (err) {
         // if the error is a conflict error and the payment status is failed, throw the error
         if (

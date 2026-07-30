@@ -2,7 +2,7 @@ import BaseDAO from "../../../utils/BaseDAO.js";
 
 /**
  * This class is the DAO for accessing database.
- * @touches_tables: brands, media
+ * @touches_tables: brands, media, models
  * @class
  * @extends BaseDAO
  */
@@ -157,6 +157,25 @@ class BrandDAO extends BaseDAO {
       { notFoundResource: "Brand" },
     );
     return rows[0] ?? null;
+  }
+
+  /**
+   * This method lists models for a brand (id, name, release_year).
+   * Ordered by name ascending. Empty list when the brand has no models.
+   * @param {number} brandId
+   * @returns {Promise<object[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findModelsByBrandId(brandId) {
+    const [rows] = await this._query(
+      `SELECT m.model_id, m.name, m.release_year
+             FROM models m
+             WHERE m.brand_id = ?
+             ORDER BY m.name ASC`,
+      [brandId],
+      { suppressNotFound: true },
+    );
+    return rows;
   }
 }
 

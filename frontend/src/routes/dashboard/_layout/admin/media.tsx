@@ -1,111 +1,123 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { useUiStore } from "@/stores/ui-store";
+import { useMemo, useState } from "react";
+import {
+    flexRender,
+    getCoreRowModel,
+    useReactTable,
+    type ColumnDef,
+    type PaginationState,
+} from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
+import { QueryError } from "@/components/common/QueryError";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/data-table";
-import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Link as LinkIcon, Trash, Star, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuTrigger,
     DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link as LinkIcon, MoreHorizontal, Plus, Star, Trash, Unlink } from "lucide-react";
+import { useUiStore } from "@/stores/ui-store";
+import { mediaUrl } from "@/lib/media";
+import {
+    setPrimaryAdminMediaVariables,
+    unlinkAdminMediaVariables,
+    useGetAdminMedia,
+    useSetPrimaryAdminMedia,
+    useUnlinkAdminMedia,
+    type AdminMediaListItem,
+} from "@/hooks/api/media/use-admin-media";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/media")({
     component: RouteComponent,
 });
 
-const MOCK_MEDIA = [
-    {
-        media_id: 101,
-        url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-        file_type: "image/jpeg",
-        alt_text: "Tesla Model S Plaid Front",
-        uploaded_at: "2026-07-20T08:15:00.000Z",
-        is_primary: true,
-        linked_cid: 55,
-    },
-    {
-        media_id: 102,
-        url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-        file_type: "image/jpeg",
-        alt_text: "Tesla Model S Plaid Interior",
-        uploaded_at: "2026-07-20T08:16:30.000Z",
-        is_primary: false,
-        linked_cid: 55,
-    },
-    {
-        media_id: 103,
-        url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-        file_type: "image/webp",
-        alt_text: "Rivian R1T Launch Edition",
-        uploaded_at: "2026-07-19T14:22:00.000Z",
-        is_primary: true,
-        linked_cid: 72,
-    },
-    {
-        media_id: 104,
-        url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-        file_type: "image/png",
-        alt_text: "Generic EV Charger",
-        uploaded_at: "2026-07-18T09:05:00.000Z",
-        is_primary: false,
-        linked_cid: null,
-    },
-    {
-        media_id: 105,
-        url: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-        file_type: "image/webp",
-        alt_text: "Ford F-150 Lightning Bed",
-        uploaded_at: "2026-07-18T16:45:00.000Z",
-        is_primary: true,
-        linked_cid: 21,
-    },
-];
+function isImageFileType(fileType: string | null) {
+    return Boolean(fileType?.startsWith("image/"));
+}
 
 function RouteComponent() {
-    const [data] = useState(MOCK_MEDIA);
-    const { openModal } = useUiStore();
+    "use no memo";
 
-    const columns = useMemo(
+    const { openModal } = useUiStore();
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+
+    const mediaQuery = useGetAdminMedia(pagination.pageIndex + 1, pagination.pageSize);
+    const setPrimaryMutation = useSetPrimaryAdminMedia();
+    const unlinkMutation = useUnlinkAdminMedia();
+    const data = mediaQuery.data?.items ?? [];
+
+    const pendingPrimaryKey =
+        setPrimaryMutation.isPending && setPrimaryMutation.variables?.url
+            ? setPrimaryMutation.variables.url
+            : null;
+    const pendingUnlinkKey =
+        unlinkMutation.isPending && unlinkMutation.variables?.url ? unlinkMutation.variables.url : null;
+
+    function handleSetPrimary(item: AdminMediaListItem) {
+        if (item.linked_cid == null || item.is_primary) {
+            return;
+        }
+        setPrimaryMutation.mutate(setPrimaryAdminMediaVariables(item.linked_cid, item.media_id));
+    }
+
+    function handleUnlink(item: AdminMediaListItem) {
+        if (item.linked_cid == null) {
+            return;
+        }
+        unlinkMutation.mutate(unlinkAdminMediaVariables(item.linked_cid, item.media_id));
+    }
+
+    const columns = useMemo<ColumnDef<AdminMediaListItem>[]>(
         () => [
             {
-                accessorKey: "preview",
+                id: "preview",
                 header: "Preview",
-                cell: ({ row }: any) => {
-                    const original = row.original;
-                    // For the sake of UI we only attempt to preview typical image links
-                    if (original.file_type.includes("image")) {
+                cell: ({ row }) => {
+                    const item = row.original;
+                    const src = mediaUrl(item.url);
+
+                    if (isImageFileType(item.file_type) && src) {
                         return (
-                            <div className="bg-muted h-12 w-16 overflow-hidden rounded-md border">
-                                <img src={original.url} alt={original.alt_text} className="h-full w-full object-cover" />
+                            <div className="bg-muted size-12 overflow-hidden rounded-md border sm:w-16">
+                                <img src={src} alt={item.alt_text ?? "Media preview"} className="size-full object-cover" />
                             </div>
                         );
                     }
-                    return <div className="bg-muted flex h-12 w-16 items-center justify-center rounded-md border text-xs">DOC</div>;
+
+                    return (
+                        <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-md border text-xs sm:w-16">
+                            DOC
+                        </div>
+                    );
                 },
             },
             {
                 id: "metadata",
                 header: "Metadata",
-                cell: ({ row }: any) => {
-                    const original = row.original;
+                cell: ({ row }) => {
+                    const item = row.original;
+                    const href = mediaUrl(item.url) ?? item.url;
+
                     return (
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium">{original.alt_text || "No Alt Text"}</span>
+                            <span className="text-sm font-medium">{item.alt_text || "No Alt Text"}</span>
                             <a
-                                href={original.url}
+                                href={href}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="block max-w-[200px] truncate text-xs text-blue-500 hover:underline"
+                                className="text-muted-foreground hover:text-foreground block max-w-50 truncate text-xs underline-offset-4 hover:underline"
                             >
-                                {original.url}
+                                {item.url}
                             </a>
                         </div>
                     );
@@ -114,39 +126,41 @@ function RouteComponent() {
             {
                 accessorKey: "file_type",
                 header: "File Type",
-                cell: (info: any) => (
-                    <Badge variant="outline" className="text-xs uppercase">
-                        {info.getValue().split("/")[1] || info.getValue()}
-                    </Badge>
-                ),
+                cell: ({ getValue }) => {
+                    const fileType = getValue<string | null>() ?? "unknown";
+                    const label = fileType.includes("/") ? fileType.split("/")[1] : fileType;
+                    return (
+                        <Badge variant="outline" className="uppercase">
+                            {label}
+                        </Badge>
+                    );
+                },
             },
             {
                 accessorKey: "linked_cid",
                 header: "Catalog Link",
-                cell: ({ row }: any) => {
-                    const original = row.original;
-                    if (original.linked_cid) {
-                        return (
-                            <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium">CID: {original.linked_cid}</span>
-                                {original.is_primary && (
-                                    <Badge className="w-fit bg-amber-500/10 text-[10px] text-amber-500 hover:bg-amber-500/20">Primary</Badge>
-                                )}
-                            </div>
-                        );
+                cell: ({ row }) => {
+                    const item = row.original;
+                    if (item.linked_cid == null) {
+                        return <span className="text-muted-foreground text-xs">Unlinked</span>;
                     }
-                    return <span className="text-muted-foreground text-xs">Unlinked</span>;
+
+                    return (
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium">CID: {item.linked_cid}</span>
+                            {item.is_primary ? <Badge variant="secondary">Primary</Badge> : null}
+                        </div>
+                    );
                 },
             },
             {
                 accessorKey: "uploaded_at",
                 header: "Uploaded On",
-                cell: (info: any) => {
-                    const val = info.getValue();
-                    if (!val) return <span className="text-muted-foreground text-sm">--</span>;
+                cell: ({ getValue }) => {
+                    const value = getValue<string>();
                     return (
                         <span className="text-muted-foreground text-sm whitespace-nowrap">
-                            {new Date(val).toLocaleDateString(undefined, {
+                            {new Date(value).toLocaleDateString(undefined, {
                                 year: "numeric",
                                 month: "short",
                                 day: "numeric",
@@ -157,39 +171,72 @@ function RouteComponent() {
             },
             {
                 id: "actions",
-                cell: ({ row }: any) => {
-                    const original = row.original;
+                cell: ({ row }) => {
+                    const item = row.original;
+                    const primaryPending =
+                        pendingPrimaryKey ===
+                        `/api/dashboard/admin/catalog/${item.linked_cid}/media/${item.media_id}/primary`;
+                    const unlinkPending =
+                        pendingUnlinkKey ===
+                        `/api/dashboard/admin/catalog/${item.linked_cid}/media/${item.media_id}`;
+
                     return (
                         <div className="flex justify-end pr-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" size="icon-sm">
                                         <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
+                                        <MoreHorizontal />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Media Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem
-                                        onClick={() => openModal("mediaLink", { mediaId: original.media_id, label: original.alt_text })}
-                                    >
-                                        <LinkIcon className="mr-2 h-4 w-4" />
-                                        Link to Catalog Item
-                                    </DropdownMenuItem>
-                                    {original.linked_cid && !original.is_primary && (
-                                        <DropdownMenuItem onClick={() => console.log("Set Primary", original.media_id)}>
-                                            <Star className="mr-2 h-4 w-4" />
-                                            Set as Primary Image
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                openModal("mediaLink", {
+                                                    mediaId: item.media_id,
+                                                    label: item.alt_text ?? undefined,
+                                                })
+                                            }
+                                        >
+                                            <LinkIcon />
+                                            Link to Catalog Item
                                         </DropdownMenuItem>
-                                    )}
+                                        {item.linked_cid != null && !item.is_primary ? (
+                                            <DropdownMenuItem
+                                                disabled={primaryPending}
+                                                onClick={() => handleSetPrimary(item)}
+                                            >
+                                                <Star />
+                                                {primaryPending ? "Setting primary..." : "Set as Primary Image"}
+                                            </DropdownMenuItem>
+                                        ) : null}
+                                        {item.linked_cid != null ? (
+                                            <DropdownMenuItem
+                                                disabled={unlinkPending}
+                                                onClick={() => handleUnlink(item)}
+                                            >
+                                                <Unlink />
+                                                {unlinkPending ? "Unlinking..." : "Unlink from Catalog"}
+                                            </DropdownMenuItem>
+                                        ) : null}
+                                    </DropdownMenuGroup>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                                        onClick={() => openModal("mediaDelete", { mediaId: original.media_id, label: original.alt_text })}
-                                    >
-                                        <Trash className="mr-2 h-4 w-4" />
-                                        Delete Asset
-                                    </DropdownMenuItem>
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            onClick={() =>
+                                                openModal("mediaDelete", {
+                                                    mediaId: item.media_id,
+                                                    label: item.alt_text ?? undefined,
+                                                })
+                                            }
+                                        >
+                                            <Trash />
+                                            Delete Asset
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -197,19 +244,19 @@ function RouteComponent() {
                 },
             },
         ],
-        []
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers intentionally omitted
+        [openModal, pendingPrimaryKey, pendingUnlinkKey],
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table opted out via "use no memo"
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
-        },
+        manualPagination: true,
+        rowCount: mediaQuery.data?.pagination.total ?? 0,
+        state: { pagination },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -217,19 +264,27 @@ function RouteComponent() {
             title="Media Library"
             desc="Global repository for image assets and documents linked to the platform catalog."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Media")}
+            RefreshFunction={() => void mediaQuery.refetch()}
         >
-            <div className="mt-4 space-y-4">
-                {/* Header Actions */}
-                <div className="flex w-full items-center justify-between">
+            <div className="mt-4 flex flex-col gap-4">
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-muted-foreground text-sm">
-                        Because direct physical uploads are disabled, all new media operates via public URL reference ingestion.
+                        Direct physical uploads are disabled. Register assets by public or local URL reference.
                     </p>
                     <Button onClick={() => openModal("mediaRegister")}>
-                        <Plus className="mr-2 h-4 w-4" />
+                        <Plus data-icon="inline-start" />
                         Register External URL
                     </Button>
                 </div>
+
+                {mediaQuery.isError ? (
+                    <QueryError
+                        title="Couldn't load media library"
+                        error={mediaQuery.error}
+                        onRetry={() => void mediaQuery.refetch()}
+                        isRetrying={mediaQuery.isFetching}
+                    />
+                ) : null}
 
                 <div className="rounded-md border">
                     <Table>
@@ -238,18 +293,31 @@ function RouteComponent() {
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
                                         <TableHead key={header.id}>
-                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
                                     ))}
                                 </TableRow>
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {mediaQuery.isPending ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                        Loading media assets...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows.length > 0 ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow
+                                        key={row.id}
+                                        className={mediaQuery.isFetching ? "opacity-60" : undefined}
+                                    >
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                            <TableCell key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 ))

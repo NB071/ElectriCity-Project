@@ -5,6 +5,7 @@
  */
 function toEventTypeBreakdownDTO(row) {
   return {
+    event_type_id: Number(row.event_type_id),
     code: row.code,
     name: row.name,
     total: Number(row.total) || 0,

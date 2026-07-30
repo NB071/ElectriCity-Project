@@ -12,6 +12,23 @@ const PROMO_TYPES = {
     FEATURED: "featured",
 };
 
+/**
+ * Canonical filter / facet values for vehicle catalog UIs.
+ * Browse validators and /vehicles/facets use these so counts stay aligned.
+ */
+const BODY_SHAPES = [
+    "SUV",
+    "Sedan",
+    "Hatchback",
+    "Coupe",
+    "Convertible",
+    "Truck",
+];
+
+const DRIVETRAINS = ["AWD", "FWD", "RWD", "4WD"];
+
+const FACET_FIELDS = ["body_shape", "condition", "drivetrain", "promo"];
+
 const VALIDATIONS = {
     ITEM_TYPES: [ITEM_TYPES.VEHICLE],
 
@@ -23,6 +40,10 @@ const VALIDATIONS = {
     ],
 
     VEHICLE_CONDITIONS: ["new", "used"],
+
+    BODY_SHAPES,
+    DRIVETRAINS,
+    FACET_FIELDS,
 
     SORT_VALUES: [
         "price_asc",
@@ -59,4 +80,13 @@ const PROMO_NAME_MATCH = {
     [PROMO_TYPES.FEATURED]: "%featured%",
 };
 
-export { ITEM_TYPES, PROMO_TYPES, VALIDATIONS, DEFAULTS, PROMO_NAME_MATCH };
+export {
+    ITEM_TYPES,
+    PROMO_TYPES,
+    BODY_SHAPES,
+    DRIVETRAINS,
+    FACET_FIELDS,
+    VALIDATIONS,
+    DEFAULTS,
+    PROMO_NAME_MATCH,
+};

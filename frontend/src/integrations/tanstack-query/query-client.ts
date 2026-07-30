@@ -12,7 +12,7 @@ const queryClientConfig: QueryClientConfig = {
             gcTime: 1000 * 60 * 10, // 10 minutes Garbage Collection
         },
         mutations: {
-            retry: 1,
+            retry: 0,
         },
     },
 };

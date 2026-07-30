@@ -6,6 +6,7 @@ import { validateBrandId, validateListBrandsQuery } from "./brandValidator.js";
 import { toBrandListItemDTO } from "./DTOs/brandListItemDTO.js";
 import { toBrandLiteDTO } from "./DTOs/brandLiteDTO.js";
 import { toBrandDetailDTO } from "./DTOs/brandDetailDTO.js";
+import { toBrandModelListItemDTO } from "./DTOs/brandModelListItemDTO.js";
 import { ValidationError } from "../../../utils/errors.js";
 import {
     parsePaginationQuery,
@@ -83,4 +84,22 @@ async function getBrandById(brandId) {
     return toBrandDetailDTO(row);
 }
 
-export { listBrands, getBrandById };
+/**
+ * This function lists models for a brand (unpaginated, A-Z).
+ * Used by filter UIs such as the storefront hero make → model cascade.
+ * @param {number|string} brandId
+ * @returns {Promise<{ items: object[] }>}
+ * @throws {ValidationError} If brandId is invalid
+ * @throws {NotFoundError} If the brand does not exist
+ * @throws {DatabaseError} On database failures
+ */
+async function listBrandModels(brandId) {
+    const id = validateBrandId(brandId);
+    await brandDAO.findById(id);
+    const rows = await brandDAO.findModelsByBrandId(id);
+    return {
+        items: rows.map(toBrandModelListItemDTO),
+    };
+}
+
+export { listBrands, getBrandById, listBrandModels };

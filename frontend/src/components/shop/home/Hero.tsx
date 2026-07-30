@@ -1,7 +1,10 @@
 import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Car, CarFront, CarTaxiFront, Search, Truck, Zap } from "lucide-react";
+import { Car, CarFront, CarTaxiFront, Search, Truck, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCatalogStore } from "@/stores";
+import { useGetBrandModels, useGetBrandsLite } from "@/hooks/api/catalog/use-brands";
+import { useGetVehicleFacets } from "@/hooks/api/catalog/use-vehicles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -16,10 +19,6 @@ const CONDITIONS = [
     { value: "used", label: "Used" },
 ];
 
-const MAKES = ["Tesla", "BMW", "Audi", "Hyundai", "Kia", "Nissan", "Volkswagen"];
-
-const MODELS = ["Model 3", "Model Y", "i4", "e-tron", "Ioniq 5", "EV6", "Leaf", "ID.4"];
-
 const PRICES = [
     { value: "0-30000", label: "Under $30,000" },
     { value: "30000-50000", label: "$30,000 - $50,000" },
@@ -32,19 +31,62 @@ const BODY_TYPES = [
     { label: "Sedan", icon: Car },
     { label: "Hatchback", icon: CarTaxiFront },
     { label: "Coupe", icon: CarFront },
-    { label: "Hybrid", icon: Zap },
-];
+    { label: "Convertible", icon: CarFront },
+    { label: "Truck", icon: Truck },
+] satisfies { label: string; icon: LucideIcon }[];
 
 function Hero() {
     const navigate = useNavigate();
+    const setFilters = useCatalogStore((state) => state.setFilters);
+    const resetStore = useCatalogStore((state) => state.resetStore);
     const [condition, setCondition] = useState("all");
-    const [make, setMake] = useState<string | undefined>();
-    const [model, setModel] = useState<string | undefined>();
+    const [make, setMake] = useState<number | undefined>();
+    const [model, setModel] = useState<number | undefined>();
     const [price, setPrice] = useState<string | undefined>();
+    const { data: brandsData, isLoading: brandsLoading } = useGetBrandsLite();
+    const { data: modelsData, isLoading: modelsLoading } = useGetBrandModels(make);
+    const [priceMin, priceMax] = price?.split("-") ?? [];
+    const { data: facetsData } = useGetVehicleFacets({
+        brand_id: make,
+        model_id: model,
+        condition: condition === "all" ? undefined : (condition as "new" | "used"),
+        price_min: priceMin ? Number(priceMin) : undefined,
+        price_max: priceMax ? Number(priceMax) : undefined,
+        fields: ["condition"],
+    });
+
+    const brands = brandsData?.items ?? [];
+    const models = modelsData?.items ?? [];
+
+    function onMakeChange(value: string) {
+        setMake(Number(value));
+        setModel(undefined);
+    }
 
     function onSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        void navigate({ to: "/catalog" });
+        const filters = {
+            brand_id: make,
+            model_id: model,
+            condition: condition === "all" ? undefined : (condition as "new" | "used"),
+            price_min: priceMin ? Number(priceMin) : undefined,
+            price_max: priceMax ? Number(priceMax) : undefined,
+        };
+
+        resetStore();
+        setFilters(filters);
+        void navigate({ to: "/catalog", search: filters });
+    }
+
+    function browseBodyType(bodyShape: string) {
+        const filters = {
+            condition: condition === "all" ? undefined : (condition as "new" | "used"),
+            body_shape: bodyShape,
+        };
+
+        resetStore();
+        setFilters({ ...filters, body_shape: [bodyShape] });
+        void navigate({ to: "/catalog", search: filters });
     }
 
     return (
@@ -84,15 +126,15 @@ function Hero() {
                                     <FieldLabel htmlFor="hero-make-m" className="text-muted-foreground text-xs">
                                         Any Makes
                                     </FieldLabel>
-                                    <Select value={make} onValueChange={setMake}>
+                                    <Select value={make != null ? String(make) : undefined} onValueChange={onMakeChange}>
                                         <SelectTrigger id="hero-make-m" className="w-full">
-                                            <SelectValue placeholder="All Makes" />
+                                            <SelectValue placeholder={brandsLoading ? "Loading makes..." : "All Makes"} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
-                                                {MAKES.map((m) => (
-                                                    <SelectItem key={m} value={m}>
-                                                        {m}
+                                                {brands.map((brand) => (
+                                                    <SelectItem key={brand.id} value={String(brand.id)}>
+                                                        {brand.name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectGroup>
@@ -103,15 +145,23 @@ function Hero() {
                                     <FieldLabel htmlFor="hero-model-m" className="text-muted-foreground text-xs">
                                         Any Models
                                     </FieldLabel>
-                                    <Select value={model} onValueChange={setModel}>
+                                    <Select
+                                        value={model != null ? String(model) : undefined}
+                                        onValueChange={(value) => setModel(Number(value))}
+                                        disabled={make == null || modelsLoading}
+                                    >
                                         <SelectTrigger id="hero-model-m" className="w-full">
-                                            <SelectValue placeholder="All Models" />
+                                            <SelectValue
+                                                placeholder={
+                                                    make == null ? "Select a make first" : modelsLoading ? "Loading models..." : "All Models"
+                                                }
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
-                                                {MODELS.map((m) => (
-                                                    <SelectItem key={m} value={m}>
-                                                        {m}
+                                                {models.map((modelItem) => (
+                                                    <SelectItem key={modelItem.id} value={String(modelItem.id)}>
+                                                        {modelItem.name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectGroup>
@@ -139,7 +189,7 @@ function Hero() {
                                 </Field>
                                 <Button type="submit" size="sm" className="w-full rounded-full">
                                     <Search data-icon="inline-start" />
-                                    Search
+                                    Search {facetsData ? `(${facetsData.total})` : ""}
                                 </Button>
                             </FieldGroup>
                         </CardContent>
@@ -147,42 +197,46 @@ function Hero() {
 
                     {/* Desktop: pill row */}
                     <div className="text-foreground mx-auto hidden h-14 w-full max-w-2xl items-center gap-1 rounded-full bg-white p-1.5 pl-3 shadow-lg md:flex">
-                        <Select value={make} onValueChange={setMake}>
+                        <Select value={make != null ? String(make) : undefined} onValueChange={onMakeChange}>
                             <SelectTrigger
                                 aria-label="Any makes"
                                 className="flex-1 border-none bg-transparent shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
                             >
-                                <SelectValue placeholder="Any Makes" />
+                                <SelectValue placeholder={brandsLoading ? "Loading makes..." : "Any Makes"} />
                             </SelectTrigger>
                             <SelectContent position="popper">
                                 <SelectGroup>
-                                    {MAKES.map((m) => (
-                                        <SelectItem key={m} value={m}>
-                                            {m}
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand.id} value={String(brand.id)}>
+                                            {brand.name}
                                         </SelectItem>
                                     ))}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <Separator orientation="vertical" className="h-6!" />
-                        <Select value={model} onValueChange={setModel}>
+                        <Separator orientation="vertical" />
+                        <Select
+                            value={model != null ? String(model) : undefined}
+                            onValueChange={(value) => setModel(Number(value))}
+                            disabled={make == null || modelsLoading}
+                        >
                             <SelectTrigger
                                 aria-label="Any models"
                                 className="flex-1 border-none bg-transparent shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
                             >
-                                <SelectValue placeholder="Any Models" />
+                                <SelectValue placeholder={make == null ? "Select make" : modelsLoading ? "Loading models..." : "Any Models"} />
                             </SelectTrigger>
                             <SelectContent position="popper">
                                 <SelectGroup>
-                                    {MODELS.map((m) => (
-                                        <SelectItem key={m} value={m}>
-                                            {m}
+                                    {models.map((modelItem) => (
+                                        <SelectItem key={modelItem.id} value={String(modelItem.id)}>
+                                            {modelItem.name}
                                         </SelectItem>
                                     ))}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <Separator orientation="vertical" className="h-6!" />
+                        <Separator orientation="vertical" />
                         <Select value={price} onValueChange={setPrice}>
                             <SelectTrigger
                                 aria-label="Any price"
@@ -201,14 +255,14 @@ function Hero() {
                             </SelectContent>
                         </Select>
                         <Button type="submit" size="lg" className="m-auto h-11 shrink-0 rounded-full px-5">
-                            <Search className="ml-1 size-4" data-icon="inline-start" />
-                            Search
+                            <Search data-icon="inline-start" />
+                            Search {facetsData ? `(${facetsData.total})` : ""}
                         </Button>
                     </div>
                 </form>
 
                 <div className="flex w-full flex-col items-center gap-4">
-                    <p className="text-sm text-white/90">Or Browse Featured Model</p>
+                    <p className="text-sm text-white/90">Featured body styles</p>
                     <ScrollArea className="w-full" scrollHideDelay={100} about="Featured models">
                         <div className="mx-auto flex w-max gap-3 px-1 pb-2">
                             {BODY_TYPES.map(({ label, icon: Icon }) => (
@@ -216,13 +270,13 @@ function Hero() {
                                     key={label}
                                     type="button"
                                     variant="secondary"
-                                    onClick={() => void navigate({ to: "/catalog" })}
+                                    onClick={() => browseBodyType(label)}
                                     className={cn(
                                         "rounded-full border-white/20 bg-white/15 text-white backdrop-blur-md transition-all duration-500",
                                         "hover:bg-white/25 aria-expanded:bg-white/25"
                                     )}
                                 >
-                                    <Icon className="ml-1 size-4" data-icon="inline-start" />
+                                    <Icon data-icon="inline-start" />
                                     {label}
                                 </Button>
                             ))}

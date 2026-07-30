@@ -40,8 +40,8 @@ const vehicleFilterArgsSchema = z.object({
     price_min: nonNegativeNumber.optional(),
     price_max: nonNegativeNumber.optional(),
     mileage_max: z.coerce.number().int().min(0).optional(),
-    body_shape: z.string().min(1).optional(),
-    drivetrain: z.string().min(1).optional(),
+    body_shape: z.enum(VALIDATIONS.TOOL_ARGS.BODY_SHAPES).optional(),
+    drivetrain: z.enum(VALIDATIONS.TOOL_ARGS.DRIVETRAINS).optional(),
     sort: z.enum(VALIDATIONS.TOOL_ARGS.SORT_VALUES).optional(),
     page: z.coerce
         .number()
@@ -54,6 +54,26 @@ const vehicleFilterArgsSchema = z.object({
         .int()
         .min(VALIDATIONS.TOOL_ARGS.LIMIT_MIN)
         .max(VALIDATIONS.TOOL_ARGS.LIMIT_MAX)
+        .optional(),
+});
+
+const vehicleFacetArgsSchema = z.object({
+    brand_id: positiveInt.optional(),
+    model_id: positiveInt.optional(),
+    condition: z.enum(VALIDATIONS.TOOL_ARGS.VEHICLE_CONDITIONS).optional(),
+    year_min: z.coerce.number().int().optional(),
+    year_max: z.coerce.number().int().optional(),
+    price_min: nonNegativeNumber.optional(),
+    price_max: nonNegativeNumber.optional(),
+    mileage_max: z.coerce.number().int().min(0).optional(),
+    body_shape: z.enum(VALIDATIONS.TOOL_ARGS.BODY_SHAPES).optional(),
+    drivetrain: z.enum(VALIDATIONS.TOOL_ARGS.DRIVETRAINS).optional(),
+    fields: z
+        .union([
+            z.array(z.enum(VALIDATIONS.TOOL_ARGS.FACET_FIELDS)),
+            z.enum(VALIDATIONS.TOOL_ARGS.FACET_FIELDS),
+            z.string().min(1),
+        ])
         .optional(),
 });
 
@@ -100,6 +120,8 @@ const TOOL_ARG_SCHEMAS = {
     }),
 
     [TOOLS.LIST_BRANDS]: z.object({}),
+
+    [TOOLS.GET_VEHICLE_FACETS]: vehicleFacetArgsSchema,
 
     [TOOLS.GET_VEHICLE_DETAILS]: vehicleReferenceArgsSchema,
 

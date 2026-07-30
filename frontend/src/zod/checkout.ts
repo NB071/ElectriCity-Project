@@ -3,11 +3,11 @@ import { z } from "zod";
 export const baseCheckoutSchema = z.object({
     firstName: z.string().min(1, "First Name is required").max(50, "First Name is too long"),
     lastName: z.string().min(1, "Last Name is required").max(50, "Last Name is too long"),
-    companyName: z.string().optional(),
     country: z
         .string()
         .min(1, "Country / Region is required")
-        .regex(/^[^0-9]*$/, "Numbers are not allowed"),
+        .regex(/^[^0-9]*$/, "Numbers are not allowed")
+        .default("Canada"),
     street: z.string().min(1, "House number and street name are required").max(100, "Street is too long"),
     apartment: z.string().optional(),
     city: z
@@ -17,10 +17,10 @@ export const baseCheckoutSchema = z.object({
         .regex(/^[^0-9]*$/, "Numbers are not allowed"),
     province: z
         .string()
-        .min(1, "State is required")
-        .max(50, "State is too long")
+        .min(1, "Province / Territory is required")
+        .max(50, "Province is too long")
         .regex(/^[^0-9]*$/, "Numbers are not allowed"),
-    postal_code: z.string().min(1, "Zip Code is required").max(20, "Zip Code is too long"),
+    postal_code: z.string().min(1, "Postal Code is required").max(20, "Postal Code is too long"),
     phone: z.string().max(30, "Phone is too long").optional(),
     shipping_country: z
         .string()
@@ -46,6 +46,8 @@ export const baseCheckoutSchema = z.object({
     expiry_year: z.string().optional(),
     cvv: z.string().optional(),
     cardholder_name: z.string().optional(),
+    billing_address_id: z.number().nullable().optional(),
+    shipping_address_id: z.number().nullable().optional(),
 });
 
 export const getCheckoutSchema = (isGuest: boolean) =>
@@ -91,7 +93,7 @@ export const getCheckoutSchema = (isGuest: boolean) =>
                     ctx.addIssue({ code: "custom", message: "Country is required", path: ["shipping_country"] });
                 }
                 if (!data.shipping_province || data.shipping_province.trim() === "") {
-                    ctx.addIssue({ code: "custom", message: "Region/State is required", path: ["shipping_province"] });
+                    ctx.addIssue({ code: "custom", message: "Province / Territory is required", path: ["shipping_province"] });
                 }
             }
         });

@@ -15,12 +15,14 @@ export const addressKeys = {
 };
 
 // Endpoints: [GET] /api/auth/me/addresses
-export const useGetMyAddresses = (page: number = 1, limit: number = 20) => {
+export const useGetMyAddresses = (page: number = 1, limit: number = 20, options?: { enabled?: boolean }) => {
     return usePaginatedQuery<AddressResponse>({
         queryKey: addressKeys.all,
         url: "/api/auth/me/addresses",
         page,
         limit,
+        enabled: options?.enabled ?? true,
+        refetchOnMount: true,
     });
 };
 

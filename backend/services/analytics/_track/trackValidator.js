@@ -2,11 +2,25 @@
 // This file is used for validation of analytics data
 
 import { z } from "zod";
-import { EVENT_IDS, REPORT_DEFAULTS } from "../constants.js";
+import { EVENT_IDS, EVENT_LIST, REPORT_DEFAULTS } from "../constants.js";
 import { ValidationError } from "../../../utils/errors.js";
 
 // array of all valid event IDs
 const ALL_VALID_EVENT_IDS = Array.from(EVENT_IDS);
+
+/**
+ * Treat empty query-string values as omitted filters.
+ * @helper_function
+ * @private
+ * @param {unknown} value
+ * @returns {unknown}
+ */
+function emptyToUndefined(value) {
+  if (value === "" || value === null || value === undefined) {
+    return undefined;
+  }
+  return value;
+}
 
 /**
  * @helper_function
@@ -86,6 +100,87 @@ const reportParamsSchema = z
     limit: d.limit,
   }));
 
+const eventListParamsSchema = z
+  .object({
+    start: z.coerce
+      .date({ error: "start must be a valid date (YYYY-MM-DD)." })
+      .default(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - REPORT_DEFAULTS.DAYS);
+        return d;
+      }),
+
+    end: z.coerce
+      .date({ error: "end must be a valid date (YYYY-MM-DD)." })
+      .default(() => new Date()),
+
+    event_type_id: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number()
+        .int("event_type_id must be an integer.")
+        .refine((id) => ALL_VALID_EVENT_IDS.includes(id), {
+          message: `Unknown event_type_id. Allowed: ${ALL_VALID_EVENT_IDS.join(", ")}`,
+        })
+        .optional(),
+    ),
+
+    user_id: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number()
+        .int("user_id must be an integer.")
+        .positive("user_id must be a positive integer.")
+        .optional(),
+    ),
+
+    cid: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number()
+        .int("cid must be an integer.")
+        .positive("cid must be a positive integer.")
+        .optional(),
+    ),
+
+    q: z.preprocess(
+      emptyToUndefined,
+      z
+        .string()
+        .trim()
+        .min(
+          EVENT_LIST.SEARCH.MIN_LENGTH,
+          `q must be at least ${EVENT_LIST.SEARCH.MIN_LENGTH} character.`,
+        )
+        .max(
+          EVENT_LIST.SEARCH.MAX_LENGTH,
+          `q must be at most ${EVENT_LIST.SEARCH.MAX_LENGTH} characters.`,
+        )
+        .optional(),
+    ),
+  })
+  .refine((d) => d.start <= d.end, {
+    message: "start date must be on or before end date.",
+    path: ["start"],
+  })
+  .refine(
+    (d) =>
+      (d.end - d.start) / (1000 * 60 * 60 * 24) <=
+      REPORT_DEFAULTS.MAX_RANGE_DAYS,
+    {
+      message: `date range must not exceed ${REPORT_DEFAULTS.MAX_RANGE_DAYS} days.`,
+      path: ["end"],
+    },
+  )
+  .transform((d) => ({
+    start: d.start.toISOString().slice(0, 10),
+    end: d.end.toISOString().slice(0, 10),
+    event_type_id: d.event_type_id,
+    user_id: d.user_id,
+    cid: d.cid,
+    q: d.q,
+  }));
+
 // Validators
 /**
  * This function validates the input for a new event record.
@@ -139,4 +234,26 @@ function validateReportParams(params) {
   return parsed.data;
 }
 
-export { validateEvent, validateEventId, validateReportParams };
+/**
+ * This function validates filters for the admin event log list.
+ * Pagination (`page`, `limit`) is handled separately via pagination helpers.
+ * @param {object} params The list query parameters
+ * @returns {object} The validated list filters
+ * @throws {ValidationError} If the list parameters are invalid
+ */
+function validateEventListParams(params) {
+  const parsed = eventListParamsSchema.safeParse(params);
+
+  if (!parsed.success) {
+    throwValidationError(parsed.error);
+  }
+
+  return parsed.data;
+}
+
+export {
+  validateEvent,
+  validateEventId,
+  validateReportParams,
+  validateEventListParams,
+};

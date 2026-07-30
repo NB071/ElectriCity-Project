@@ -1,118 +1,73 @@
-/* eslint-disable */
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState } from "@tanstack/react-table";
+import { MoreHorizontal, ShoppingBag } from "lucide-react";
 import { ContentSection } from "@/components/dashboard/ContentSection";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
+import { QueryError } from "@/components/common/QueryError";
+import { DataTablePagination } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useGetCustomerPayments, type CustomerPaymentAttempt } from "@/hooks/api/payment/use-payments";
+import { useUiStore } from "@/stores/ui-store";
 
 export const Route = createFileRoute("/dashboard/_layout/customer/payments")({
     component: RouteComponent,
 });
 
-type CustomerPaymentAttemptDTO = {
-    attempt_id: string;
-    order_id: string;
-    amount: number;
-    payment_method: string;
-    status: string;
-    attempted_at: string;
-};
-
-const MOCK_PAYMENTS: CustomerPaymentAttemptDTO[] = [
-    {
-        attempt_id: "pa_9001",
-        order_id: "ord_20304050",
-        amount: 56100.0,
-        payment_method: "debit_card",
-        status: "success",
-        attempted_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-    },
-    {
-        attempt_id: "pa_1002",
-        order_id: "ord_30405060",
-        amount: 1320.0,
-        payment_method: "credit_card",
-        status: "success",
-        attempted_at: new Date(Date.now() - 86400000 * 12).toISOString(),
-    },
-    {
-        attempt_id: "pa_1001",
-        order_id: "ord_30405060",
-        amount: 1320.0,
-        payment_method: "apple_pay",
-        status: "failed",
-        attempted_at: new Date(Date.now() - 86400000 * 13).toISOString(),
-    },
-    {
-        attempt_id: "pa_2001",
-        order_id: "ord_40506070",
-        amount: 226.0,
-        payment_method: "credit_card",
-        status: "success",
-        attempted_at: new Date(Date.now() - 86400000 * 29).toISOString(),
-    },
-    {
-        attempt_id: "pa_889",
-        order_id: "ord_10203040",
-        amount: 115.0,
-        payment_method: "credit_card",
-        status: "success",
-        attempted_at: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-        attempt_id: "pa_3001",
-        order_id: "ord_50607080",
-        amount: 84.75,
-        payment_method: "apple_pay",
-        status: "pending",
-        attempted_at: new Date().toISOString(),
-    },
-];
-
 function RouteComponent() {
-    const [data] = useState<CustomerPaymentAttemptDTO[]>(MOCK_PAYMENTS);
+    "use no memo";
 
-    const columns = useMemo(
+    const { openModal } = useUiStore();
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+
+    const paymentsQuery = useGetCustomerPayments(pagination.pageIndex + 1, pagination.pageSize);
+    const data = paymentsQuery.data?.items ?? [];
+
+    const columns = useMemo<ColumnDef<CustomerPaymentAttempt>[]>(
         () => [
             {
                 accessorKey: "attempt_id",
                 header: "Attempt ID",
-                cell: (info: any) => <span className="font-mono text-xs opacity-80">{info.getValue()}</span>,
+                cell: ({ getValue }) => <span className="font-mono text-xs">#{getValue<number>()}</span>,
             },
             {
                 accessorKey: "order_id",
-                header: "Order ID",
-                cell: (info: any) => <span className="font-mono text-xs opacity-80">{info.getValue()}</span>,
+                header: "Order",
+                cell: ({ getValue }) => <span className="font-mono font-medium">#{getValue<number>()}</span>,
             },
             {
                 accessorKey: "attempted_at",
-                header: ({ column }: any) => <DataTableColumnHeader column={column} title="Date" />,
-                cell: (info: any) => new Date(info.getValue()).toLocaleString(),
+                header: "Date",
+                cell: ({ getValue }) => new Date(getValue<string>()).toLocaleString(),
             },
             {
                 accessorKey: "payment_method",
                 header: "Method",
-                cell: (info: any) => (
-                    <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
-                        {(info.getValue() as string).replace("_", " ")}
+                cell: ({ getValue }) => (
+                    <span className="text-xs font-semibold tracking-wider capitalize">
+                        {getValue<CustomerPaymentAttempt["payment_method"]>().replaceAll("_", " ")}
                     </span>
                 ),
             },
             {
                 accessorKey: "status",
                 header: "Status",
-                cell: (info: any) => {
-                    const status = info.getValue() as string;
-                    let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
-
-                    if (status === "success") variant = "default";
-                    else if (status === "failed") variant = "destructive";
-                    else if (status === "pending") variant = "secondary";
-
+                cell: ({ getValue }) => {
+                    const status = getValue<CustomerPaymentAttempt["status"]>();
                     return (
-                        <Badge variant={variant} className="h-5 text-[10px] tracking-wider uppercase">
+                        <Badge variant={status === "success" ? "default" : "destructive"} className="capitalize">
                             {status}
                         </Badge>
                     );
@@ -121,25 +76,59 @@ function RouteComponent() {
             {
                 accessorKey: "amount",
                 header: () => <div className="text-right">Amount</div>,
-                cell: (info: any) => {
-                    const total = Number(info.getValue());
-                    return <div className="text-right font-medium">${total.toFixed(2)}</div>;
-                },
+                cell: ({ getValue }) => (
+                    <div className="text-right font-medium">
+                        {getValue<number>().toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "CAD",
+                        })}
+                    </div>
+                ),
+            },
+            {
+                id: "actions",
+                cell: ({ row }) => (
+                    <div className="flex justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon-sm">
+                                    <span className="sr-only">Open actions menu</span>
+                                    <MoreHorizontal />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Payment Actions</DropdownMenuLabel>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            openModal("orderDetail", {
+                                                orderId: row.original.order_id,
+                                                scope: "customer",
+                                            })
+                                        }
+                                    >
+                                        <ShoppingBag />
+                                        View Order Details
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                ),
             },
         ],
-        []
+        [openModal],
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table opted out via "use no memo"
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
-        },
+        manualPagination: true,
+        rowCount: paymentsQuery.data?.pagination.total ?? 0,
+        state: { pagination },
+        onPaginationChange: setPagination,
     });
 
     return (
@@ -147,9 +136,18 @@ function RouteComponent() {
             title="My Payments"
             desc="View your transaction history across all your orders."
             withRefresh
-            RefreshFunction={() => console.log("Refresh Payments")}
+            RefreshFunction={() => void paymentsQuery.refetch()}
         >
-            <div className="mt-4 space-y-4">
+            <div className="mt-4 flex flex-col gap-4">
+                {paymentsQuery.isError ? (
+                    <QueryError
+                        title="Couldn't load your payments"
+                        error={paymentsQuery.error}
+                        onRetry={() => void paymentsQuery.refetch()}
+                        isRetrying={paymentsQuery.isFetching}
+                    />
+                ) : null}
+
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader className="bg-muted/50">
@@ -157,18 +155,28 @@ function RouteComponent() {
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
                                         <TableHead key={header.id}>
-                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
                                     ))}
                                 </TableRow>
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {table.getRowModel().rows?.length ? (
+                            {paymentsQuery.isPending ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
+                                        Loading transactions...
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows.length > 0 ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} className={paymentsQuery.isFetching ? "opacity-60" : undefined}>
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                            <TableCell key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                 ))

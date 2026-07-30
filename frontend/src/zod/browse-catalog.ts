@@ -6,6 +6,10 @@ export type SortValue = (typeof ValidSortValues)[number];
 
 export const VehicleConditions = ["new", "used"] as const;
 
+export const PromoTypes = ["hot_deal", "seasonal", "clearance", "featured"] as const;
+
+export type PromoType = (typeof PromoTypes)[number];
+
 export const BrowseCatalogSchema = z
     .object({
         q: z.string().optional(),
@@ -25,7 +29,7 @@ export const BrowseCatalogSchema = z
         drivetrain: z.string().optional(),
         exterior_color: z.string().optional(),
         interior_color: z.string().optional(),
-        promo: z.enum(["hot_deal", "seasonal", "clearance", "featured"]).optional(),
+        promo: z.array(z.enum(PromoTypes)).optional(),
         sort: z.enum(ValidSortValues).default("added_desc"),
     })
     .refine(

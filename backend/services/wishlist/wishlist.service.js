@@ -1,10 +1,15 @@
 // Wishlist Service (Facade)
 
-import { viewWishlist, isInWishlist } from "./wishlistQuery.js";
+import {
+    listWishlistIds,
+    viewWishlist,
+    isInWishlist,
+} from "./wishlistQuery.js";
 import { addToWishlist, removeFromWishlist } from "./wishlistMutation.js";
 import { VALIDATIONS, DEFAULTS } from "./constants.js";
 
 const wishlistService = {
+    listWishlistIds,
     viewWishlist,
     isInWishlist,
     addToWishlist,
@@ -17,6 +22,7 @@ export default wishlistService;
 
 export {
     // Queries
+    listWishlistIds,
     viewWishlist,
     isInWishlist,
 

@@ -3,7 +3,8 @@ import {
     validateEvent,
     validateEventId,
     validateReportParams,
-} from "../../../services/analytics/analyticsValidator.js";
+    validateEventListParams,
+} from "../../../services/analytics/_track/trackValidator.js";
 import { EVENT_DEFINITIONS } from "../../../services/analytics/constants.js";
 
 describe("analyticsValidator", () => {
@@ -50,6 +51,50 @@ describe("analyticsValidator", () => {
         ).toThrow(ValidationError);
 
         expect(() => validateReportParams({ limit: 101 })).toThrow(
+            ValidationError,
+        );
+    });
+
+    test("validateEventListParams defaults and filters", () => {
+        const defaults = validateEventListParams({});
+        expect(defaults.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(defaults.end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(defaults.event_type_id).toBeUndefined();
+        expect(defaults.user_id).toBeUndefined();
+        expect(defaults.cid).toBeUndefined();
+        expect(defaults.q).toBeUndefined();
+
+        const filtered = validateEventListParams({
+            start: "2025-01-01",
+            end: "2025-01-31",
+            event_type_id: EVENT_DEFINITIONS.CART.ADD,
+            user_id: "7",
+            cid: "3",
+            q: " Tesla ",
+        });
+        expect(filtered).toEqual({
+            start: "2025-01-01",
+            end: "2025-01-31",
+            event_type_id: EVENT_DEFINITIONS.CART.ADD,
+            user_id: 7,
+            cid: 3,
+            q: "Tesla",
+        });
+
+        expect(validateEventListParams({ q: "" }).q).toBeUndefined();
+
+        expect(() =>
+            validateEventListParams({
+                start: "2025-01-01",
+                end: "2024-01-01",
+            }),
+        ).toThrow(ValidationError);
+
+        expect(() =>
+            validateEventListParams({ event_type_id: 999 }),
+        ).toThrow(ValidationError);
+
+        expect(() => validateEventListParams({ q: "x".repeat(101) })).toThrow(
             ValidationError,
         );
     });

@@ -9,8 +9,8 @@ import {
     type UseQueryOptions,
 } from "@tanstack/react-query";
 import type { AxiosRequestConfig } from "axios";
-import { apiClient } from "@/integrations/axios";
-import type { ApiError, ApiResponse } from "@/integrations/axios";
+import { apiClient, ApiError } from "@/integrations/axios";
+import type { ApiResponse } from "@/integrations/axios";
 
 // types
 type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
@@ -176,6 +176,17 @@ function useApiMutation<TData = unknown, TBody = unknown, TContext = unknown>({
                 data: body,
                 params,
             });
+
+            if (!data.success) {
+                const status = Number.parseInt(data.status, 10) || 500;
+                throw new ApiError(data.data.message || "Request failed", {
+                    status,
+                    code: data.data.code,
+                    details: data.data.details,
+                    sentryEventId: data.data.sentry_event_id,
+                });
+            }
+
             return data.data as TData;
         },
         ...mutationOptions,

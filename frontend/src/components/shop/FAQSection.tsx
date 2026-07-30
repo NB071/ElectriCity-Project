@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { EmptyState } from "@/components/common/EmptyState";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { SearchIcon, SearchSlashIcon } from "lucide-react";
 
@@ -63,20 +63,12 @@ export function FAQSection() {
             </Accordion>
 
             {filtered.length === 0 && (
-                <Empty>
-                    <EmptyHeader>
-                        <EmptyMedia variant="icon">
-                            <SearchIcon />
-                        </EmptyMedia>
-                        <EmptyTitle>No FAQs found matching your search.</EmptyTitle>
-                    </EmptyHeader>
-                    <EmptyContent>
-                        <Button onClick={() => setSearchTerm("")} variant="outline">
-                            <SearchSlashIcon data-icon="inline-start" />
-                            Clear search
-                        </Button>
-                    </EmptyContent>
-                </Empty>
+                <EmptyState icon={SearchIcon} title="No FAQs found matching your search.">
+                    <Button onClick={() => setSearchTerm("")} variant="outline">
+                        <SearchSlashIcon data-icon="inline-start" />
+                        Clear search
+                    </Button>
+                </EmptyState>
             )}
 
             <div className="flex items-center px-4 py-6 lg:px-6">
