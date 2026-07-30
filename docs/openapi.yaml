@@ -1,0 +1,4906 @@
+openapi: 3.0.3
+info:
+  title: ElectriCity API
+  version: 1.0.0
+  description: |-
+    HTTP API for the ElectriCity EV marketplace Express backend.
+
+    Every successful and error response uses the same envelope shape: `success`, `status`, `data`, and `timestamp`. On success, `data` holds the payload. On failure, `data` is an error object with `code`, `message`, and optional `details`, `stack`, and `sentry_event_id`.
+
+    Authenticate with the `access_token` httpOnly cookie or an `Authorization: Bearer` JWT. Guest carts use the `X-Cart-Session` header (or matching `cart_session` cookie). Customer and admin dashboard routes require the matching role.
+servers:
+- url: http://localhost:8080
+  description: Local development server
+- url: https://api.project-electricity.app
+  description: Production API
+tags:
+- name: Auth
+  description: Registration, login, sessions, profile, and saved addresses.
+- name: Cart
+  description: Guest or customer shopping cart. Admins cannot use cart routes.
+- name: Catalog
+  description: Public vehicle browse, brands, configurations, and reviews.
+- name: Checkout
+  description: Tax calculation and order placement for guest or customer carts.
+- name: Chatbot
+  description: Templated shop assistant replies.
+- name: Customer Dashboard
+  description: Customer-only orders, payments, wishlist, reviews, and overview.
+- name: Admin Dashboard
+  description: Admin analytics, orders, payments, reviews, media, and users.
+paths:
+  /api/auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Register a new customer
+      description: Creates a customer account and returns the new profile. Tokens are not issued here.
+        Sign in afterward to receive auth cookies.
+      operationId: authRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/User'
+              example:
+                success: true
+                status: 201 Created
+                data:
+                  user_id: 12
+                  role: customer
+                  first_name: Maya
+                  last_name: Singh
+                  email: maya.singh@example.com
+                  phone_number: '4165551001'
+                  created_at: '2026-07-30T07:30:00.000Z'
+                  updated_at: '2026-07-30T07:30:00.000Z'
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Log in
+      description: Validates credentials and sets httpOnly access_token and refresh_token cookies. If
+        a guest cart session is present, the server may merge those items into the customer cart and include
+        cart_merge in the payload.
+      operationId: authLogin
+      parameters:
+      - name: X-Cart-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Optional guest cart session to merge on login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in. Auth cookies are set.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/LoginResponseData'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  user:
+                    user_id: 12
+                    role: customer
+                    first_name: Maya
+                    last_name: Singh
+                    email: maya.singh@example.com
+                  cart_merge:
+                    merged: true
+                    moved_items: 1
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/refresh:
+    post:
+      tags:
+      - Auth
+      summary: Refresh access token
+      description: Rotates auth cookies using the refresh_token cookie or an explicit refresh_token body
+        field.
+      operationId: authRefresh
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Tokens refreshed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        refreshed:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  refreshed: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/logout:
+    post:
+      tags:
+      - Auth
+      summary: Log out current session
+      description: Revokes the current refresh session and clears auth cookies on this device.
+      operationId: authLogout
+      security: &id001
+      - cookieAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        loggedOut:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  loggedOut: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/logout-all:
+    post:
+      tags:
+      - Auth
+      summary: Log out all devices
+      description: Revokes every refresh session for the user and clears cookies on this request.
+      operationId: authLogoutAll
+      security: *id001
+      responses:
+        '200':
+          description: All sessions revoked.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        loggedOutAllDevices:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  loggedOutAllDevices: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me/sessions:
+    get:
+      tags:
+      - Auth
+      summary: List my sessions
+      description: Returns active refresh sessions for the signed-in user. The current session is flagged
+        with is_current and sorted first.
+      operationId: authListSessions
+      security: *id001
+      responses:
+        '200':
+          description: Session list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        sessions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              session_id:
+                                type: string
+                                format: uuid
+                              device_label:
+                                type: string
+                                nullable: true
+                              ip_address:
+                                type: string
+                                nullable: true
+                              user_agent:
+                                type: string
+                                nullable: true
+                              last_seen_at:
+                                type: string
+                                format: date-time
+                              created_at:
+                                type: string
+                                format: date-time
+                              is_current:
+                                type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me/sessions/{sessionId}:
+    delete:
+      tags:
+      - Auth
+      summary: Revoke a session
+      description: Revokes another device session. The current session cannot be deleted through this
+        endpoint. Use logout instead.
+      operationId: authRevokeSession
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/SessionIdPath'
+      responses:
+        '200':
+          description: Session revoked.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        revoked:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  revoked: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me:
+    get:
+      tags:
+      - Auth
+      summary: Get current user
+      description: Optional auth. Guests receive data null. Authenticated callers get their User profile.
+        Use fields to request a subset of columns.
+      operationId: authGetMe
+      security: *id001
+      parameters:
+      - name: fields
+        in: query
+        required: false
+        description: 'Comma-separated subset: user_id, role, first_name, last_name, email, phone_number,
+          created_at, updated_at.'
+        schema:
+          type: string
+          example: email,first_name
+      responses:
+        '200':
+          description: Current user, or null for guests.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      nullable: true
+                      allOf:
+                      - $ref: '#/components/schemas/User'
+              examples:
+                authenticated:
+                  value:
+                    success: true
+                    status: 200 OK
+                    data:
+                      user_id: 12
+                      role: customer
+                      first_name: Maya
+                      last_name: Singh
+                      email: maya.singh@example.com
+                      phone_number: '4165551001'
+                      created_at: '2026-01-10T12:00:00.000Z'
+                      updated_at: '2026-07-01T09:00:00.000Z'
+                    timestamp: '2026-07-30T07:30:00.000Z'
+                guest:
+                  value:
+                    success: true
+                    status: 200 OK
+                    data: null
+                    timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags:
+      - Auth
+      summary: Update profile
+      description: Updates profile fields for the signed-in user. Supply current_password when setting
+        new_password. At least one profile field must change.
+      operationId: authUpdateMe
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone_number:
+                  type: string
+                  nullable: true
+                current_password:
+                  type: string
+                new_password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      responses:
+        '200':
+          description: Updated user.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+      - Auth
+      summary: Delete account
+      description: Soft-deletes the signed-in account after verifying current_password.
+      operationId: authDeleteMe
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - current_password
+              properties:
+                current_password:
+                  type: string
+      responses:
+        '200':
+          description: Account deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        deleted:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  deleted: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me/addresses:
+    get:
+      tags:
+      - Auth
+      summary: List saved addresses
+      description: Returns paginated saved addresses for the signed-in user (max 20 addresses per account).
+      operationId: authListAddresses
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Address page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Address'
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags:
+      - Auth
+      summary: Add saved address
+      description: Creates a saved address. Optionally mark it as the default shipping address.
+      operationId: authCreateAddress
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressCreateRequest'
+      responses:
+        '201':
+          description: Address created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Address'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me/addresses/{addressId}:
+    get:
+      tags:
+      - Auth
+      summary: Get saved address
+      description: Returns one saved address owned by the signed-in user.
+      operationId: authGetAddress
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AddressIdPath'
+      responses:
+        '200':
+          description: Address detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags:
+      - Auth
+      summary: Update saved address
+      description: Patches one or more address fields. At least one field is required.
+      operationId: authUpdateAddress
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AddressIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                street:
+                  type: string
+                city:
+                  type: string
+                province:
+                  type: string
+                country:
+                  type: string
+                postal_code:
+                  type: string
+                is_default:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated address.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Address'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+      - Auth
+      summary: Delete saved address
+      description: Removes a saved address owned by the signed-in user.
+      operationId: authDeleteAddress
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AddressIdPath'
+      responses:
+        '200':
+          description: Address deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        address_id:
+                          type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  address_id: 3
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/me/addresses/{addressId}/default:
+    patch:
+      tags:
+      - Auth
+      summary: Set default address
+      description: Marks the given address as the user's default and clears the previous default flag.
+      operationId: authSetDefaultAddress
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AddressIdPath'
+      responses:
+        '200':
+          description: Default address updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/cart:
+    get:
+      tags:
+      - Cart
+      summary: Get cart
+      description: Returns the guest or customer cart with paginated line items. Guests must send X-Cart-Session.
+        Authenticated admins are rejected.
+      operationId: cartGet
+      security: &id002
+      - cookieAuth: []
+      - bearerAuth: []
+      - cartSession: []
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - added_at_desc
+          - added_at_asc
+          - price_asc
+          - price_desc
+          default: added_at_desc
+      responses:
+        '200':
+          description: Cart contents.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CartListResponse'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cart_id: 5
+                  items:
+                  - cart_item_id: 41
+                    cid: 24
+                    config_id: 8
+                    quantity: 1
+                    added_at: '2026-07-29T18:00:00.000Z'
+                    unit_price: 51500
+                    line_total: 51500
+                    catalog_item:
+                      cid: 24
+                      item_type: vehicle
+                      name: Toyota bZ4X
+                      base_price: 50000
+                      stock: 5
+                      is_active: true
+                      primary_image_url: /media/vehicles/Toyota bZ4X 2026/ext.jpg
+                      promotions: []
+                    configuration:
+                      config_id: 8
+                      total_price: 51500
+                      created_at: '2026-07-29T17:55:00.000Z'
+                      options:
+                      - category_id: 1
+                        category_name: Paint
+                        select_type: SINGLE
+                        option_id: 2
+                        name: Solid Black
+                        price_delta: 1500
+                  pagination:
+                    page: 1
+                    limit: 5
+                    total: 1
+                    totalPages: 1
+                    hasNext: false
+                    hasPrev: false
+                  sort: added_at_desc
+                  session_token: null
+                  is_guest: false
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+      - Cart
+      summary: Clear cart
+      description: Removes every item from the current guest or customer cart.
+      operationId: cartClear
+      security: *id002
+      responses:
+        '200':
+          description: Cart cleared.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cleared:
+                          type: boolean
+                        session_token:
+                          type: string
+                          nullable: true
+                        is_guest:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cleared: true
+                  session_token: null
+                  is_guest: false
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/cart/summary:
+    get:
+      tags:
+      - Cart
+      summary: Cart summary
+      description: Lightweight cart preview for headers and drawers. Preview limit defaults to 5 and is
+        capped at 10.
+      operationId: cartSummary
+      security: *id002
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Cart summary.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CartSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/cart/items:
+    post:
+      tags:
+      - Cart
+      summary: Add cart item
+      description: Adds a catalog item (optionally with a saved configuration) to the guest or customer
+        cart.
+      operationId: cartAddItem
+      security: *id002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCartItemRequest'
+      responses:
+        '200':
+          description: Item added or quantity updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CartItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/cart/items/{cartItemId}:
+    patch:
+      tags:
+      - Cart
+      summary: Update cart item quantity
+      description: Sets quantity for an existing cart line (1-99).
+      operationId: cartUpdateItem
+      security: *id002
+      parameters:
+      - $ref: '#/components/parameters/CartItemIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - quantity
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                  maximum: 99
+                  example: 2
+      responses:
+        '200':
+          description: Updated cart item.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CartItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+      - Cart
+      summary: Remove cart item
+      description: Deletes a single line from the guest or customer cart.
+      operationId: cartRemoveItem
+      security: *id002
+      parameters:
+      - $ref: '#/components/parameters/CartItemIdPath'
+      responses:
+        '200':
+          description: Item removed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cart_item_id:
+                          type: integer
+                        cid:
+                          type: integer
+                        session_token:
+                          type: string
+                          nullable: true
+                        is_guest:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cart_item_id: 41
+                  cid: 24
+                  session_token: null
+                  is_guest: false
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/brands:
+    get:
+      tags:
+      - Catalog
+      summary: List brands
+      description: Public brand list. Use lite=true for id/name only (unpaginated). is_featured=true also
+        returns an unpaginated featured set.
+      operationId: catalogListBrands
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - name: lite
+        in: query
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          - '1'
+          - '0'
+          - 'yes'
+          - 'no'
+      - name: is_featured
+        in: query
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          - '1'
+          - '0'
+          - 'yes'
+          - 'no'
+      responses:
+        '200':
+          description: Brand list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/brands/{brandId}:
+    get:
+      tags:
+      - Catalog
+      summary: Get brand
+      description: Returns brand detail including description and website_url.
+      operationId: catalogGetBrand
+      parameters:
+      - $ref: '#/components/parameters/BrandIdPath'
+      responses:
+        '200':
+          description: Brand detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/brands/{brandId}/models:
+    get:
+      tags:
+      - Catalog
+      summary: List brand models
+      description: Returns models for a brand with id, name, and optional release_year.
+      operationId: catalogListBrandModels
+      parameters:
+      - $ref: '#/components/parameters/BrandIdPath'
+      responses:
+        '200':
+          description: Model list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              name:
+                                type: string
+                              release_year:
+                                type: integer
+                                nullable: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/vehicles:
+    get:
+      tags:
+      - Catalog
+      summary: Browse vehicles
+      description: Filterable, sortable, paginated vehicle catalog for the shop grid.
+      operationId: catalogBrowseVehicles
+      parameters:
+      - &id003
+        name: brand_id
+        in: query
+        schema:
+          type: integer
+      - &id004
+        name: model_id
+        in: query
+        schema:
+          type: integer
+      - &id005
+        name: condition
+        in: query
+        schema:
+          type: string
+          enum:
+          - new
+          - used
+      - &id006
+        name: year_min
+        in: query
+        schema:
+          type: integer
+      - &id007
+        name: year_max
+        in: query
+        schema:
+          type: integer
+      - &id008
+        name: price_min
+        in: query
+        schema:
+          type: number
+      - &id009
+        name: price_max
+        in: query
+        schema:
+          type: number
+      - &id010
+        name: mileage_max
+        in: query
+        schema:
+          type: integer
+      - &id011
+        name: body_shape
+        in: query
+        description: 'Repeated or comma-separated. Values: SUV, Sedan, Hatchback, Coupe, Convertible,
+          Truck.'
+        schema:
+          type: string
+      - &id012
+        name: drivetrain
+        in: query
+        schema:
+          type: string
+          enum:
+          - AWD
+          - FWD
+          - RWD
+          - 4WD
+      - &id013
+        name: exterior_color
+        in: query
+        schema:
+          type: string
+      - &id014
+        name: interior_color
+        in: query
+        schema:
+          type: string
+      - &id015
+        name: promo
+        in: query
+        description: 'Promotion filters: hot_deal, seasonal, clearance, featured.'
+        schema:
+          type: string
+      - &id016
+        $ref: '#/components/parameters/PageParam'
+      - &id017
+        $ref: '#/components/parameters/LimitParam'
+      - &id018
+        name: sort
+        in: query
+        schema:
+          type: string
+          enum:
+          - price_asc
+          - price_desc
+          - year_desc
+          - year_asc
+          - mileage_asc
+          - mileage_desc
+          - added_desc
+          default: added_desc
+      responses:
+        '200':
+          description: Vehicle page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/CatalogListItem'
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+                        sort:
+                          type: string
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  items: &id019
+                  - id: 24
+                    item_type: vehicle
+                    name: Toyota bZ4X
+                    brand:
+                      id: 14
+                      name: Toyota
+                    model:
+                      id: 22
+                      name: bZ4X
+                    base_price: 50000
+                    stock: 5
+                    is_active: true
+                    primary_image_url: /media/vehicles/Toyota bZ4X 2026/ext.jpg
+                    image_urls:
+                    - /media/vehicles/Toyota bZ4X 2026/ext.jpg
+                    - /media/vehicles/Toyota bZ4X 2026/int.jpg
+                    promotions: []
+                    vehicle:
+                      year: 2026
+                      condition: new
+                      mileage: 2
+                      exterior_color: Wind Chill Pearl
+                      interior_color: Gray
+                      body_shape: SUV
+                      door_count: 4
+                      drivetrain: AWD
+                  pagination: &id020
+                    page: 1
+                    limit: 5
+                    total: 1
+                    totalPages: 1
+                    hasNext: false
+                    hasPrev: false
+                  sort: added_desc
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/vehicles/search:
+    get:
+      tags:
+      - Catalog
+      summary: Search vehicles
+      description: Full-text style vehicle search. Query parameter q is required (1-100 characters). Supports
+        the same filters as browse.
+      operationId: catalogSearchVehicles
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: bZ4X
+      - *id003
+      - *id004
+      - *id005
+      - *id006
+      - *id007
+      - *id008
+      - *id009
+      - *id010
+      - *id011
+      - *id012
+      - *id013
+      - *id014
+      - *id015
+      - *id016
+      - *id017
+      - *id018
+      responses:
+        '200':
+          description: Search results.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/CatalogListItem'
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+                        sort:
+                          type: string
+                        q:
+                          type: string
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  items: *id019
+                  pagination: *id020
+                  sort: added_desc
+                  q: bZ4X
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/vehicles/facets:
+    get:
+      tags:
+      - Catalog
+      summary: Vehicle facets
+      description: Facet counts for filters. Request fields via repeated or comma-separated fields query
+        (body_shape, condition, drivetrain, promo).
+      operationId: catalogVehicleFacets
+      parameters:
+      - name: fields
+        in: query
+        schema:
+          type: string
+          example: body_shape,condition,drivetrain,promo
+      - name: brand_id
+        in: query
+        schema:
+          type: integer
+      - name: model_id
+        in: query
+        schema:
+          type: integer
+      - name: condition
+        in: query
+        schema:
+          type: string
+          enum:
+          - new
+          - used
+      - name: year_min
+        in: query
+        schema:
+          type: integer
+      - name: year_max
+        in: query
+        schema:
+          type: integer
+      - name: price_min
+        in: query
+        schema:
+          type: number
+      - name: price_max
+        in: query
+        schema:
+          type: number
+      - name: mileage_max
+        in: query
+        schema:
+          type: integer
+      - name: body_shape
+        in: query
+        schema:
+          type: string
+      - name: drivetrain
+        in: query
+        schema:
+          type: string
+      - name: exterior_color
+        in: query
+        schema:
+          type: string
+      - name: interior_color
+        in: query
+        schema:
+          type: string
+      - name: promo
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Facet groups.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/compare:
+    get:
+      tags:
+      - Catalog
+      summary: Compare vehicles
+      description: Compares 2 to 5 catalog ids. Pass cids as a comma-separated list or repeated query
+        values.
+      operationId: catalogCompare
+      parameters:
+      - name: cids
+        in: query
+        required: true
+        description: Two to five catalog ids.
+        schema:
+          type: string
+          example: 24,18
+      responses:
+        '200':
+          description: Compare matrix.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        columns:
+                          type: array
+                          items:
+                            type: object
+                        rows:
+                          type: array
+                          items:
+                            type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/configurations:
+    post:
+      tags:
+      - Catalog
+      summary: Create configuration
+      description: Builds a priced option configuration for a catalog item. Pass at least one option_id.
+      operationId: catalogCreateConfiguration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - cid
+              - option_ids
+              properties:
+                cid:
+                  type: integer
+                  example: 24
+                option_ids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: integer
+                  example:
+                  - 2
+      responses:
+        '200':
+          description: Created configuration.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/configurations/{configId}:
+    get:
+      tags:
+      - Catalog
+      summary: Get configuration
+      description: Fetches a previously created configuration by id, including option categories and total_price.
+      operationId: catalogGetConfiguration
+      parameters:
+      - $ref: '#/components/parameters/ConfigIdPath'
+      responses:
+        '200':
+          description: Configuration detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/{cid}:
+    get:
+      tags:
+      - Catalog
+      summary: Get vehicle detail
+      description: Full vehicle page payload with brand, model, options, promotions, history, and images.
+        Also records a vehicle details view analytics event.
+      operationId: catalogGetVehicle
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      responses:
+        '200':
+          description: Vehicle detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/VehicleDetails'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  id: 24
+                  item_type: vehicle
+                  name: Toyota bZ4X
+                  description: Toyota bZ4X electric vehicle model.
+                  base_price: 50000
+                  stock: 5
+                  is_active: true
+                  review_count: 3
+                  avg_rating: 4.7
+                  brand:
+                    id: 14
+                    name: Toyota
+                    country: Japan
+                    logo: null
+                    is_featured: false
+                    display_order: 14
+                  model:
+                    id: 22
+                    name: bZ4X
+                    release_year: 2022
+                  vehicle:
+                    year: 2026
+                    condition: new
+                    mileage: 2
+                    exterior_color: Wind Chill Pearl
+                    interior_color: Gray
+                    body_shape: SUV
+                    door_count: 4
+                    drivetrain: AWD
+                  equipped_options: []
+                  customizations:
+                  - category_id: 1
+                    name: Paint
+                    select_type: SINGLE
+                    options:
+                    - option_id: 1
+                      name: Pearl White
+                      price_delta: 0
+                    - option_id: 2
+                      name: Solid Black
+                      price_delta: 1500
+                  promotions: []
+                  history:
+                    has_accidents: false
+                    owners_count: 0
+                    report:
+                      media_id: 90
+                      url: /media/carfax/24.pdf
+                      alt_text: null
+                  images:
+                  - media_id: 81
+                    url: /media/vehicles/Toyota bZ4X 2026/ext.jpg
+                    alt_text: Exterior
+                    display_order: 0
+                    is_primary: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/{cid}/reviews:
+    get:
+      tags:
+      - Catalog
+      summary: List vehicle reviews
+      description: Public paginated reviews for a catalog item.
+      operationId: catalogListReviews
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Reviews page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            type: object
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags:
+      - Catalog
+      summary: Publish review
+      description: Customer-only. Publishes a 1-5 star review for the vehicle.
+      operationId: catalogPublishReview
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - body
+              - rating
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                  maxLength: 150
+                body:
+                  type: string
+                  minLength: 1
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        '200':
+          description: Review published.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/catalog/{cid}/wishlist:
+    get:
+      tags:
+      - Catalog
+      summary: Wishlist status for vehicle
+      description: Customer-only. Returns the wishlist entry for this cid, or 404 if it is not wishlisted.
+      operationId: catalogWishlistStatus
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      responses:
+        '200':
+          description: Wishlist entry.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        user_id:
+                          type: integer
+                        cid:
+                          type: integer
+                        added_at:
+                          type: string
+                          format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/checkout/calculate:
+    post:
+      tags:
+      - Checkout
+      summary: Calculate checkout totals
+      description: Prices the cart for a Canadian province, including currency CAD, tax_rate, and tax_breakdown.
+        Customers use their account cart. Guests send items or rely on X-Cart-Session.
+      operationId: checkoutCalculate
+      security: *id002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutCalculateRequest'
+            example:
+              shipping_address:
+                province: 'ON'
+      responses:
+        '200':
+          description: Calculated totals.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CheckoutCalculateResponse'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  currency: CAD
+                  province: 'ON'
+                  tax_rate: 0.13
+                  subtotal: 51500
+                  tax: 6695
+                  total: 58195
+                  tax_breakdown:
+                    type: hst
+                    rates:
+                      gst: 0
+                      pst: 0
+                      hst: 0.13
+                      applicable: 0.13
+                    amounts:
+                      gst: 0
+                      pst: 0
+                      hst: 6695
+                      tax: 6695
+                  items:
+                  - cid: 24
+                    config_id: 8
+                    quantity: 1
+                    unit_price: 51500
+                    line_total: 51500
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/checkout:
+    post:
+      tags:
+      - Checkout
+      summary: Place order
+      description: Creates an order and payment attempt. Guests must provide guest_email. payment_method
+        is credit_card, debit_card, or apple_pay. shipping_address.province must be a Canadian province.
+      operationId: checkoutPlaceOrder
+      security: *id002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+            example:
+              shipping_address:
+                address_type: shipping
+                full_name: Maya Singh
+                phone_number: '4165551001'
+                street: 100 Queen St W
+                city: Toronto
+                province: 'ON'
+                country: Canada
+                postal_code: M5H2N2
+              payment_method: credit_card
+              payment_details:
+                card_number: '4111111111111111'
+                expiry_month: '12'
+                expiry_year: '2028'
+                cvv: '123'
+                cardholder_name: Maya Singh
+      responses:
+        '200':
+          description: Order placed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CheckoutResult'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  order_id: 77
+                  order_status: pending
+                  payment_status: paid
+                  subtotal: 51500
+                  tax: 6695
+                  total: 58195
+                  payment:
+                    attempt_id: 90
+                    status: success
+                    payment_method: credit_card
+                  items:
+                  - cid: 24
+                    config_id: 8
+                    name: Toyota bZ4X
+                    quantity: 1
+                    unit_price: 51500
+                    line_total: 51500
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '502':
+          description: Payment provider failure.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ApiErrorBody'
+              example:
+                success: false
+                status: 502 Bad Gateway
+                data:
+                  code: PAYMENT_ERROR
+                  message: Payment processing failed.
+                  details: null
+                  stack: null
+                  sentry_event_id: null
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/shop/chatbot/message:
+    post:
+      tags:
+      - Chatbot
+      summary: Send chatbot message
+      description: Public, rate-limited shop assistant. Choose a template (product-inquiry, cart-assist,
+        or general-support) and send userMessage. Optional vars and context refine the reply.
+      operationId: chatbotMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatbotRequest'
+      responses:
+        '200':
+          description: Assistant reply.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        reply:
+                          type: string
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  reply: The Toyota bZ4X is a capable all-electric SUV with AWD available on this listing.
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/analytics/overview:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: Customer analytics overview
+      description: 'Customer home dashboard. Response fields are camelCase: accountSummary, orderStats,
+        wishlistStats, and recentOrders.'
+      operationId: customerAnalyticsOverview
+      security: *id001
+      responses:
+        '200':
+          description: Customer overview.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/CustomerOverview'
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  accountSummary:
+                    status: active
+                    memberSince: '2026-01-10T12:00:00.000Z'
+                    totalAmountSpent: 58195
+                  orderStats:
+                    totalOrders: 2
+                    activeOrders: 1
+                    completedOrders: 1
+                  wishlistStats:
+                    itemCount: 3
+                  recentOrders:
+                  - orderId: ORD-77
+                    total: 58195
+                    status: confirmed
+                    itemCount: 1
+                    createdAt: '2026-07-28T15:00:00.000Z'
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/reviews:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: My reviews
+      description: Paginated reviews written by the signed-in customer, including a compact catalog_item.
+      operationId: customerListReviews
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Reviews page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/orders:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: My orders
+      description: Paginated order history for the signed-in customer.
+      operationId: customerListOrders
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Orders page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/OrderListItem'
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/orders/{orderId}:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: My order detail
+      description: Full order detail including line items, addresses, and payment attempts.
+      operationId: customerGetOrder
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: Order detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/OrderDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/payments:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: My payments
+      description: Paginated payment attempts for the customer's orders.
+      operationId: customerListPayments
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Payments page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/wishlist/ids:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: Wishlist catalog ids
+      description: Compact list of wishlisted catalog ids for quick UI checks.
+      operationId: customerWishlistIds
+      security: *id001
+      responses:
+        '200':
+          description: Wishlist ids.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cids:
+                          type: array
+                          items:
+                            type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cids:
+                  - 24
+                  - 18
+                  - 7
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/wishlist:
+    get:
+      tags:
+      - Customer Dashboard
+      summary: My wishlist
+      description: Paginated wishlist with catalog snapshots. Sort options include added_at and price
+        or name directions.
+      operationId: customerListWishlist
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      - name: sort
+        in: query
+        schema:
+          type: string
+          enum:
+          - added_at_desc
+          - added_at_asc
+          - price_asc
+          - price_desc
+          - name_asc
+          - name_desc
+          default: added_at_desc
+      responses:
+        '200':
+          description: Wishlist page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags:
+      - Customer Dashboard
+      summary: Add wishlist item
+      description: Adds a catalog item to the customer wishlist.
+      operationId: customerAddWishlist
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - cid
+              properties:
+                cid:
+                  type: integer
+                  example: 24
+      responses:
+        '200':
+          description: Wishlist entry created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        user_id:
+                          type: integer
+                        cid:
+                          type: integer
+                        added_at:
+                          type: string
+                          format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/customer/wishlist/{cid}:
+    delete:
+      tags:
+      - Customer Dashboard
+      summary: Remove wishlist item
+      description: Removes a catalog id from the customer wishlist.
+      operationId: customerRemoveWishlist
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cid:
+                          type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cid: 24
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/overview:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Admin analytics overview
+      description: 'Admin home metrics: kpis, ordersByStatus, recentActivity, and revenueTrend (camelCase).'
+      operationId: adminAnalyticsOverview
+      security: *id001
+      responses:
+        '200':
+          description: Admin overview.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/AdminOverview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/reports/breakdown:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Event type breakdown
+      description: Totals by analytics event type for a date range (max 366 days).
+      operationId: adminReportsBreakdown
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AnalyticsStart'
+      - $ref: '#/components/parameters/AnalyticsEnd'
+      responses:
+        '200':
+          description: Breakdown rows.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          event_type_id:
+                            type: integer
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          total:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/reports/trend/{eventTypeId}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Event type daily trend
+      description: Daily totals for one event type across the selected date range.
+      operationId: adminReportsTrend
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/EventTypeIdPath'
+      - $ref: '#/components/parameters/AnalyticsStart'
+      - $ref: '#/components/parameters/AnalyticsEnd'
+      responses:
+        '200':
+          description: Trend points.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          day:
+                            type: string
+                            format: date
+                          total:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/reports/top-items/{eventTypeId}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Top catalog items for event type
+      description: Ranks catalog items by event volume for the given event type and date range.
+      operationId: adminReportsTopItems
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/EventTypeIdPath'
+      - $ref: '#/components/parameters/AnalyticsStart'
+      - $ref: '#/components/parameters/AnalyticsEnd'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+      responses:
+        '200':
+          description: Top items.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          cid:
+                            type: integer
+                            nullable: true
+                          name:
+                            type: string
+                          item_type:
+                            type: string
+                          total:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/events:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List analytics events
+      description: Searchable, filterable event log with pagination.
+      operationId: adminListEvents
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AnalyticsStart'
+      - $ref: '#/components/parameters/AnalyticsEnd'
+      - name: event_type_id
+        in: query
+        schema:
+          type: integer
+      - name: user_id
+        in: query
+        schema:
+          type: integer
+      - name: cid
+        in: query
+        schema:
+          type: integer
+      - name: q
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Events page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/events/{eventId}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Analytics event detail
+      description: Single analytics event with meta payload and optional catalog snapshot.
+      operationId: adminGetEvent
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/EventIdPath'
+      responses:
+        '200':
+          description: Event detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/event-types:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List event types
+      description: Returns all analytics event type definitions.
+      operationId: adminListEventTypes
+      security: *id001
+      responses:
+        '200':
+          description: Event types.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          event_type_id:
+                            type: integer
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          description:
+                            type: string
+                            nullable: true
+                          is_active:
+                            type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/analytics/event-types/{eventTypeId}/active:
+    patch:
+      tags:
+      - Admin Dashboard
+      summary: Set event type active flag
+      description: Enables or disables collection for an analytics event type.
+      operationId: adminSetEventTypeActive
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/EventTypeIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - is_active
+              properties:
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated event type.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        event_type_id:
+                          type: integer
+                        is_active:
+                          type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/orders:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List all orders
+      description: Admin paginated orders, including user_id, guest_email, and optional user summary.
+      operationId: adminListOrders
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Orders page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/AdminOrderListItem'
+                        pagination:
+                          $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/orders/{orderId}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Admin order detail
+      description: Full order detail for admins, including customer or guest identity fields.
+      operationId: adminGetOrder
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: Order detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/AdminOrderDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/orders/{orderId}/status:
+    patch:
+      tags:
+      - Admin Dashboard
+      summary: Update order status
+      description: Sets order_status to pending, confirmed, shipped, delivered, or cancelled.
+      operationId: adminUpdateOrderStatus
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/OrderIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - order_status
+              properties:
+                order_status:
+                  type: string
+                  enum:
+                  - pending
+                  - confirmed
+                  - shipped
+                  - delivered
+                  - cancelled
+      responses:
+        '200':
+          description: Status updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        order_id:
+                          type: integer
+                        order_status:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/orders/{orderId}/payments:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Payments for an order
+      description: Returns the bare array of payment attempts for one order.
+      operationId: adminOrderPayments
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/OrderIdPath'
+      responses:
+        '200':
+          description: Payment attempts.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/orders/{orderId}/payment-status:
+    patch:
+      tags:
+      - Admin Dashboard
+      summary: Update order payment status
+      description: Sets the order payment_status to unpaid, paid, or failed.
+      operationId: adminUpdatePaymentStatus
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/OrderIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - payment_status
+              properties:
+                payment_status:
+                  type: string
+                  enum:
+                  - unpaid
+                  - paid
+                  - failed
+      responses:
+        '200':
+          description: Payment status updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        order_id:
+                          type: integer
+                        payment_status:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/payments:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List payments
+      description: Paginated payment attempts across all orders, with optional user summary.
+      operationId: adminListPayments
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Payments page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/payments/{attemptId}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Payment detail
+      description: Single payment attempt detail for admins.
+      operationId: adminGetPayment
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/AttemptIdPath'
+      responses:
+        '200':
+          description: Payment detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/reviews:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List reviews
+      description: Admin paginated reviews with author and catalog_item snapshots.
+      operationId: adminListReviews
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Reviews page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/reviews/catalog/{cid}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Reviews for a catalog item
+      description: Paginated reviews for one catalog id. Items omit nested catalog_item.
+      operationId: adminCatalogReviews
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Catalog reviews.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/reviews/{rid}:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Review detail
+      description: Single review with author and catalog context.
+      operationId: adminGetReview
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/ReviewIdPath'
+      responses:
+        '200':
+          description: Review detail.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags:
+      - Admin Dashboard
+      summary: Delete review
+      description: Permanently removes a review.
+      operationId: adminDeleteReview
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/ReviewIdPath'
+      responses:
+        '200':
+          description: Review deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        review_id:
+                          type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  review_id: 15
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/media:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List media
+      description: Paginated media library entries with optional catalog link metadata.
+      operationId: adminListMedia
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Media page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags:
+      - Admin Dashboard
+      summary: Create media
+      description: Registers a media asset. Optionally link it to a catalog item and mark it primary.
+        PDF assets cannot be primary.
+      operationId: adminCreateMedia
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - url
+              - file_type
+              properties:
+                url:
+                  type: string
+                file_type:
+                  type: string
+                  enum:
+                  - image/jpeg
+                  - image/png
+                  - image/webp
+                  - image/gif
+                  - application/pdf
+                alt_text:
+                  type: string
+                  nullable: true
+                cid:
+                  type: integer
+                display_order:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                is_primary:
+                  type: boolean
+      responses:
+        '200':
+          description: Media created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        media_id:
+                          type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  media_id: 120
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/media/{mediaId}:
+    delete:
+      tags:
+      - Admin Dashboard
+      summary: Delete media
+      description: Deletes a media asset from the library.
+      operationId: adminDeleteMedia
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/MediaIdPath'
+      responses:
+        '200':
+          description: Media deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        media_id:
+                          type: integer
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  media_id: 120
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/catalog/{cid}/media:
+    post:
+      tags:
+      - Admin Dashboard
+      summary: Link media to catalog item
+      description: Attaches an existing media_id to a catalog item, optionally as primary.
+      operationId: adminLinkCatalogMedia
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - media_id
+              properties:
+                media_id:
+                  type: integer
+                display_order:
+                  type: integer
+                is_primary:
+                  type: boolean
+      responses:
+        '200':
+          description: Media linked.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cid:
+                          type: integer
+                        media_id:
+                          type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/catalog/{cid}/media/{mediaId}/primary:
+    patch:
+      tags:
+      - Admin Dashboard
+      summary: Set primary catalog media
+      description: Marks a linked image as the primary media for the catalog item.
+      operationId: adminSetPrimaryMedia
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      - $ref: '#/components/parameters/MediaIdPath'
+      responses:
+        '200':
+          description: Primary media set.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cid:
+                          type: integer
+                        media_id:
+                          type: integer
+                        is_primary:
+                          type: boolean
+              example:
+                success: true
+                status: 200 OK
+                data:
+                  cid: 24
+                  media_id: 81
+                  is_primary: true
+                timestamp: '2026-07-30T07:30:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/catalog/{cid}/media/{mediaId}:
+    delete:
+      tags:
+      - Admin Dashboard
+      summary: Unlink catalog media
+      description: Removes the link between a catalog item and a media asset without deleting the media
+        row itself.
+      operationId: adminUnlinkCatalogMedia
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/CidPath'
+      - $ref: '#/components/parameters/MediaIdPath'
+      responses:
+        '200':
+          description: Media unlinked.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        cid:
+                          type: integer
+                        media_id:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/users:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: List users
+      description: Paginated users with full_name, role, and soft-delete flag.
+      operationId: adminListUsers
+      security: *id001
+      parameters:
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Users page.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/dashboard/admin/users/search:
+    get:
+      tags:
+      - Admin Dashboard
+      summary: Search users
+      description: Required q (1-100 chars) searches names, email, phone, created date, or status keywords
+        such as active, inactive, and deleted.
+      operationId: adminSearchUsers
+      security: *id001
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: maya
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: User search results.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ApiEnvelope'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/PaginatedItems'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: httpOnly JWT access cookie set by login or refresh.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Authorization Bearer JWT. Alternative to the access_token cookie.
+    cartSession:
+      type: apiKey
+      in: header
+      name: X-Cart-Session
+      description: Guest cart session UUID (36 characters). Also accepted as cart_session cookie.
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Page number (1-based). Defaults to 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Items per page. Defaults to 5. Maximum 100.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 5
+        example: 5
+    SessionIdPath:
+      name: sessionId
+      in: path
+      required: true
+      description: Refresh session UUID to revoke.
+      schema:
+        type: string
+        format: uuid
+    AddressIdPath:
+      name: addressId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    CartItemIdPath:
+      name: cartItemId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    BrandIdPath:
+      name: brandId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    CidPath:
+      name: cid
+      in: path
+      required: true
+      description: Catalog item id.
+      schema:
+        type: integer
+        minimum: 1
+    ConfigIdPath:
+      name: configId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    OrderIdPath:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    EventTypeIdPath:
+      name: eventTypeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    EventIdPath:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    AttemptIdPath:
+      name: attemptId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    ReviewIdPath:
+      name: rid
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    MediaIdPath:
+      name: mediaId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    AnalyticsStart:
+      name: start
+      in: query
+      required: false
+      description: Inclusive start date (YYYY-MM-DD). Defaults to 30 days ago.
+      schema:
+        type: string
+        format: date
+    AnalyticsEnd:
+      name: end
+      in: query
+      required: false
+      description: Inclusive end date (YYYY-MM-DD). Defaults to today. Max range 366 days.
+      schema:
+        type: string
+        format: date
+  schemas:
+    ApiEnvelope:
+      type: object
+      description: Universal response wrapper. Every endpoint returns this shape.
+      required:
+      - success
+      - status
+      - data
+      - timestamp
+      properties:
+        success:
+          type: boolean
+          description: True for successful handlers, false for errors.
+        status:
+          type: string
+          description: HTTP status text such as '200 OK' or '404 Not Found'.
+          example: 200 OK
+        data:
+          description: Payload on success, or ApiErrorBody on failure. May be null (for example GET /api/auth/me
+            as a guest).
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 response time from the server.
+    ApiErrorBody:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code.
+          enum:
+          - VALIDATION_ERROR
+          - UNAUTHORIZED
+          - FORBIDDEN
+          - NOT_FOUND
+          - CONFLICT
+          - RATE_LIMITED
+          - DATABASE_ERROR
+          - INTERNAL_ERROR
+          - PAYMENT_ERROR
+        message:
+          type: string
+        details:
+          nullable: true
+          description: Validation issues or extra context. Suppressed for 5xx in production.
+        stack:
+          type: string
+          nullable: true
+          description: Stack trace in non-production environments only.
+        sentry_event_id:
+          type: string
+          nullable: true
+          description: Sentry event id when error reporting is enabled.
+    PaginationMeta:
+      type: object
+      required:
+      - page
+      - limit
+      - total
+      - totalPages
+      - hasNext
+      - hasPrev
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 5
+        total:
+          type: integer
+          example: 24
+        totalPages:
+          type: integer
+          example: 5
+        hasNext:
+          type: boolean
+          example: true
+        hasPrev:
+          type: boolean
+          example: false
+    PaginatedItems:
+      type: object
+      description: Common list payload with items plus pagination meta.
+      required:
+      - items
+      - pagination
+      properties:
+        items:
+          type: array
+          items: {}
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 12
+        role:
+          type: string
+          enum:
+          - customer
+          - admin
+          example: customer
+        first_name:
+          type: string
+          example: Maya
+        last_name:
+          type: string
+          example: Singh
+        email:
+          type: string
+          format: email
+          example: maya.singh@example.com
+        phone_number:
+          type: string
+          nullable: true
+          example: '4165551001'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Address:
+      type: object
+      properties:
+        address_id:
+          type: integer
+          example: 3
+        street:
+          type: string
+          example: 100 Queen St W
+        city:
+          type: string
+          example: Toronto
+        province:
+          type: string
+          example: 'ON'
+        country:
+          type: string
+          example: Canada
+        postal_code:
+          type: string
+          example: M5H2N2
+        is_default:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Promotion:
+      type: object
+      properties:
+        promo_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        discount_amount:
+          type: number
+    CartCatalogItem:
+      type: object
+      properties:
+        cid:
+          type: integer
+          example: 24
+        item_type:
+          type: string
+          example: vehicle
+        name:
+          type: string
+          example: Toyota bZ4X
+        base_price:
+          type: number
+          example: 50000
+        stock:
+          type: integer
+          example: 5
+        is_active:
+          type: boolean
+          example: true
+        primary_image_url:
+          type: string
+          nullable: true
+          example: /media/vehicles/Toyota bZ4X 2026/ext.jpg
+        promotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promotion'
+    CartConfigurationOption:
+      type: object
+      properties:
+        category_id:
+          type: integer
+        category_name:
+          type: string
+        select_type:
+          type: string
+        option_id:
+          type: integer
+        name:
+          type: string
+        price_delta:
+          type: number
+    CartConfiguration:
+      type: object
+      nullable: true
+      properties:
+        config_id:
+          type: integer
+          example: 8
+        total_price:
+          type: number
+          example: 51500
+        created_at:
+          type: string
+          format: date-time
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartConfigurationOption'
+    CartItem:
+      type: object
+      properties:
+        cart_item_id:
+          type: integer
+          example: 41
+        cid:
+          type: integer
+          example: 24
+        config_id:
+          type: integer
+          nullable: true
+          example: 8
+        quantity:
+          type: integer
+          example: 1
+        added_at:
+          type: string
+          format: date-time
+        unit_price:
+          type: number
+          example: 51500
+        line_total:
+          type: number
+          example: 51500
+        catalog_item:
+          $ref: '#/components/schemas/CartCatalogItem'
+        configuration:
+          $ref: '#/components/schemas/CartConfiguration'
+        session_token:
+          type: string
+          nullable: true
+        is_guest:
+          type: boolean
+    CheckoutAddress:
+      type: object
+      required:
+      - full_name
+      - street
+      - city
+      - province
+      - country
+      - postal_code
+      properties:
+        address_type:
+          type: string
+          enum:
+          - shipping
+          - billing
+          example: shipping
+        full_name:
+          type: string
+          example: Maya Singh
+        phone_number:
+          type: string
+          nullable: true
+          example: '4165551001'
+        street:
+          type: string
+          example: 100 Queen St W
+        city:
+          type: string
+          example: Toronto
+        province:
+          type: string
+          description: Canadian province code or name. Normalized to a two-letter code.
+          example: 'ON'
+        country:
+          type: string
+          example: Canada
+        postal_code:
+          type: string
+          example: M5H2N2
+    CheckoutLineItem:
+      type: object
+      properties:
+        cid:
+          type: integer
+          example: 24
+        config_id:
+          type: integer
+          nullable: true
+          example: 8
+        name:
+          type: string
+          example: Toyota bZ4X
+        quantity:
+          type: integer
+          example: 1
+        unit_price:
+          type: number
+          example: 51500
+        line_total:
+          type: number
+          example: 51500
+    CheckoutCalculateLineItem:
+      type: object
+      properties:
+        cid:
+          type: integer
+          example: 24
+        config_id:
+          type: integer
+          nullable: true
+          example: 8
+        quantity:
+          type: integer
+          example: 1
+        unit_price:
+          type: number
+          example: 51500
+        line_total:
+          type: number
+          example: 51500
+    TaxBreakdown:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - gst
+          - gst_pst
+          - hst
+          example: hst
+        rates:
+          type: object
+          properties:
+            gst:
+              type: number
+              example: 0
+            pst:
+              type: number
+              example: 0
+            hst:
+              type: number
+              example: 0.13
+            applicable:
+              type: number
+              example: 0.13
+        amounts:
+          type: object
+          properties:
+            gst:
+              type: number
+              example: 0
+            pst:
+              type: number
+              example: 0
+            hst:
+              type: number
+              example: 6695
+            tax:
+              type: number
+              example: 6695
+    CheckoutCalculateResponse:
+      type: object
+      properties:
+        currency:
+          type: string
+          example: CAD
+        province:
+          type: string
+          example: 'ON'
+        tax_rate:
+          type: number
+          example: 0.13
+        subtotal:
+          type: number
+          example: 51500
+        tax:
+          type: number
+          example: 6695
+        total:
+          type: number
+          example: 58195
+        tax_breakdown:
+          $ref: '#/components/schemas/TaxBreakdown'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutCalculateLineItem'
+    CheckoutResult:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 77
+        order_status:
+          type: string
+          example: pending
+        payment_status:
+          type: string
+          example: paid
+        subtotal:
+          type: number
+          example: 51500
+        tax:
+          type: number
+          example: 6695
+        total:
+          type: number
+          example: 58195
+        payment:
+          type: object
+          properties:
+            attempt_id:
+              type: integer
+              example: 90
+            status:
+              type: string
+              enum:
+              - success
+              - failed
+              example: success
+            payment_method:
+              type: string
+              enum:
+              - credit_card
+              - debit_card
+              - apple_pay
+              example: credit_card
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutLineItem'
+    CatalogListItem:
+      type: object
+      description: Compact vehicle card used in browse and search results.
+      properties:
+        id:
+          type: integer
+          example: 24
+        item_type:
+          type: string
+          example: vehicle
+        name:
+          type: string
+          example: Toyota bZ4X
+        brand:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 14
+            name:
+              type: string
+              example: Toyota
+        model:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 22
+            name:
+              type: string
+              example: bZ4X
+        base_price:
+          type: number
+          example: 50000
+        stock:
+          type: integer
+          example: 5
+        is_active:
+          type: boolean
+          example: true
+        primary_image_url:
+          type: string
+          nullable: true
+          example: /media/vehicles/Toyota bZ4X 2026/ext.jpg
+        image_urls:
+          type: array
+          items:
+            type: string
+        promotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promotion'
+        vehicle:
+          type: object
+          properties:
+            year:
+              type: integer
+              example: 2026
+            condition:
+              type: string
+              enum:
+              - new
+              - used
+              example: new
+            mileage:
+              type: integer
+              example: 2
+            exterior_color:
+              type: string
+              example: Wind Chill Pearl
+            interior_color:
+              type: string
+              example: Gray
+            body_shape:
+              type: string
+              example: SUV
+            door_count:
+              type: integer
+              example: 4
+            drivetrain:
+              type: string
+              example: AWD
+    OptionCategory:
+      type: object
+      properties:
+        category_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Paint
+        select_type:
+          type: string
+          example: SINGLE
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              option_id:
+                type: integer
+                example: 2
+              name:
+                type: string
+                example: Solid Black
+              price_delta:
+                type: number
+                example: 1500
+    VehicleDetails:
+      type: object
+      description: Full catalog vehicle detail returned by GET /api/shop/catalog/{cid}.
+      properties:
+        id:
+          type: integer
+          example: 24
+        item_type:
+          type: string
+          example: vehicle
+        name:
+          type: string
+          example: Toyota bZ4X
+        description:
+          type: string
+          nullable: true
+        base_price:
+          type: number
+          example: 50000
+        stock:
+          type: integer
+          example: 5
+        is_active:
+          type: boolean
+          example: true
+        review_count:
+          type: integer
+          example: 3
+        avg_rating:
+          type: number
+          nullable: true
+          example: 4.7
+        brand:
+          type: object
+          additionalProperties: true
+        model:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 22
+            name:
+              type: string
+              example: bZ4X
+            release_year:
+              type: integer
+              nullable: true
+              example: 2022
+        vehicle:
+          type: object
+          properties:
+            year:
+              type: integer
+              example: 2026
+            condition:
+              type: string
+              example: new
+            mileage:
+              type: integer
+              example: 2
+            exterior_color:
+              type: string
+              example: Wind Chill Pearl
+            interior_color:
+              type: string
+              example: Gray
+            body_shape:
+              type: string
+              example: SUV
+            door_count:
+              type: integer
+              example: 4
+            drivetrain:
+              type: string
+              example: AWD
+        equipped_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionCategory'
+        customizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionCategory'
+        promotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promotion'
+        history:
+          nullable: true
+          type: object
+          additionalProperties: true
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              media_id:
+                type: integer
+              url:
+                type: string
+              alt_text:
+                type: string
+                nullable: true
+              display_order:
+                type: integer
+              is_primary:
+                type: boolean
+    OrderListItem:
+      type: object
+      description: Customer order list row from toOrderListItemDTO (no owner fields).
+      properties:
+        order_id:
+          type: integer
+          example: 77
+        order_status:
+          type: string
+          example: confirmed
+        payment_status:
+          type: string
+          example: paid
+        subtotal:
+          type: number
+          example: 51500
+        tax:
+          type: number
+          example: 6695
+        total:
+          type: number
+          example: 58195
+        item_count:
+          type: integer
+          example: 1
+        additional_information:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    OrderItem:
+      type: object
+      description: Order line from toOrderItemDTO.
+      properties:
+        order_item_id:
+          type: integer
+          example: 101
+        cid:
+          type: integer
+          example: 24
+        config_id:
+          type: integer
+          nullable: true
+          example: 8
+        quantity:
+          type: integer
+          example: 1
+        unit_price:
+          type: number
+          example: 51500
+        line_total:
+          type: number
+          example: 51500
+        catalog_item:
+          type: object
+          properties:
+            cid:
+              type: integer
+            item_type:
+              type: string
+            name:
+              type: string
+              example: Toyota bZ4X
+            base_price:
+              type: number
+            is_active:
+              type: boolean
+        configuration:
+          type: object
+          nullable: true
+          additionalProperties: true
+    OrderDetail:
+      type: object
+      description: Customer order detail from toOrderDetailDTO.
+      properties:
+        order_id:
+          type: integer
+          example: 77
+        order_status:
+          type: string
+          example: confirmed
+        payment_status:
+          type: string
+          example: paid
+        subtotal:
+          type: number
+          example: 51500
+        tax:
+          type: number
+          example: 6695
+        total:
+          type: number
+          example: 58195
+        additional_information:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutAddress'
+        payment_attempts:
+          type: array
+          items:
+            type: object
+            properties:
+              attempt_id:
+                type: integer
+              status:
+                type: string
+              payment_method:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+    AdminOrderListItem:
+      allOf:
+      - $ref: '#/components/schemas/OrderListItem'
+      - type: object
+        description: Admin list row from toAdminOrderListItemDTO.
+        properties:
+          user_id:
+            type: integer
+            nullable: true
+          guest_email:
+            type: string
+            nullable: true
+          user:
+            type: object
+            nullable: true
+            description: Present when the order belongs to a registered user with email.
+            properties:
+              user_id:
+                type: integer
+              first_name:
+                type: string
+              last_name:
+                type: string
+              email:
+                type: string
+                format: email
+    AdminOrderDetail:
+      allOf:
+      - $ref: '#/components/schemas/OrderDetail'
+      - type: object
+        description: Admin order detail from toAdminOrderDetailDTO.
+        properties:
+          user_id:
+            type: integer
+            nullable: true
+          guest_email:
+            type: string
+            nullable: true
+          user:
+            type: object
+            nullable: true
+            properties:
+              user_id:
+                type: integer
+              first_name:
+                type: string
+              last_name:
+                type: string
+              email:
+                type: string
+                format: email
+    CustomerOverview:
+      type: object
+      description: Customer analytics overview. Field names are camelCase.
+      properties:
+        accountSummary:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+              - active
+              - inactive
+            memberSince:
+              type: string
+              nullable: true
+              format: date-time
+            totalAmountSpent:
+              type: number
+              example: 58195
+        orderStats:
+          type: object
+          properties:
+            totalOrders:
+              type: integer
+              example: 2
+            activeOrders:
+              type: integer
+              example: 1
+            completedOrders:
+              type: integer
+              example: 1
+        wishlistStats:
+          type: object
+          properties:
+            itemCount:
+              type: integer
+              example: 3
+        recentOrders:
+          type: array
+          items:
+            type: object
+            properties:
+              orderId:
+                type: string
+                example: ORD-77
+              total:
+                type: number
+                example: 58195
+              status:
+                type: string
+                example: confirmed
+              itemCount:
+                type: integer
+                example: 1
+              createdAt:
+                type: string
+                format: date-time
+    AdminOverview:
+      type: object
+      description: Admin analytics overview. Field names are camelCase.
+      properties:
+        kpis:
+          type: object
+          properties:
+            totalRevenue:
+              type: number
+            totalOrders:
+              type: integer
+            newUsers:
+              type: integer
+            averageOrderValue:
+              type: number
+        ordersByStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              count:
+                type: integer
+        recentActivity:
+          type: array
+          items:
+            type: object
+            properties:
+              orderId:
+                type: string
+              customerName:
+                type: string
+                nullable: true
+              total:
+                type: number
+              status:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+        revenueTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              revenue:
+                type: number
+    LoginResponseData:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            user_id:
+              type: integer
+              example: 12
+            role:
+              type: string
+              example: customer
+            first_name:
+              type: string
+              example: Maya
+            last_name:
+              type: string
+              example: Singh
+            email:
+              type: string
+              example: maya.singh@example.com
+        cart_merge:
+          type: object
+          description: Present only when a guest cart session was supplied at login.
+          properties:
+            merged:
+              type: boolean
+              example: true
+            moved_items:
+              type: integer
+              example: 1
+            error:
+              type: string
+    CartListResponse:
+      type: object
+      properties:
+        cart_id:
+          type: integer
+          nullable: true
+          example: 5
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        sort:
+          type: string
+          example: added_at_desc
+        session_token:
+          type: string
+          nullable: true
+        is_guest:
+          type: boolean
+          example: false
+    CartSummary:
+      type: object
+      description: Header cart preview from toCartSummaryDTO.
+      properties:
+        cart_id:
+          type: integer
+          nullable: true
+        item_count:
+          type: integer
+        quantity_total:
+          type: integer
+        subtotal:
+          type: number
+        preview:
+          type: array
+          items:
+            type: object
+            properties:
+              cart_item_id:
+                type: integer
+              cid:
+                type: integer
+              name:
+                type: string
+                example: Toyota bZ4X
+              quantity:
+                type: integer
+              unit_price:
+                type: number
+              line_total:
+                type: number
+              primary_image_url:
+                type: string
+                nullable: true
+        preview_limit:
+          type: integer
+        session_token:
+          type: string
+          nullable: true
+        is_guest:
+          type: boolean
+    RegisterRequest:
+      type: object
+      required:
+      - first_name
+      - last_name
+      - email
+      - password
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+          example: Maya
+        last_name:
+          type: string
+          maxLength: 100
+          example: Singh
+        email:
+          type: string
+          format: email
+          example: maya.singh@example.com
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          example: SecurePass1!
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+          example: '4165551001'
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: maya.singh@example.com
+        password:
+          type: string
+          example: SecurePass1!
+    AddressCreateRequest:
+      type: object
+      required:
+      - street
+      - city
+      - province
+      - country
+      - postal_code
+      properties:
+        street:
+          type: string
+          example: 100 Queen St W
+        city:
+          type: string
+          example: Toronto
+        province:
+          type: string
+          example: 'ON'
+        country:
+          type: string
+          example: Canada
+        postal_code:
+          type: string
+          example: M5H2N2
+        is_default:
+          type: boolean
+          default: false
+    AddCartItemRequest:
+      type: object
+      required:
+      - cid
+      properties:
+        cid:
+          type: integer
+          example: 24
+        config_id:
+          type: integer
+          nullable: true
+          example: 8
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          default: 1
+          example: 1
+    CheckoutCalculateRequest:
+      type: object
+      required:
+      - shipping_address
+      properties:
+        shipping_address:
+          type: object
+          required:
+          - province
+          properties:
+            province:
+              type: string
+              example: 'ON'
+        items:
+          type: array
+          description: Guest only. Optional when X-Cart-Session already has items.
+          items:
+            type: object
+            required:
+            - cid
+            - quantity
+            properties:
+              cid:
+                type: integer
+              config_id:
+                type: integer
+                nullable: true
+              quantity:
+                type: integer
+                minimum: 1
+                maximum: 99
+    CheckoutRequest:
+      type: object
+      required:
+      - shipping_address
+      - payment_method
+      properties:
+        guest_email:
+          type: string
+          format: email
+          description: Required for guest checkout.
+          example: guest@example.com
+        shipping_address:
+          $ref: '#/components/schemas/CheckoutAddress'
+        billing_address:
+          $ref: '#/components/schemas/CheckoutAddress'
+        payment_method:
+          type: string
+          enum:
+          - credit_card
+          - debit_card
+          - apple_pay
+          example: credit_card
+        payment_details:
+          type: object
+          description: Card fields for credit_card/debit_card, or token for apple_pay.
+          additionalProperties: true
+          example:
+            card_number: '4111111111111111'
+            expiry_month: '12'
+            expiry_year: '2028'
+            cvv: '123'
+            cardholder_name: Maya Singh
+        additional_information:
+          type: string
+          maxLength: 1000
+        items:
+          type: array
+          description: Guest only. Ignored for authenticated customers.
+          items:
+            type: object
+            properties:
+              cid:
+                type: integer
+              config_id:
+                type: integer
+                nullable: true
+              quantity:
+                type: integer
+    ChatbotRequest:
+      type: object
+      required:
+      - template
+      - userMessage
+      properties:
+        template:
+          type: string
+          enum:
+          - product-inquiry
+          - cart-assist
+          - general-support
+          example: product-inquiry
+        userMessage:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: What is the range?
+        vars:
+          type: object
+          additionalProperties: true
+          example:
+            cid: 24
+            model_name: bZ4X
+            item_name: Toyota bZ4X
+            base_price: 50000
+        context:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            maxLength: 4000
+  responses:
+    BadRequest:
+      description: Validation failed.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 400 Bad Request
+            data:
+              code: VALIDATION_ERROR
+              message: Request validation failed.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    Unauthorized:
+      description: Missing or invalid credentials.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 401 Unauthorized
+            data:
+              code: UNAUTHORIZED
+              message: Authentication required.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    Forbidden:
+      description: Forbidden for this role.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 403 Forbidden
+            data:
+              code: FORBIDDEN
+              message: You do not have permission to perform this action.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 404 Not Found
+            data:
+              code: NOT_FOUND
+              message: Resource not found.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    Conflict:
+      description: Conflict.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 409 Conflict
+            data:
+              code: CONFLICT
+              message: Conflict with current state.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    TooManyRequests:
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 429 Too Many Requests
+            data:
+              code: RATE_LIMITED
+              message: Too many requests. Try again later.
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ApiEnvelope'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ApiErrorBody'
+          example:
+            success: false
+            status: 500 Internal Server Error
+            data:
+              code: INTERNAL_ERROR
+              message: Internal server error
+              details: null
+              stack: null
+              sentry_event_id: null
+            timestamp: '2026-07-30T07:30:00.000Z'

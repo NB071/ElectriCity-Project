@@ -41,6 +41,13 @@ export default {
     server: {
         PORT: process.env.PORT,
         LOCAL_ADDRESS: process.env.LOCAL_ADDRESS,
+        CORS_ORIGINS: (
+            process.env.CORS_ORIGINS ||
+            APP_CONSTANTS.CORS.DEFAULT_ORIGINS.join(",")
+        )
+            .split(",")
+            .map((origin) => origin.trim())
+            .filter(Boolean),
     },
     email: {
         host: process.env.EMAIL_HOST,

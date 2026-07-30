@@ -16,3 +16,12 @@ export function getApiBaseUrl(): string {
     const base = env.VITE_ENVIRONMENT === "development" ? env.VITE_DEV_API_URL : env.VITE_PROD_API_URL;
     return base.replace(/\/$/, "");
 }
+
+/**
+ * Helper to resolve the Sentry traces sample rate for the current environment.
+ */
+export function getSentryTracesSampleRate(): number {
+    return env.VITE_ENVIRONMENT === "development"
+        ? env.VITE_SENTRY_DEV_TRACES_SAMPLE_RATE
+        : env.VITE_SENTRY_PROD_TRACES_SAMPLE_RATE;
+}
