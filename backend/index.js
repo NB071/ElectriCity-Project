@@ -42,9 +42,16 @@ const server = http.createServer(app);
 // > Middlewares (security)
 app.disable("x-powered-by");
 app.use(helmetMiddleware);
+const allowedOrigins = new Set(env.server.CORS_ORIGINS);
 app.use(
     cors({
-        origin: true,
+        origin(origin, callback) {
+            // Allow non-browser clients (curl, server-to-server) with no Origin.
+            if (!origin || allowedOrigins.has(origin)) {
+                return callback(null, true);
+            }
+            return callback(null, false);
+        },
         credentials: true,
         exposedHeaders: [CART_HEADERS.SESSION],
     }),

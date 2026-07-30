@@ -36,6 +36,12 @@ const APP_CONSTANTS = {
     DEFAULT_RETRY_ATTEMPTS: 3,
     DEFAULT_RETRY_DELAY_MS: 1500,
   },
+  CORS: {
+    DEFAULT_ORIGINS: [
+      "http://localhost:3000",
+      "https://project-electricity.app",
+    ],
+  },
 };
 
 export default APP_CONSTANTS;

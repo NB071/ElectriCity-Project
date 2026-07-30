@@ -12,6 +12,7 @@ import { UserDetailModal } from "@/components/dashboard/modals/UserDetailModal";
 import { MediaDeleteModal } from "@/components/dashboard/modals/MediaDeleteModal";
 import { MediaLinkModal } from "@/components/dashboard/modals/MediaLinkModal";
 import { MediaRegisterModal } from "@/components/dashboard/modals/MediaRegisterModal";
+import { ProfileDeleteModal } from "@/components/dashboard/modals/ProfileDeleteModal";
 import { VehicleImageGalleryModal } from "@/components/shop/catalog/VehicleImageGalleryModal";
 
 export function ModalsContainer() {
@@ -31,6 +32,7 @@ export function ModalsContainer() {
             <MediaDeleteModal />
             <MediaLinkModal />
             <MediaRegisterModal />
+            <ProfileDeleteModal />
             <VehicleImageGalleryModal />
         </>
     );

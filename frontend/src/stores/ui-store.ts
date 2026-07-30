@@ -45,6 +45,7 @@ export type UiModals = {
     mediaLink: ModalConfig<{ mediaId: number; label?: string }>;
     mediaRegister: ModalConfig;
     imageGallery: ModalConfig<{ images: any[] }>;
+    profileDelete: ModalConfig;
 };
 
 const initialModals: UiModals = {
@@ -63,6 +64,7 @@ const initialModals: UiModals = {
     mediaLink: { isOpen: false },
     mediaRegister: { isOpen: false },
     imageGallery: { isOpen: false },
+    profileDelete: { isOpen: false },
 };
 
 export const useUiStore = create<UiState>((set) => ({

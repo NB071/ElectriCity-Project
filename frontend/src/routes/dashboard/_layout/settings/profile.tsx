@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ContentSection } from "@/components/dashboard/ContentSection";
 import { useMe } from "@/hooks/use-me";
 import { useUpdateProfile } from "@/hooks/api/iam/use-profile";
+import { useUiStore } from "@/stores/ui-store";
 import { accountFormSchema, type AccountFormValues } from "@/zod/profile";
 
 export const Route = createFileRoute("/dashboard/_layout/settings/profile")({
@@ -109,11 +110,30 @@ function AccountForm() {
     );
 }
 
+function DeleteAccountSection() {
+    const { openModal } = useUiStore();
+
+    return (
+        <div className="border-destructive/20 space-y-4 border-t pt-8">
+            <div>
+                <h3 className="text-destructive text-lg font-medium">Delete account</h3>
+                <p className="text-muted-foreground text-[0.8rem] font-normal">
+                    Deactivate your account permanently for login. You will need your current password to confirm.
+                </p>
+            </div>
+            <Button type="button" variant="destructive" onClick={() => openModal("profileDelete")}>
+                Delete account
+            </Button>
+        </div>
+    );
+}
+
 function RouteComponent() {
     return (
         <ContentSection title="Profile" desc="Manage your personal information">
             <div className="space-y-12">
                 <AccountForm />
+                <DeleteAccountSection />
             </div>
         </ContentSection>
     );
