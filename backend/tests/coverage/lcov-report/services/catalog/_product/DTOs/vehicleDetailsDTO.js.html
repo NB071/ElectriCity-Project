@@ -143,7 +143,17 @@
 <a name='L78'></a><a href='#L78'>78</a>
 <a name='L79'></a><a href='#L79'>79</a>
 <a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -212,6 +222,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -224,6 +242,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { toReviewSummaryDTO } from "../../../review/DTOs/reviewSummaryDTO.js";
+import { toBrandListItemDTO } from "../../_brand/DTOs/brandListItemDTO.js";
 &nbsp;
 /**
  * This function maps the vehicle details to a representable format.
@@ -239,67 +258,75 @@
  * @returns {object}
  */
 function toVehicleDetailsDTO(
-    base,
-    subtype,
-    customizations,
-    equipped_options,
-    history,
-    images = [],
-    historyReport = null,
-    promotions = [],
-    reviewSummary = { review_count: 0, avg_rating: null },
+  base,
+  subtype,
+  customizations,
+  equipped_options,
+  history,
+  images = [],
+  historyReport = null,
+  promotions = [],
+  reviewSummary = { review_count: 0, avg_rating: null },
 ) {
-    return {
-        id: base.cid,
-        item_type: base.item_type,
-        name: `${base.brand_name} ${base.model_name}`,
-        description: base.model_description,
-        base_price: Number(base.base_price),
-        stock: base.quantity,
-        is_active: Boolean(base.is_active),
-        ...toReviewSummaryDTO(reviewSummary),
-        brand: {
-            id: base.brand_id,
-            name: base.brand_name,
-            country: base.brand_country,
-        },
-        model: {
-            id: base.model_id,
-            name: base.model_name,
-            release_year: base.release_year,
-        },
-        vehicle: {
-            year: subtype.year,
-            condition: subtype.condition,
-            mileage: subtype.mileage,
-            body_shape: subtype.body_shape,
-            door_count: subtype.door_count,
-            drivetrain: subtype.drivetrain,
-        },
-        equipped_options,
-        customizations,
-        promotions,
-        history: history
+  return {
+    id: base.cid,
+    item_type: base.item_type,
+    name: `${base.brand_name} ${base.model_name}`,
+    description: base.model_description,
+    base_price: Number(base.base_price),
+    stock: base.quantity,
+    is_active: Boolean(base.is_active),
+    ...toReviewSummaryDTO(reviewSummary),
+    brand: toBrandListItemDTO({
+      brand_id: base.brand_id,
+      name: base.brand_name,
+      country: base.brand_country,
+      is_featured: base.brand_is_featured,
+      display_order: base.brand_display_order,
+      media_id: base.brand_media_id,
+      logo_url: base.brand_logo_url,
+      logo_file_type: base.brand_logo_file_type,
+      logo_alt_text: base.brand_logo_alt_text,
+    }),
+    model: {
+      id: base.model_id,
+      name: base.model_name,
+      release_year: base.release_year,
+    },
+    vehicle: {
+      year: subtype.year,
+      condition: subtype.condition,
+      mileage: subtype.mileage,
+      exterior_color: subtype.exterior_color,
+      interior_color: subtype.interior_color,
+      body_shape: subtype.body_shape,
+      door_count: subtype.door_count,
+      drivetrain: subtype.drivetrain,
+    },
+    equipped_options,
+    customizations,
+    promotions,
+    history: history
+      ? {
+          has_accidents: Boolean(history.has_accidents),
+          owners_count: Number(history.owners_count ?? 0),
+          report: historyReport
             ? {
-                  has_accidents: Boolean(history.has_accidents),
-                  owners_count: Number(history.owners_count ?? 0),
-                  report: historyReport
-                      ? {
-                            media_id: historyReport.media_id,
-                            url: historyReport.url,
-                            alt_text: historyReport.alt_text ?? <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
-                        }
-                      : null,
+                media_id: historyReport.media_id,
+                url: historyReport.url,
+                alt_text: historyReport.alt_text ?? <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
               }
             : null,
-        images: images.map((image) =&gt; ({
-            media_id: image.media_id,
-            url: image.url,
-            alt_text: image.alt_text ?? null,
-            display_order: image.display_order ?? 0,
-            is_primary: Boolean(image.is_primary),
-        })),
-    };
+        }
+      : null,
+    images: images.map((image) =&gt; ({
+      media_id: image.media_id,
+      url: image.url,
+      alt_text: image.alt_text ?? null,
+      display_order: image.display_order ?? 0,
+      is_primary: Boolean(image.is_primary),
+    })),
+  };
 }
 &nbsp;
 export { toVehicleDetailsDTO };
@@ -310,7 +337,7 @@ export { toVehicleDetailsDTO };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-16T04:33:06.652Z
+                at 2026-07-30T16:41:14.082Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

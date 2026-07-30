@@ -299,20 +299,13 @@
 <a name='L234'></a><a href='#L234'>234</a>
 <a name='L235'></a><a href='#L235'>235</a>
 <a name='L236'></a><a href='#L236'>236</a>
-<a name='L237'></a><a href='#L237'>237</a>
-<a name='L238'></a><a href='#L238'>238</a>
-<a name='L239'></a><a href='#L239'>239</a>
-<a name='L240'></a><a href='#L240'>240</a>
-<a name='L241'></a><a href='#L241'>241</a>
-<a name='L242'></a><a href='#L242'>242</a>
-<a name='L243'></a><a href='#L243'>243</a>
-<a name='L244'></a><a href='#L244'>244</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L237'></a><a href='#L237'>237</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -334,11 +327,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -420,14 +414,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -547,7 +533,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// IAM Identity Management
 // DAO for addresses table
@@ -562,232 +548,225 @@ const ADDRESS_COLUMNS = `
 &nbsp;
 /**
  * This class is used to interact with the addresses table (a user's saved shipping/billing addresses).
+ * @touches_tables: addresses
  * @class
  * @extends BaseDAO
  */
 class AddressDAO extends BaseDAO {
-    // #########################
-    // Read operations
-    // #########################
+  // #########################
+  // Read operations
+  // #########################
 &nbsp;
-    /**
-     * This method counts saved addresses for a user.
-     * @param {number} user_id
-     * @returns {Promise&lt;number&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async countByUserId(user_id) {
-        const [rows] = await this._query(
-            `SELECT COUNT(*) AS total FROM addresses WHERE user_id = ?`,
-            [user_id],
-        );
-        return Number(rows[0].total);
-    }
+  /**
+   * This method counts saved addresses for a user.
+   * @param {number} user_id
+   * @returns {Promise&lt;number&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async countByUserId(user_id) {
+    const [rows] = await this._query(
+      `SELECT COUNT(*) AS total FROM addresses WHERE user_id = ?`,
+      [user_id],
+    );
+    return Number(rows[0].total);
+  }
 &nbsp;
-    /**
-     * This method returns paginated saved addresses for a user, default address first.
-     * @param {number} user_id
-     * @param {number} limit
-     * @param {number} offset
-     * @returns {Promise&lt;object[]&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async findByUserId(user_id, limit, offset) {
-        const safeLimit = Number(limit);
-        const safeOffset = Number(offset);
+  /**
+   * This method returns paginated saved addresses for a user, default address first.
+   * @param {number} user_id
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {Promise&lt;object[]&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async findByUserId(user_id, limit, offset) {
+    const safeLimit = Number(limit);
+    const safeOffset = Number(offset);
 &nbsp;
-        const [rows] = await this._query(
-            `SELECT ${ADDRESS_COLUMNS}
+    const [rows] = await this._query(
+      `SELECT ${ADDRESS_COLUMNS}
              FROM addresses
              WHERE user_id = ?
              ORDER BY is_default DESC, created_at DESC
              LIMIT ${safeLimit} OFFSET ${safeOffset}`,
-            [user_id],
-            { suppressNotFound: true },
-        );
-        return rows;
-    }
+      [user_id],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
 &nbsp;
-    /**
-     * This method finds one address, scoped to its owning user.
-     * @param {number} address_id
-     * @param {number} user_id
-     * @returns {Promise&lt;object&gt;}
-     * @throws {NotFoundError} If the address does not exist or does not belong to the user
-     * @throws {DatabaseError} On database failures
-     */
-    async findByIdForUser(address_id, user_id) {
-        const [rows] = await this._query(
-            `SELECT ${ADDRESS_COLUMNS}
+  /**
+   * This method finds one address, scoped to its owning user.
+   * @param {number} address_id
+   * @param {number} user_id
+   * @returns {Promise&lt;object&gt;}
+   * @throws {NotFoundError} If the address does not exist or does not belong to the user
+   * @throws {DatabaseError} On database failures
+   */
+  async findByIdForUser(address_id, user_id) {
+    const [rows] = await this._query(
+      `SELECT ${ADDRESS_COLUMNS}
              FROM addresses
              WHERE address_id = ? AND user_id = ?`,
-            [address_id, user_id],
-            { notFoundResource: "Address" },
+      [address_id, user_id],
+      { notFoundResource: "Address" },
+    );
+    return rows[0];
+  }
+&nbsp;
+  // #########################
+  // Write operations
+  // #########################
+&nbsp;
+  /**
+   * This method creates a saved address for a user. When marked default, any existing
+   * default address for the user is cleared first, in the same transaction.
+   * @param {object} data
+   * @param {number} data.user_id
+   * @param {string} data.street
+   * @param {string} data.city
+   * @param {string} data.province
+   * @param {string} data.country
+   * @param {string} data.postal_code
+   * @param {boolean} [data.is_default=false]
+   * @returns {Promise&lt;object&gt;} The created address
+   * @throws {DatabaseError} On database failures
+   */
+  async insert({
+    user_id,
+    street,
+    city,
+    province,
+    country,
+    postal_code,
+    is_default = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span>
+  }) {
+    return this._transaction(async (conn, _queryOptions) =&gt; {
+      if (is_default) {
+        await conn.execute(
+          `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
+          [user_id],
         );
-        return rows[0];
-    }
+      }
 &nbsp;
-    // #########################
-    // Write operations
-    // #########################
-&nbsp;
-    /**
-     * This method creates a saved address for a user. When marked default, any existing
-     * default address for the user is cleared first, in the same transaction.
-     * @param {object} data
-     * @param {number} data.user_id
-     * @param {string} data.street
-     * @param {string} data.city
-     * @param {string} data.province
-     * @param {string} data.country
-     * @param {string} data.postal_code
-     * @param {boolean} [data.is_default=false]
-     * @returns {Promise&lt;object&gt;} The created address
-     * @throws {DatabaseError} On database failures
-     */
-    async insert({
-        user_id,
-        street,
-        city,
-        province,
-        country,
-        postal_code,
-        is_default = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span>
-    }) {
-        return this._transaction(async (conn, _queryOptions) =&gt; {
-            if (is_default) {
-                await conn.execute(
-                    `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
-                    [user_id],
-                );
-            }
-&nbsp;
-            const [result] = await conn.execute(
-                `INSERT INTO addresses (user_id, street, city, province, country, postal_code, is_default)
+      const [result] = await conn.execute(
+        `INSERT INTO addresses (user_id, street, city, province, country, postal_code, is_default)
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    user_id,
-                    street,
-                    city,
-                    province,
-                    country,
-                    postal_code,
-                    is_default,
-                ],
-            );
+        [user_id, street, city, province, country, postal_code, is_default],
+      );
 &nbsp;
-            const [rows] = await conn.execute(
-                `SELECT ${ADDRESS_COLUMNS}
+      const [rows] = await conn.execute(
+        `SELECT ${ADDRESS_COLUMNS}
                  FROM addresses
                  WHERE address_id = ?`,
-                [result.insertId],
-            );
+        [result.insertId],
+      );
 &nbsp;
-            return rows[0];
-        });
+      return rows[0];
+    });
+  }
+&nbsp;
+  /**
+   * This method updates a saved address, scoped to its owning user. When setting the
+   * address as default, any existing default address for the user is cleared first.
+   * @param {number} address_id
+   * @param {number} user_id
+   * @param {object} updates
+   * @param {string} [updates.street]
+   * @param {string} [updates.city]
+   * @param {string} [updates.province]
+   * @param {string} [updates.country]
+   * @param {string} [updates.postal_code]
+   * @param {boolean} [updates.is_default]
+   * @returns {Promise&lt;void&gt;}
+   * @throws {NotFoundError} If the address does not exist or does not belong to the user
+   * @throws {DatabaseError} On database failures
+   */
+  async updateById(address_id, user_id, updates) {
+    const allowedColumns = [
+      "street",
+      "city",
+      "province",
+      "country",
+      "postal_code",
+      "is_default",
+    ];
+    const sets = [];
+    const params = [];
+&nbsp;
+    for (const [column, value] of Object.entries(updates)) {
+      if (value !== undefined &amp;&amp; allowedColumns.includes(column)) {
+        sets.push(`${column} = ?`);
+        params.push(value);
+      }
     }
 &nbsp;
-    /**
-     * This method updates a saved address, scoped to its owning user. When setting the
-     * address as default, any existing default address for the user is cleared first.
-     * @param {number} address_id
-     * @param {number} user_id
-     * @param {object} updates
-     * @param {string} [updates.street]
-     * @param {string} [updates.city]
-     * @param {string} [updates.province]
-     * @param {string} [updates.country]
-     * @param {string} [updates.postal_code]
-     * @param {boolean} [updates.is_default]
-     * @returns {Promise&lt;void&gt;}
-     * @throws {NotFoundError} If the address does not exist or does not belong to the user
-     * @throws {DatabaseError} On database failures
-     */
-    async updateById(address_id, user_id, updates) {
-        const allowedColumns = [
-            "street",
-            "city",
-            "province",
-            "country",
-            "postal_code",
-            "is_default",
-        ];
-        const sets = [];
-        const params = [];
+    if (sets.length === 0) {
+      return;
+    }
 &nbsp;
-        for (const [column, value] of Object.entries(updates)) {
-            if (value !== undefined &amp;&amp; allowedColumns.includes(column)) {
-                sets.push(`${column} = ?`);
-                params.push(value);
-            }
-        }
+    await this._transaction(async (conn, _queryOptions) =&gt; {
+      if (updates.is_default === true) {
+        await conn.execute(
+          `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
+          [user_id],
+        );
+      }
 &nbsp;
-        if (sets.length === 0) {
-            return;
-        }
-&nbsp;
-        await this._transaction(async (conn, _queryOptions) =&gt; {
-            if (updates.is_default === true) {
-                await conn.execute(
-                    `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
-                    [user_id],
-                );
-            }
-&nbsp;
-            const [result] = await conn.execute(
-                `UPDATE addresses
+      const [result] = await conn.execute(
+        `UPDATE addresses
                  SET ${sets.join(", ")}
                  WHERE address_id = ? AND user_id = ?`,
-                [...params, address_id, user_id],
-            );
+        [...params, address_id, user_id],
+      );
 &nbsp;
-            if (result.affectedRows === 0) {
-                throw new NotFoundError("Address");
-            }
-        });
-    }
+      if (result.affectedRows === 0) {
+        throw new NotFoundError("Address");
+      }
+    });
+  }
 &nbsp;
-    /**
-     * This method deletes a saved address, scoped to its owning user.
-     * @param {number} address_id
-     * @param {number} user_id
-     * @returns {Promise&lt;void&gt;}
-     * @throws {NotFoundError} If the address does not exist or does not belong to the user
-     * @throws {DatabaseError} On database failures
-     */
-    async deleteById(address_id, user_id) {
-        await this._query(
-            `DELETE FROM addresses WHERE address_id = ? AND user_id = ?`,
-            [address_id, user_id],
-            { notFoundResource: "Address" },
-        );
-    }
+  /**
+   * This method deletes a saved address, scoped to its owning user.
+   * @param {number} address_id
+   * @param {number} user_id
+   * @returns {Promise&lt;void&gt;}
+   * @throws {NotFoundError} If the address does not exist or does not belong to the user
+   * @throws {DatabaseError} On database failures
+   */
+  async deleteById(address_id, user_id) {
+    await this._query(
+      `DELETE FROM addresses WHERE address_id = ? AND user_id = ?`,
+      [address_id, user_id],
+      { notFoundResource: "Address" },
+    );
+  }
 &nbsp;
-    /**
-     * This method marks one address as the user's default, clearing any previous default.
-     * @param {number} address_id
-     * @param {number} user_id
-     * @returns {Promise&lt;void&gt;}
-     * @throws {NotFoundError} If the address does not exist or does not belong to the user
-     * @throws {DatabaseError} On database failures
-     */
-    async setDefault(address_id, user_id) {
-        await this._transaction(async (conn, _queryOptions) =&gt; {
-            await conn.execute(
-                `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
-                [user_id],
-            );
+  /**
+   * This method marks one address as the user's default, clearing any previous default.
+   * @param {number} address_id
+   * @param {number} user_id
+   * @returns {Promise&lt;void&gt;}
+   * @throws {NotFoundError} If the address does not exist or does not belong to the user
+   * @throws {DatabaseError} On database failures
+   */
+  async setDefault(address_id, user_id) {
+    await this._transaction(async (conn, _queryOptions) =&gt; {
+      await conn.execute(
+        `UPDATE addresses SET is_default = FALSE WHERE user_id = ?`,
+        [user_id],
+      );
 &nbsp;
-            const [result] = await conn.execute(
-                `UPDATE addresses SET is_default = TRUE WHERE address_id = ? AND user_id = ?`,
-                [address_id, user_id],
-            );
+      const [result] = await conn.execute(
+        `UPDATE addresses SET is_default = TRUE WHERE address_id = ? AND user_id = ?`,
+        [address_id, user_id],
+      );
 &nbsp;
-            if (result.affectedRows === 0) {
-                throw new NotFoundError("Address");
-            }
-        });
-    }
+      if (result.affectedRows === 0) {
+        throw new NotFoundError("Address");
+      }
+    });
+  }
 }
 &nbsp;
 const addressDAO = new AddressDAO();
@@ -799,7 +778,7 @@ export default addressDAO;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-16T04:33:08.592Z
+                at 2026-07-30T16:41:16.212Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

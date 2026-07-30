@@ -76,6 +76,10 @@ describe("identityQuery", () => {
         const user = await getUserById(1);
         expect(user.user_id).toBe(1);
 
+        mockFindById.mockResolvedValueOnce(userRow);
+        await getUserById(1, { fields: ["email"] });
+        expect(mockFindById).toHaveBeenLastCalledWith(1, ["email"]);
+
         mockFindById.mockRejectedValueOnce(new NotFoundError("User"));
         await expect(getUserById(1)).rejects.toBeInstanceOf(NotFoundError);
     });
@@ -90,6 +94,13 @@ describe("identityQuery", () => {
         const result = await viewAllUsers({ page: 1, limit: 10 });
         expect(result.items).toHaveLength(1);
         expect(result.pagination.total).toBe(1);
+
+        mockCountAllUsers.mockResolvedValue(0);
+        mockFindAllUsers.mockResolvedValue([]);
+        await expect(viewAllUsers()).resolves.toMatchObject({
+            items: [],
+            pagination: { total: 0 },
+        });
     });
 
     test("searchUsers rejects invalid pagination and returns matches", async () => {
@@ -102,11 +113,20 @@ describe("identityQuery", () => {
         const result = await searchUsers({ q: "ada", page: 1, limit: 10 });
         expect(result.q).toBe("ada");
         expect(result.items).toHaveLength(1);
+
+        mockCountSearchUsers.mockResolvedValue(0);
+        mockSearchUsers.mockResolvedValue([]);
+        await expect(searchUsers({ q: "x" })).resolves.toMatchObject({
+            items: [],
+            q: "x",
+        });
+
+        await expect(searchUsers()).rejects.toBeInstanceOf(ValidationError);
     });
 
     test("getUserAddresses skips find when total is 0", async () => {
         mockCountByUserId.mockResolvedValue(0);
-        const result = await getUserAddresses(1, { page: 1, limit: 5 });
+        const result = await getUserAddresses(1);
         expect(result.items).toEqual([]);
         expect(mockFindByUserId).not.toHaveBeenCalled();
     });

@@ -143,7 +143,13 @@
 <a name='L78'></a><a href='#L78'>78</a>
 <a name='L79'></a><a href='#L79'>79</a>
 <a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -225,34 +231,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import BaseDAO from "../../../utils/BaseDAO.js";
 &nbsp;
+/**
+ * @touches_tables: configurations, config_options, option_values, option_categories
+ */
 class ConfigurationsDAO extends BaseDAO {
-    /**
-     * This method fetches a configuration by its ID.
-     * @param {number} configId
-     * @returns {Promise&lt;object&gt;}
-     * @throws {NotFoundError} If the configuration does not exist
-     * @throws {DatabaseError} On database failures
-     */
-    async findById(configId) {
-        const [rows] = await this._query(
-            `SELECT config_id, cid, total_price, created_at
+  /**
+   * This method fetches a configuration by its ID.
+   * @param {number} configId
+   * @returns {Promise&lt;object&gt;}
+   * @throws {NotFoundError} If the configuration does not exist
+   * @throws {DatabaseError} On database failures
+   */
+  async findById(configId) {
+    const [rows] = await this._query(
+      `SELECT config_id, cid, total_price, created_at
              FROM configurations
              WHERE config_id = ?`,
-            [configId],
-            { notFoundResource: "Configuration" },
-        );
-        return rows[0];
-    }
+      [configId],
+      { notFoundResource: "Configuration" },
+    );
+    return rows[0];
+  }
 &nbsp;
-    /**
-     * This method fetches the options for a given configuration.
-     * @param {number} configId
-     * @returns {Promise&lt;object[]&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async findOptionsByConfigId(configId) {
-        const [rows] = await this._query(
-            `SELECT
+  /**
+   * This method fetches the options for a given configuration.
+   * @param {number} configId
+   * @returns {Promise&lt;object[]&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async findOptionsByConfigId(configId) {
+    const [rows] = await this._query(
+      `SELECT
                 co.option_id,
                 ov.name AS option_name,
                 ov.price_delta,
@@ -264,41 +273,41 @@ class ConfigurationsDAO extends BaseDAO {
              JOIN option_categories oc ON oc.category_id = ov.category_id
              WHERE co.config_id = ?
              ORDER BY oc.category_id ASC, ov.name ASC`,
-            [configId],
-            { suppressNotFound: true },
+      [configId],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+&nbsp;
+  /**
+   * This method inserts a new configuration.
+   * @param {object} input
+   * @param {number} input.cid
+   * @param {number} input.total_price
+   * @param {number[]} input.option_ids
+   * @returns {Promise&lt;number&gt;}
+   * @throws {ConflictError} If the configuration already exists
+   * @throws {DatabaseError} On database failures
+   */
+  async insertConfiguration({ cid, total_price, option_ids }) {
+    return this._transaction(async (conn, _queryOptions) =&gt; {
+      const [result] = await conn.execute(
+        `INSERT INTO configurations (cid, total_price) VALUES (?, ?)`,
+        [cid, total_price],
+      );
+&nbsp;
+      const configId = result.insertId;
+&nbsp;
+      for (const optionId of option_ids) {
+        await conn.execute(
+          `INSERT INTO config_options (config_id, option_id) VALUES (?, ?)`,
+          [configId, optionId],
         );
-        return rows;
-    }
+      }
 &nbsp;
-    /**
-     * This method inserts a new configuration.
-     * @param {object} input
-     * @param {number} input.cid
-     * @param {number} input.total_price
-     * @param {number[]} input.option_ids
-     * @returns {Promise&lt;number&gt;}
-     * @throws {ConflictError} If the configuration already exists
-     * @throws {DatabaseError} On database failures
-     */
-    async insertConfiguration({ cid, total_price, option_ids }) {
-        return this._transaction(async (conn, _queryOptions) =&gt; {
-            const [result] = await conn.execute(
-                `INSERT INTO configurations (cid, total_price) VALUES (?, ?)`,
-                [cid, total_price],
-            );
-&nbsp;
-            const configId = result.insertId;
-&nbsp;
-            for (const optionId of option_ids) {
-                await conn.execute(
-                    `INSERT INTO config_options (config_id, option_id) VALUES (?, ?)`,
-                    [configId, optionId],
-                );
-            }
-&nbsp;
-            return configId;
-        });
-    }
+      return configId;
+    });
+  }
 }
 &nbsp;
 const configurationsDAO = new ConfigurationsDAO();
@@ -310,7 +319,7 @@ export default configurationsDAO;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-16T04:33:06.652Z
+                at 2026-07-30T16:41:14.082Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

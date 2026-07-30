@@ -142,7 +142,19 @@
 <a name='L77'></a><a href='#L77'>77</a>
 <a name='L78'></a><a href='#L78'>78</a>
 <a name='L79'></a><a href='#L79'>79</a>
-<a name='L80'></a><a href='#L80'>80</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,7 +183,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -185,7 +197,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -223,15 +235,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import BaseDAO from "../../../utils/BaseDAO.js";
 &nbsp;
+/**
+ * This class is used to interact with the database.
+ * @touches_tables: catalog_promos, promos
+ * @class
+ * @extends BaseDAO
+ */
 class PromotionsDAO extends BaseDAO {
-    /**
-     * Builds a parameterized EXISTS clause for catalog browse promo filtering.
-     * @param {string} namePattern LIKE pattern (e.g. "%hot deal%")
-     * @returns {{ sql: string, params: unknown[] }}
-     */
-    buildBrowseFilterFragment(namePattern) {
-        return {
-            sql: `EXISTS (
+  /**
+   * Builds a parameterized EXISTS clause for catalog browse promo filtering.
+   * @param {string} namePattern LIKE pattern (e.g. "%hot deal%")
+   * @returns {{ sql: string, params: unknown[] }}
+   */
+  buildBrowseFilterFragment(namePattern) {
+    return {
+      sql: `EXISTS (
                 SELECT 1
                 FROM catalog_promos cp
                 JOIN promos p ON p.promo_id = cp.promo_id
@@ -239,19 +257,19 @@ class PromotionsDAO extends BaseDAO {
                   AND p.is_active = TRUE
                   AND LOWER(p.name) LIKE ?
             )`,
-            params: [namePattern],
-        };
-    }
+      params: [namePattern],
+    };
+  }
 &nbsp;
-    /**
-     * This method finds promotions linked to a catalog item.
-     * @param {number} cid
-     * @returns {Promise&lt;object[]&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async findByCatalogItemId(cid) {
-        const [rows] = await this._query(
-            `SELECT
+  /**
+   * This method finds promotions linked to a catalog item.
+   * @param {number} cid
+   * @returns {Promise&lt;object[]&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async findByCatalogItemId(cid) {
+    const [rows] = await this._query(
+      `SELECT
                 p.promo_id,
                 p.name,
                 p.description,
@@ -261,26 +279,26 @@ class PromotionsDAO extends BaseDAO {
              WHERE cp.cid = ?
                AND p.is_active = TRUE
              ORDER BY p.name ASC`,
-            [cid],
-            { suppressNotFound: true },
-        );
-        return rows;
+      [cid],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+&nbsp;
+  /**
+   * This method finds promotions linked to multiple catalog items.
+   * @param {number[]} cids
+   * @returns {Promise&lt;object[]&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async findByCatalogItemIds(cids) {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!cids.length) {
+<span class="cstat-no" title="statement not covered" >      return [];</span>
     }
 &nbsp;
-    /**
-     * This method finds promotions linked to multiple catalog items.
-     * @param {number[]} cids
-     * @returns {Promise&lt;object[]&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async findByCatalogItemIds(cids) {
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (!cids.length) {
-<span class="cstat-no" title="statement not covered" >            return [];</span>
-        }
-&nbsp;
-        const placeholders = cids.map(() =&gt; "?").join(", ");
-        const [rows] = await this._query(
-            `SELECT
+    const placeholders = cids.map(() =&gt; "?").join(", ");
+    const [rows] = await this._query(
+      `SELECT
                 cp.cid,
                 p.promo_id,
                 p.name,
@@ -291,11 +309,11 @@ class PromotionsDAO extends BaseDAO {
              WHERE cp.cid IN (${placeholders})
                AND p.is_active = TRUE
              ORDER BY cp.cid ASC, p.name ASC`,
-            cids,
-            { suppressNotFound: true },
-        );
-        return rows;
-    }
+      cids,
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
 }
 &nbsp;
 const promotionsDAO = new PromotionsDAO();
@@ -307,7 +325,7 @@ export default promotionsDAO;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-16T04:33:08.592Z
+                at 2026-07-30T16:41:16.212Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>24/24</span>
+                <span class='fraction'>26/26</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>24/24</span>
+                <span class='fraction'>26/26</span>
             </div>
         
             
@@ -238,7 +238,32 @@
 <a name='L173'></a><a href='#L173'>173</a>
 <a name='L174'></a><a href='#L174'>174</a>
 <a name='L175'></a><a href='#L175'>175</a>
-<a name='L176'></a><a href='#L176'>176</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -347,6 +372,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -418,76 +462,79 @@ import { DEFAULTS } from "./constants.js";
 import BaseDAO from "../../utils/BaseDAO.js";
 &nbsp;
 /**
- * This class is used to interact with the wishlist database.
+ * This class is used to interact with the database.
+ * @touches_tables: wishlist, catalog_items, models, brands, catalog_images, media
+ * @class
+ * @extends BaseDAO
  */
 class WishlistDAO extends BaseDAO {
-    /**
-     * This constructor calls the constructor of the BaseDAO class.
-     * @constructor
-     */
-    constructor() {
-        super();
-    }
+  /**
+   * This constructor calls the constructor of the BaseDAO class.
+   * @constructor
+   */
+  constructor() {
+    super();
+  }
 &nbsp;
-    /**
-     * This private method resolves a sort key to an 'ORDER BY' SQL clause.
-     * @private
-     * @param {string} sort
-     * @returns {string}
-     * @throws {ValidationError} If the sort key is not supported
-     */
-    #resolveSortClause(sort) {
-        switch (sort) {
-            case "added_at_desc":
-                return "w.added_at DESC";
-            case "added_at_asc":
-                return "w.added_at ASC";
-            case "price_asc":
-                return "ci.base_price ASC";
-            case "price_desc":
-                return "ci.base_price DESC";
-            case "name_asc":
-                return "b.name ASC, m.name ASC";
-            case "name_desc":
-                return "b.name DESC, m.name DESC";
-            // just in case default sort constant is not in the DEFAULTS
-            default:
-                throw new ValidationError(`Unsupported wishlist sort: ${sort}`);
-        }
+  /**
+   * This private method resolves a sort key to an 'ORDER BY' SQL clause.
+   * @private
+   * @param {string} sort
+   * @returns {string}
+   * @throws {ValidationError} If the sort key is not supported
+   */
+  #resolveSortClause(sort) {
+    switch (sort) {
+      case "added_at_desc":
+        return "w.added_at DESC";
+      case "added_at_asc":
+        return "w.added_at ASC";
+      case "price_asc":
+        return "ci.base_price ASC";
+      case "price_desc":
+        return "ci.base_price DESC";
+      case "name_asc":
+        return "b.name ASC, m.name ASC";
+      case "name_desc":
+        return "b.name DESC, m.name DESC";
+      // just in case default sort constant is not in the DEFAULTS
+      default:
+        throw new ValidationError(`Unsupported wishlist sort: ${sort}`);
     }
+  }
 &nbsp;
-    // #########################
-    // Read operations
-    // #########################
-    /**
-     * This method counts wishlist items for a user.
-     * @param {number} user_id
-     * @returns {Promise&lt;number&gt;}
-     * @throws {DatabaseError} On database failures
-     */
-    async countByUserId(user_id) {
-        const [rows] = await this._query(
-            `SELECT COUNT(*) AS total FROM wishlist WHERE user_id = ?`,
-            [user_id],
-        );
-        return rows[0].total;
-    }
+  // #########################
+  // Read operations
+  // #########################
+  /**
+   * This method counts wishlist items for a user.
+   * @param {number} user_id
+   * @returns {Promise&lt;number&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async countByUserId(user_id) {
+    const [rows] = await this._query(
+      `SELECT COUNT(*) AS total FROM wishlist WHERE user_id = ?`,
+      [user_id],
+    );
+    return rows[0].total;
+  }
 &nbsp;
-    /**
-     * This method returns paginated wishlist items for a user with catalog details.
-     * @param {number} user_id
-     * @param {number} limit
-     * @param {number} offset
-     * @param {string} sort Validated sort key from VALIDATIONS.SORT_VALUES
-     * @returns {Promise&lt;object[]&gt;}
-     * @throws {DatabaseError} On database failures
-     * @throws {NotFoundError} If the user has no wishlist items
-     */
-    async findByUserId(user_id, limit, offset, sort = <span class="branch-0 cbranch-no" title="branch not covered" >DEFAULTS.SORT)</span> {
-        const safeLimit = Number(limit);
-        const safeOffset = Number(offset);
-        const [rows] = await this._query(
-            `SELECT
+  /**
+   * This method returns paginated wishlist items for a user with catalog details.
+   * @param {number} user_id
+   * @param {number} limit
+   * @param {number} offset
+   * @param {string} sort Validated sort key from VALIDATIONS.SORT_VALUES
+   * @returns {Promise&lt;object[]&gt;}
+   * @throws {DatabaseError} On database failures
+   * @throws {NotFoundError} If the user has no wishlist items
+   */
+  async findByUserId(user_id, limit, offset, sort = <span class="branch-0 cbranch-no" title="branch not covered" >DEFAULTS.SORT)</span> {
+    const safeLimit = Number(limit);
+    const safeOffset = Number(offset);
+    const [rows] = await this._query(
+      `SELECT
                 w.user_id,
                 w.cid,
                 w.added_at,
@@ -508,82 +555,101 @@ class WishlistDAO extends BaseDAO {
              WHERE w.user_id = ?
              ORDER BY ${this.#resolveSortClause(sort)}
              LIMIT ${safeLimit} OFFSET ${safeOffset}`,
-            [user_id],
-            { notFoundResource: "Wishlist items for user" },
-        );
-        return rows;
-    }
+      [user_id],
+      { notFoundResource: "Wishlist items for user" },
+    );
+    return rows;
+  }
 &nbsp;
-    /**
-     * This method finds one wishlist entry for a user and catalog item.
-     * @param {number} user_id
-     * @param {number} cid
-     * @returns {Promise&lt;{ user_id: number, cid: number, added_at: string }&gt;}
-     * @throws {DatabaseError} On database failures
-     * @throws {NotFoundError} If the user has no wishlist items or the item is not in the wishlist
-     */
-    async findEntry(user_id, cid) {
-        const [rows] = await this._query(
-            `SELECT user_id, cid, added_at
+  /**
+   * This method returns all catalog item ids in a user's wishlist.
+   * Empty wishlists return an empty array (no NotFoundError).
+   * @param {number} user_id
+   * @returns {Promise&lt;{ cid: number }[]&gt;}
+   * @throws {DatabaseError} On database failures
+   */
+  async findCidsByUserId(user_id) {
+    const [rows] = await this._query(
+      `SELECT cid
+             FROM wishlist
+             WHERE user_id = ?
+             ORDER BY added_at DESC`,
+      [user_id],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+&nbsp;
+  /**
+   * This method finds one wishlist entry for a user and catalog item.
+   * @param {number} user_id
+   * @param {number} cid
+   * @returns {Promise&lt;{ user_id: number, cid: number, added_at: string }&gt;}
+   * @throws {DatabaseError} On database failures
+   * @throws {NotFoundError} If the user has no wishlist items or the item is not in the wishlist
+   */
+  async findEntry(user_id, cid) {
+    const [rows] = await this._query(
+      `SELECT user_id, cid, added_at
              FROM wishlist
              WHERE user_id = ? AND cid = ?`,
-            [user_id, cid],
-            {
-                notFoundResource: "Wishlist item for user and catalog item",
-            },
-        );
-        return rows[0];
+      [user_id, cid],
+      {
+        notFoundResource: "Wishlist item for user and catalog item",
+      },
+    );
+    return rows[0];
+  }
+&nbsp;
+  // #########################
+  // Write operations
+  // #########################
+  /**
+   * This method adds a catalog item to a user's wishlist.
+   * PRIMARY KEY (user_id, cid).
+   * @param {object} entry
+   * @param {number} entry.user_id
+   * @param {number} entry.cid
+   * @returns {Promise&lt;object&gt;} The wishlist entry
+   * @throws {ConflictError} If the item is already in the wishlist
+   * @throws {DatabaseError} If the insert fails
+   */
+  async insert({ user_id, cid }) {
+    await this._query(
+      `INSERT INTO wishlist (user_id, cid) VALUES (?, ?)`,
+      [user_id, cid],
+      {
+        conflictMessage: "Catalog item is already in the wishlist.",
+        conflictDetails: { user_id, cid },
+      },
+    );
+&nbsp;
+    const entry = await this.findEntry(user_id, cid);
+&nbsp;
+    if (!entry) {
+      throw new DatabaseError(
+        "Wishlist entry was inserted but could not be retrieved.",
+      );
     }
 &nbsp;
-    // #########################
-    // Write operations
-    // #########################
-    /**
-     * This method adds a catalog item to a user's wishlist.
-     * PRIMARY KEY (user_id, cid).
-     * @param {object} entry
-     * @param {number} entry.user_id
-     * @param {number} entry.cid
-     * @returns {Promise&lt;object&gt;} The wishlist entry
-     * @throws {ConflictError} If the item is already in the wishlist
-     * @throws {DatabaseError} If the insert fails
-     */
-    async insert({ user_id, cid }) {
-        await this._query(
-            `INSERT INTO wishlist (user_id, cid) VALUES (?, ?)`,
-            [user_id, cid],
-            {
-                conflictMessage: "Catalog item is already in the wishlist.",
-                conflictDetails: { user_id, cid },
-            },
-        );
+    return entry;
+  }
 &nbsp;
-        const entry = await this.findEntry(user_id, cid);
-&nbsp;
-        if (!entry) {
-            throw new DatabaseError(
-                "Wishlist entry was inserted but could not be retrieved.",
-            );
-        }
-&nbsp;
-        return entry;
-    }
-&nbsp;
-    /**
-     * This method removes a catalog item from a user's wishlist.
-     * @param {number} user_id
-     * @param {number} cid
-     * @returns {Promise&lt;void&gt;}
-     * @throws {NotFoundError} If the item is not in the wishlist
-     * @throws {DatabaseError} On database failures
-     */
-    async deleteByUserAndCid(user_id, cid) {
-        await this._query(
-            `DELETE FROM wishlist WHERE user_id = ? AND cid = ?`,
-            [user_id, cid],
-            { notFoundResource: "Wishlist item" },
-        );
-    }
+  /**
+   * This method removes a catalog item from a user's wishlist.
+   * @param {number} user_id
+   * @param {number} cid
+   * @returns {Promise&lt;void&gt;}
+   * @throws {NotFoundError} If the item is not in the wishlist
+   * @throws {DatabaseError} On database failures
+   */
+  async deleteByUserAndCid(user_id, cid) {
+    await this._query(
+      `DELETE FROM wishlist WHERE user_id = ? AND cid = ?`,
+      [user_id, cid],
+      { notFoundResource: "Wishlist item" },
+    );
+  }
 }
 &nbsp;
 const wishlistDAO = new WishlistDAO();
@@ -595,7 +661,7 @@ export default wishlistDAO;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-16T04:33:06.652Z
+                at 2026-07-30T16:41:14.082Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
