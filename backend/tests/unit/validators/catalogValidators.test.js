@@ -1,11 +1,13 @@
 import { ValidationError } from "../../../utils/errors.js";
 import {
     validateBrowseFilters,
+    validateFacetsQuery,
     validateSortParams,
     validateSearchQuery,
     validateCompareQuery,
     validateCatalogItemId,
 } from "../../../services/catalog/_product/productValidator.js";
+import { VALIDATIONS } from "../../../services/catalog/constants.js";
 import { validatePromoType } from "../../../services/catalog/_promotions/promotionValidator.js";
 import {
     validateCatalogItemId as validateOptionCid,
@@ -30,6 +32,45 @@ describe("productValidator", () => {
         ).toThrow(ValidationError);
         expect(() =>
             validateBrowseFilters({ condition: "scrap" }),
+        ).toThrow(ValidationError);
+        expect(validateBrowseFilters({ body_shape: "SUV" }).body_shape).toEqual(
+            ["SUV"],
+        );
+        expect(() =>
+            validateBrowseFilters({ body_shape: "van" }),
+        ).toThrow(ValidationError);
+        expect(validateBrowseFilters({ drivetrain: "AWD" }).drivetrain).toBe(
+            "AWD",
+        );
+        expect(() =>
+            validateBrowseFilters({ drivetrain: "xdrive" }),
+        ).toThrow(ValidationError);
+        expect(
+            validateBrowseFilters({
+                promo: "hot_deal,seasonal",
+            }).promo,
+        ).toEqual(["hot_deal", "seasonal"]);
+        expect(
+            validateBrowseFilters({
+                promo: ["clearance", "featured"],
+            }).promo,
+        ).toEqual(["clearance", "featured"]);
+    });
+
+    test("facets query defaults and fields", () => {
+        const all = validateFacetsQuery({});
+        expect(all.fields).toEqual([...VALIDATIONS.FACET_FIELDS]);
+        expect(all.filters).toEqual({});
+
+        const narrowed = validateFacetsQuery({
+            condition: "new",
+            fields: "body_shape,condition",
+        });
+        expect(narrowed.filters.condition).toBe("new");
+        expect(narrowed.fields).toEqual(["body_shape", "condition"]);
+
+        expect(() =>
+            validateFacetsQuery({ fields: "color" }),
         ).toThrow(ValidationError);
     });
 

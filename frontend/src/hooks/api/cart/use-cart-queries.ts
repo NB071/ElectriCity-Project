@@ -40,6 +40,7 @@ export const useGetCart = (page: number = 1, limit: number = 10, sort?: string, 
         method: "get",
         params: { page, limit, ...(sort ? { sort } : {}) },
         enabled: options?.enabled ?? true,
+        refetchOnMount: true,
     });
 };
 
@@ -51,5 +52,6 @@ export const useGetCartSummary = (limit: number = 5, options?: UseGetCartOptions
         method: "get",
         params: { limit },
         enabled: options?.enabled ?? true,
+        refetchOnMount: true,
     });
 };

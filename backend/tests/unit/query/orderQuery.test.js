@@ -18,6 +18,9 @@ const mockFindItemsByOrderId = jest.fn();
 const mockFindAddressesByOrderId = jest.fn();
 const mockFindOptionsByConfigId = jest.fn();
 const mockGetPaymentAttemptsByOrderId = jest.fn();
+const mockResolvePricedCheckoutLines = jest.fn();
+const mockFindCartByUserId = jest.fn();
+const mockFindActiveGuestCartBySessionToken = jest.fn();
 
 await jest.unstable_mockModule("../../../services/order/orderDAO.js", () => ({
     default: {
@@ -30,6 +33,14 @@ await jest.unstable_mockModule("../../../services/order/orderDAO.js", () => ({
         findAllOrders: mockFindAllOrders,
         findItemsByOrderId: mockFindItemsByOrderId,
         findAddressesByOrderId: mockFindAddressesByOrderId,
+        resolvePricedCheckoutLines: mockResolvePricedCheckoutLines,
+    },
+}));
+
+await jest.unstable_mockModule("../../../services/cart/cartDAO.js", () => ({
+    default: {
+        findCartByUserId: mockFindCartByUserId,
+        findActiveGuestCartBySessionToken: mockFindActiveGuestCartBySessionToken,
     },
 }));
 
@@ -58,6 +69,7 @@ const {
     getOrderDetailsForUser,
     listAllOrders,
     getOrderDetailsForAdmin,
+    calculateCheckoutTotals,
 } = await import("../../../services/order/orderQuery.js");
 
 const orderRow = {
@@ -227,5 +239,52 @@ describe("orderQuery", () => {
         });
         const admin = await getOrderDetailsForAdmin(10);
         expect(admin).toBeDefined();
+    });
+
+    test("calculateCheckoutTotals returns tax_breakdown for customer cart", async () => {
+        mockFindCartByUserId.mockResolvedValue({ cart_id: 55 });
+        mockResolvePricedCheckoutLines.mockResolvedValue([
+            { cid: 1, config_id: null, quantity: 1, unit_price: 1000 },
+        ]);
+
+        const result = await calculateCheckoutTotals({
+            actor: VALIDATIONS.CHECKOUT_ACTORS[0],
+            userId: 7,
+            shipping_address: { province: "ON" },
+        });
+
+        expect(mockResolvePricedCheckoutLines).toHaveBeenCalledWith({
+            cartId: 55,
+        });
+        expect(result.province).toBe("ON");
+        expect(result.subtotal).toBe(1000);
+        expect(result.tax).toBe(130);
+        expect(result.total).toBe(1130);
+        expect(result.tax_breakdown.amounts).toEqual({
+            gst: 0,
+            pst: 0,
+            hst: 130,
+            tax: 130,
+        });
+        expect(result.items[0].line_total).toBe(1000);
+    });
+
+    test("calculateCheckoutTotals uses guest items when no session cart", async () => {
+        mockResolvePricedCheckoutLines.mockResolvedValue([
+            { cid: 3, config_id: null, quantity: 2, unit_price: 50 },
+        ]);
+
+        const result = await calculateCheckoutTotals({
+            actor: "guest",
+            items: [{ cid: 3, quantity: 2 }],
+            shipping_address: { province: "AB" },
+        });
+
+        expect(mockResolvePricedCheckoutLines).toHaveBeenCalledWith({
+            items: [{ cid: 3, quantity: 2 }],
+        });
+        expect(result.tax_breakdown.type).toBe("gst");
+        expect(result.tax).toBe(5);
+        expect(result.total).toBe(105);
     });
 });

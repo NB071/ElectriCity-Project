@@ -6,6 +6,8 @@ import {
     validateOrderStatus,
     validateCustomerCheckoutInput,
     validateGuestCheckoutInput,
+    validateCustomerCalculateInput,
+    validateGuestCalculateInput,
 } from "../../../services/order/orderValidator.js";
 import { VALIDATIONS } from "../../../services/order/constants.js";
 
@@ -97,5 +99,35 @@ describe("orderValidator", () => {
                 payment_method: "credit_card",
             }),
         ).toThrow(ValidationError);
+    });
+
+    test("customer calculate only requires userId + province", () => {
+        const data = validateCustomerCalculateInput({
+            userId: 1,
+            shipping_address: { province: "british columbia" },
+        });
+        expect(data.shipping_address.province).toBe("BC");
+
+        expect(() =>
+            validateCustomerCalculateInput({
+                userId: 1,
+                shipping_address: { province: "Narnia" },
+            }),
+        ).toThrow(ValidationError);
+    });
+
+    test("guest calculate requires items or session plus province", () => {
+        expect(() =>
+            validateGuestCalculateInput({
+                shipping_address: { province: "ON" },
+            }),
+        ).toThrow(ValidationError);
+
+        const withItems = validateGuestCalculateInput({
+            items: [{ cid: 2, quantity: 1 }],
+            shipping_address: { province: "QC" },
+        });
+        expect(withItems.shipping_address.province).toBe("QC");
+        expect(withItems.items[0].cid).toBe(2);
     });
 });

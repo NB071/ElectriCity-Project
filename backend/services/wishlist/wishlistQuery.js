@@ -15,7 +15,28 @@ import {
 } from "../../utils/pagination.js";
 import { toWishlistItemDTO } from "./DTOs/wishlistItemDTO.js";
 import { toWishlistEntryDTO } from "./DTOs/wishlistEntryDTO.js";
+import { toWishlistIdsDTO } from "./DTOs/wishlistIdsDTO.js";
 import log from "../../utils/logger.js";
+
+/**
+ * This function returns all wishlist catalog item ids for a user.
+ * Used by the shop UI for bookmark toggles without loading full wishlist rows.
+ * @requiredRole customer
+ * @param {number|string} userId userId of the user from JWT Token
+ * @returns {Promise<{ cids: number[] }>}
+ * @throws {ValidationError} If the user id is invalid
+ * @throws {DatabaseError} On database failures
+ */
+async function listWishlistIds(userId) {
+    try {
+        const id = validateUserId(userId);
+        const rows = await wishlistDAO.findCidsByUserId(id);
+        return toWishlistIdsDTO(rows);
+    } catch (err) {
+        log.error("Wishlist", "listWishlistIds", "listWishlistIds failed", err);
+        throw err;
+    }
+}
 
 /**
  * This function returns paginated wishlist items for a user.
@@ -80,4 +101,4 @@ async function isInWishlist(userId, cid) {
     }
 }
 
-export { viewWishlist, isInWishlist };
+export { listWishlistIds, viewWishlist, isInWishlist };

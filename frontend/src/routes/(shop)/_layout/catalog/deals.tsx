@@ -3,17 +3,20 @@ import { CatalogFilters } from "@/components/shop/catalog/CatalogFilters";
 import { PaginatedCatalog } from "@/components/shop/catalog/PaginatedCatalog";
 import { useEffect } from "react";
 import { useCatalogStore } from "@/stores";
+import { PromoTypes, type PromoType } from "@/zod/browse-catalog";
 
 type DealsSearch = {
-    promo?: "hot_deal" | "seasonal" | "clearance" | "featured";
+    promo?: PromoType;
     brand_id?: string;
 };
+
+const ALL_PROMOS = [...PromoTypes];
 
 export const Route = createFileRoute("/(shop)/_layout/catalog/deals")({
     validateSearch: (search: Record<string, unknown>): DealsSearch => {
         return {
             brand_id: search.brand_id as string | undefined,
-            promo: search.promo as DealsSearch["promo"] | undefined,
+            promo: PromoTypes.includes(search.promo as PromoType) ? (search.promo as PromoType) : undefined,
         };
     },
     component: DealsRouteComponent,
@@ -26,7 +29,7 @@ function DealsRouteComponent() {
     useEffect(() => {
         setFilters({
             brand_id: brand_id ? Number(brand_id) : undefined,
-            promo: promo || "hot_deal",
+            promo: promo ? [promo] : ALL_PROMOS,
         });
 
         return () => {
@@ -45,7 +48,7 @@ function DealsRouteComponent() {
                 <div className="flex flex-col gap-8 md:flex-row md:items-start lg:gap-10">
                     {/* Filter Sidebar */}
                     <aside className="w-full shrink-0 md:w-[320px]">
-                        <CatalogFilters preserveOnClear={{ promo: promo || "hot_deal" }} />
+                        <CatalogFilters preserveOnClear={{ promo: promo ? [promo] : ALL_PROMOS }} />
                     </aside>
 
                     {/* Main Catalog View */}

@@ -126,9 +126,25 @@ class ProductDAO extends BaseDAO {
     }
 
     if (filters.promo != null) {
-      const fragment = getBrowseFilterForPromoType(filters.promo);
-      where.push(fragment.sql);
-      params.push(...fragment.params);
+      // Validator normalizes to an array, but tolerate a single string
+      // for direct callers (e.g. chatbot strategies).
+      const promos = Array.isArray(filters.promo)
+        ? filters.promo
+        : [filters.promo];
+
+      if (promos.length === 1) {
+        const fragment = getBrowseFilterForPromoType(promos[0]);
+        where.push(fragment.sql);
+        params.push(...fragment.params);
+      } else if (promos.length > 1) {
+        const fragments = promos.map((promo) =>
+          getBrowseFilterForPromoType(promo),
+        );
+        where.push(
+          `(${fragments.map((fragment) => fragment.sql).join(" OR ")})`,
+        );
+        params.push(...fragments.flatMap((fragment) => fragment.params));
+      }
     }
 
     if (filters.search != null) {
@@ -173,6 +189,81 @@ class ProductDAO extends BaseDAO {
       query.params,
     );
     return Number(rows[0].total);
+  }
+
+  /**
+   * This method counts vehicles grouped by a facet column.
+   * The facet filter key is excluded so unchecked buckets still receive counts
+   * under the remaining browse filters.
+   * @param {object} filters Browse filters
+   * @param {object} options
+   * @param {string} options.excludeKey Filter key to omit while counting (e.g. body_shape)
+   * @param {string} options.columnSql SQL expression to group by (e.g. vm.body_shape)
+   * @param {string[]} options.allowedValues Canonical values from constants (0-filled)
+   * @returns {Promise<{ value: string, count: number }[]>}
+   * @throws {ValidationError} If the sort is not supported
+   * @throws {DatabaseError} On database failures
+   */
+  async countVehiclesByFacet(filters = {}, options = {}) {
+    const { excludeKey, columnSql, allowedValues } = options;
+    const facetFilters = { ...filters };
+
+    if (excludeKey) {
+      delete facetFilters[excludeKey];
+    }
+
+    const query = this.#buildVehicleQuery(facetFilters);
+    const [rows] = await this._query(
+      `SELECT ${columnSql} AS value, COUNT(*) AS count
+             FROM catalog_items ci
+             ${query.joins}
+             WHERE ${query.where}
+               AND ${columnSql} IS NOT NULL
+             GROUP BY ${columnSql}`,
+      query.params,
+      { suppressNotFound: true },
+    );
+
+    const countByValue = new Map(
+      rows.map((row) => [String(row.value), Number(row.count)]),
+    );
+
+    return allowedValues.map((value) => ({
+      value,
+      count: countByValue.get(value) ?? 0,
+    }));
+  }
+
+  /**
+   * Counts vehicles for each canonical promotion type under the remaining
+   * browse filters. The selected promo is excluded, matching other facets.
+   * @param {object} filters Browse filters
+   * @param {string[]} allowedValues Canonical promotion types
+   * @returns {Promise<{ value: string, count: number }[]>}
+   */
+  async countVehiclesByPromoFacet(filters = {}, allowedValues = []) {
+    const facetFilters = { ...filters };
+    delete facetFilters.promo;
+
+    return Promise.all(
+      allowedValues.map(async (value) => {
+        const query = this.#buildVehicleQuery(facetFilters);
+        const fragment = getBrowseFilterForPromoType(value);
+        const [rows] = await this._query(
+          `SELECT COUNT(*) AS count
+                 FROM catalog_items ci
+                 ${query.joins}
+                 WHERE ${query.where}
+                   AND ${fragment.sql}`,
+          [...query.params, ...fragment.params],
+        );
+
+        return {
+          value,
+          count: Number(rows[0]?.count ?? 0),
+        };
+      }),
+    );
   }
 
   /**

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { formatPrice, formatMileage } from "@/components/shop/VehicleCard";
 import {
@@ -31,7 +31,17 @@ import { RecentlyViewedItems } from "@/components/shop/catalog/RecentlyViewedIte
 import { useGetVehicleDetails } from "@/hooks/api/catalog/use-vehicles";
 import { useCreateConfiguration } from "@/hooks/api/catalog/use-configurations";
 import { useAddToCart } from "@/hooks/api/cart/use-cart-mutations";
+import { useIsInWishlist } from "@/hooks/api/wishlist/use-wishlist";
+import {
+    addToWishlistVariables,
+    removeFromWishlistVariables,
+    useAddToWishlist,
+    useRemoveFromWishlist,
+} from "@/hooks/api/wishlist/use-wishlist-mutations";
+import { useAuthStatus } from "@/hooks/use-me";
 import { mediaUrl } from "@/lib/media";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(shop)/_layout/catalog/$cid")({
     component: VehicleDetailsRoute,
@@ -40,19 +50,39 @@ export const Route = createFileRoute("/(shop)/_layout/catalog/$cid")({
 function VehicleDetailsRoute() {
     const { cid } = Route.useParams();
     const numericCid = Number(cid);
+    const navigate = useNavigate();
+    const { status, user } = useAuthStatus();
     const { data: vehicle, isLoading, isError, error, refetch, isFetching } = useGetVehicleDetails(numericCid);
+    const { saved } = useIsInWishlist(numericCid);
+    const addToWishlist = useAddToWishlist();
+    const removeFromWishlist = useRemoveFromWishlist();
     const { selections, toggleOption } = useCustomizationStore();
     const { openModal } = useUiStore();
     const selectedOptions = selections[cid] || [];
     const createConfiguration = useCreateConfiguration();
     const addToCart = useAddToCart();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const wishlistPending = addToWishlist.isPending || removeFromWishlist.isPending;
 
     useEffect(() => {
         if (vehicle?.id != null) {
             useRecentlyViewedStore.getState().track(String(vehicle.id));
         }
     }, [vehicle?.id]);
+
+    function handleWishlistToggle() {
+        if (status !== "authenticated" || user?.role !== "customer") {
+            toast.info("Sign in to save vehicles to your wishlist");
+            void navigate({ to: "/auth/login", search: { redirect: `/catalog/${cid}` } });
+            return;
+        }
+
+        if (saved) {
+            removeFromWishlist.mutate(removeFromWishlistVariables(numericCid));
+        } else {
+            addToWishlist.mutate(addToWishlistVariables(numericCid));
+        }
+    }
 
     async function handleAddToCart() {
         if (!vehicle || vehicle.stock === 0 || isAddingToCart) return;
@@ -225,9 +255,16 @@ function VehicleDetailsRoute() {
                                 <Share className="mr-2 h-3.5 w-3.5" />
                                 Share
                             </Button>
-                            <Button variant="outline" size="sm" className="h-9 rounded-full px-4 text-xs font-semibold">
-                                <Bookmark className="mr-2 h-3.5 w-3.5" />
-                                Save
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 rounded-full px-4 text-xs font-semibold"
+                                aria-pressed={saved}
+                                disabled={wishlistPending}
+                                onClick={handleWishlistToggle}
+                            >
+                                <Bookmark className={cn("mr-2 h-3.5 w-3.5", saved && "fill-foreground")} />
+                                {saved ? "Saved" : "Save"}
                             </Button>
                         </div>
                         <div className="text-left md:text-right">

@@ -14,7 +14,7 @@ const REVIEWS = [
     {
         id: 2,
         title: "Honest trade-in and zero pressure",
-        body: "They walked me through every fee before I signed. The Ioniq 5 was exactly as listed — range, options, and condition. I’d buy here again.",
+        body: "They walked me through every fee before I signed. The Ioniq 5 was exactly as listed - range, options, and condition. I’d buy here again.",
         author: "Marcus Ellison",
         time: "1 week ago",
     },

@@ -1,127 +1,107 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, type PaginationState } from "@tanstack/react-table";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState } from "@tanstack/react-table";
+import { ImageOff, Trash2 } from "lucide-react";
 import { ContentSection } from "@/components/dashboard/ContentSection";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
+import { QueryError } from "@/components/common/QueryError";
+import { DataTablePagination } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { ImageOff } from "lucide-react";
-import { useUiStore } from "@/stores/ui-store";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useGetWishlist } from "@/hooks/api/wishlist/use-wishlist";
+import { useGetWishlist, type WishlistItem } from "@/hooks/api/wishlist/use-wishlist";
+import { mediaUrl } from "@/lib/media";
+import { useUiStore } from "@/stores/ui-store";
 
 export const Route = createFileRoute("/dashboard/_layout/customer/wishlist")({
     component: RouteComponent,
 });
 
-type WishlistCatalogItemDTO = {
-    cid: string;
-    item_type: string;
-    name: string;
-    base_price: number;
-    quantity: number;
-    is_active: boolean;
-    primary_image_url: string | null;
-};
-
-type WishlistItemDTO = {
-    cid: string;
-    added_at: string;
-    catalog_item: WishlistCatalogItemDTO;
-};
-
-/*const MOCK_WISHLIST: WishlistItemDTO[] = [
-    {
-        cid: "cat_101",
-        added_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-        catalog_item: {
-            cid: "cat_101",
-            item_type: "vehicle",
-            name: "ElectriCity Model Z",
-            base_price: 43000.0,
-            quantity: 2,
-            is_active: true,
-            primary_image_url: null,
-        },
-    },
-    {
-        cid: "cat_801",
-        added_at: new Date(Date.now() - 86400000 * 15).toISOString(),
-        catalog_item: {
-            cid: "cat_801",
-            item_type: "energy",
-            name: "Solar Roof Tile Module",
-            base_price: 350.0,
-            quantity: 50,
-            is_active: true,
-            primary_image_url: null,
-        },
-    },
-    {
-        cid: "cat_201",
-        added_at: new Date(Date.now() - 86400000 * 25).toISOString(),
-        catalog_item: {
-            cid: "cat_201",
-            item_type: "accessory",
-            name: "Wall Connector Cover (Discontinued)",
-            base_price: 200.0,
-            quantity: 0,
-            is_active: false,
-            primary_image_url: null,
-        },
-    },
-];*/
+function stockBadge(isActive: boolean, quantity: number) {
+    if (!isActive) {
+        return (
+            <Badge variant="outline" className="text-muted-foreground">
+                Discontinued
+            </Badge>
+        );
+    }
+    if (quantity <= 0) {
+        return (
+            <Badge variant="secondary" className="text-destructive">
+                Out of Stock
+            </Badge>
+        );
+    }
+    if (quantity < 5) {
+        return (
+            <Badge variant="outline" className="border-amber-600/30 bg-amber-600/10 text-amber-700">
+                Low Stock ({quantity})
+            </Badge>
+        );
+    }
+    return (
+        <Badge variant="outline" className="border-green-600/30 bg-green-600/10 text-green-700">
+            Available ({quantity})
+        </Badge>
+    );
+}
 
 function RouteComponent() {
+    "use no memo";
+
     const { openModal } = useUiStore();
     const [pagination, setPagination] = useState<PaginationState>({
-            pageIndex: 0,
-            pageSize: 10,
-        });
-    
-        const { data: queryData, isLoading, refetch } = useGetWishlist(pagination.pageIndex + 1, pagination.pageSize);
-        const data = (queryData?.items as WishlistItemDTO[]) || [];
+        pageIndex: 0,
+        pageSize: 10,
+    });
 
-    const columns = useMemo(
+    const wishlistQuery = useGetWishlist(pagination.pageIndex + 1, pagination.pageSize);
+    const data = wishlistQuery.data?.items ?? [];
+
+    const columns = useMemo<ColumnDef<WishlistItem>[]>(
         () => [
             {
-                accessorKey: "catalog_item.primary_image_url",
+                id: "image",
                 header: "Image",
-                cell: (info: any) => {
-                    const url = info.getValue();
-                    const name = info.row.original.catalog_item.name;
+                cell: ({ row }) => {
+                    const item = row.original.catalog_item;
+                    const src = mediaUrl(item.primary_image_url);
                     return (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className="bg-muted/50 flex h-12 w-16 items-center justify-center overflow-hidden rounded-md border">
-                                    {url ? (
-                                        <img src={url} alt="Item" className="h-full w-full object-cover" />
+                                    {src ? (
+                                        <img src={src} alt={item.name} className="size-full object-cover" />
                                     ) : (
-                                        <ImageOff className="text-muted-foreground/50 h-4 w-4" />
+                                        <ImageOff className="text-muted-foreground/50 size-4" />
                                     )}
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Thumbnail for {name}</p>
+                                <p>Thumbnail for {item.name}</p>
                             </TooltipContent>
                         </Tooltip>
                     );
                 },
             },
             {
-                accessorKey: "catalog_item.name",
+                id: "product",
                 header: "Product",
-                cell: (info: any) => {
-                    const item = info.row.original.catalog_item;
+                cell: ({ row }) => {
+                    const item = row.original.catalog_item;
                     return (
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="flex max-w-[200px] flex-col gap-0.5">
-                                    <span className="truncate text-sm font-semibold">{info.getValue()}</span>
+                                <div className="flex max-w-50 flex-col gap-0.5">
+                                    <Link
+                                        to="/catalog/$cid"
+                                        params={{ cid: String(item.cid) }}
+                                        className="truncate text-sm font-semibold hover:underline"
+                                    >
+                                        {item.name}
+                                    </Link>
                                     <div className="flex items-center gap-2 text-[10px]">
-                                        <span className="text-muted-foreground truncate font-mono">{item.cid}</span>
+                                        <span className="text-muted-foreground truncate font-mono">#{item.cid}</span>
                                         <Badge variant="secondary" className="h-4 px-1 text-[8px] tracking-widest uppercase">
                                             {item.item_type}
                                         </Badge>
@@ -129,8 +109,8 @@ function RouteComponent() {
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent className="flex flex-col">
-                                <p className="font-medium">{info.getValue()}</p>
-                                <p className="text-muted-foreground font-mono text-xs">{item.cid}</p>
+                                <p className="font-medium">{item.name}</p>
+                                <p className="text-muted-foreground font-mono text-xs">#{item.cid}</p>
                             </TooltipContent>
                         </Tooltip>
                     );
@@ -138,83 +118,65 @@ function RouteComponent() {
             },
             {
                 accessorKey: "added_at",
-                header: ({ column }: any) => <DataTableColumnHeader column={column} title="Date Added" />,
-                cell: (info: any) => new Date(info.getValue()).toLocaleDateString(),
+                header: "Date Added",
+                cell: ({ getValue }) => new Date(getValue<string>()).toLocaleDateString(),
             },
             {
-                accessorKey: "catalog_item.is_active",
+                id: "status",
                 header: "Status",
-                cell: (info: any) => {
-                    const isActive = info.getValue() as boolean;
-                    const stock = info.row.original.catalog_item.quantity;
-                    if (!isActive) {
-                        return (
-                            <Badge variant="outline" className="text-muted-foreground">
-                                Discontinued
-                            </Badge>
-                        );
-                    }
-                    if (stock <= 0) {
-                        return (
-                            <Badge variant="secondary" className="text-destructive">
-                                Out of Stock
-                            </Badge>
-                        );
-                    }
-                    if (stock < 5) {
-                        return (
-                            <Badge variant="default" className="border-amber-600/30 bg-amber-600/10 text-amber-600">
-                                Low Stock ({stock})
-                            </Badge>
-                        );
-                    }
-                    return (
-                        <Badge variant="default" className="border-green-600/30 bg-green-600/10 text-green-600">
-                            Available ({stock})
-                        </Badge>
-                    );
+                cell: ({ row }) => {
+                    const item = row.original.catalog_item;
+                    return stockBadge(item.is_active, item.quantity);
                 },
             },
             {
-                accessorKey: "catalog_item.base_price",
+                id: "price",
                 header: () => <div className="text-right">Starting Price</div>,
-                cell: (info: any) => {
-                    const total = Number(info.getValue());
-                    return <div className="text-right font-medium">${total.toFixed(2)}</div>;
-                },
+                cell: ({ row }) => (
+                    <div className="text-right font-medium">
+                        {row.original.catalog_item.base_price.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "CAD",
+                        })}
+                    </div>
+                ),
             },
             {
                 id: "actions",
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const item = row.original.catalog_item;
                     return (
                         <div className="flex justify-end pr-2">
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                size="icon-sm"
                                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                onClick={() => openModal("wishlistDelete", { cid: item.cid, itemName: item.name })}
+                                aria-label={`Remove ${item.name} from wishlist`}
+                                onClick={() =>
+                                    openModal("wishlistDelete", {
+                                        cid: item.cid,
+                                        itemName: item.name,
+                                    })
+                                }
                             >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 />
                             </Button>
                         </div>
                     );
                 },
             },
         ],
-        []
+        [openModal],
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table opted out via "use no memo"
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         manualPagination: true,
-        rowCount: queryData?.pagination?.total || -1,
-        state: {
-            pagination,
-        },
+        rowCount: wishlistQuery.data?.pagination.total ?? 0,
+        state: { pagination },
         onPaginationChange: setPagination,
     });
 
@@ -223,9 +185,18 @@ function RouteComponent() {
             title="My Wishlist"
             desc="Keep track of products, configurations, and vehicles you're planning to purchase."
             withRefresh
-            RefreshFunction={() => refetch()}
+            RefreshFunction={() => void wishlistQuery.refetch()}
         >
-            <div className="mt-4 space-y-4">
+            <div className="mt-4 flex flex-col gap-4">
+                {wishlistQuery.isError ? (
+                    <QueryError
+                        title="Couldn't load your wishlist"
+                        error={wishlistQuery.error}
+                        onRetry={() => void wishlistQuery.refetch()}
+                        isRetrying={wishlistQuery.isFetching}
+                    />
+                ) : null}
+
                 <TooltipProvider delayDuration={300}>
                     <div className="rounded-md border">
                         <Table>
@@ -234,24 +205,28 @@ function RouteComponent() {
                                     <TableRow key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
                                             <TableHead key={header.id}>
-                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(header.column.columnDef.header, header.getContext())}
                                             </TableHead>
                                         ))}
                                     </TableRow>
                                 ))}
                             </TableHeader>
                             <TableBody>
-                                {isLoading ? (
+                                {wishlistQuery.isPending ? (
                                     <TableRow>
-                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
                                             Loading wishlist...
                                         </TableCell>
                                     </TableRow>
-                                ) : table.getRowModel().rows?.length ? (
+                                ) : table.getRowModel().rows.length > 0 ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id}>
+                                        <TableRow key={row.id} className={wishlistQuery.isFetching ? "opacity-60" : undefined}>
                                             {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </TableCell>
                                             ))}
                                         </TableRow>
                                     ))

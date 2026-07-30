@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuthStatus } from "@/hooks/use-me";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Minus, Plus, Trash2, Loader2, ShoppingCart } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Minus, Plus, Trash2, Loader2, ShoppingCart } from "lucide-react";
 import { useUpdateCartItem, useRemoveCartItem, type CartLine } from "@/hooks/api/cart/use-cart-mutations";
 import { useGetCart } from "@/hooks/api/cart/use-cart-queries";
 import { mediaUrl } from "@/lib/media";
@@ -146,9 +146,21 @@ function CartComponent() {
                                     >
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center gap-4">
-                                                <div className="bg-muted border-border/40 relative z-0 h-20 w-20 shrink-0 origin-center overflow-hidden rounded-xl border shadow-sm transition-transform duration-300 ease-out hover:z-20 hover:scale-150 hover:shadow-md">
-                                                    <img src={imageSrc} alt={item.catalog_item.name} className="h-full w-full object-cover" />
-                                                </div>
+                                                <Link
+                                                    to="/catalog/$cid"
+                                                    params={{ cid: String(item.cid) }}
+                                                    aria-label={`View ${item.catalog_item.name} details`}
+                                                    className="group bg-muted border-border/40 relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border shadow-sm"
+                                                >
+                                                    <img
+                                                        src={imageSrc}
+                                                        alt={item.catalog_item.name}
+                                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+                                                        <ExternalLink className="size-5 text-white" aria-hidden="true" />
+                                                    </span>
+                                                </Link>
                                                 <div className="flex flex-col">
                                                     <span className="text-foreground text-sm leading-tight font-semibold md:text-base">
                                                         {item.catalog_item.name}

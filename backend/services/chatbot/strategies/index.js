@@ -6,6 +6,7 @@ import listBrandsStrategy from "./ListBrandsStrategy.js";
 import getVehicleDetailsStrategy from "./GetVehicleDetailsStrategy.js";
 import getCustomizationOptionsStrategy from "./GetCustomizationOptionsStrategy.js";
 import compareVehiclesStrategy from "./CompareVehiclesStrategy.js";
+import getVehicleFacetsStrategy from "./GetVehicleFacetsStrategy.js";
 import getStoreFaqStrategy from "./GetStoreFaqStrategy.js";
 import ToolContext from "./helpers/ToolContext.js";
 import { TEMPLATE_TOOLS, VALIDATIONS } from "../constants.js";
@@ -18,6 +19,7 @@ const strategies = {
     [getVehicleDetailsStrategy.name]: getVehicleDetailsStrategy,
     [getCustomizationOptionsStrategy.name]: getCustomizationOptionsStrategy,
     [compareVehiclesStrategy.name]: compareVehiclesStrategy,
+    [getVehicleFacetsStrategy.name]: getVehicleFacetsStrategy,
     [getStoreFaqStrategy.name]: getStoreFaqStrategy,
 };
 

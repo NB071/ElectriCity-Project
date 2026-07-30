@@ -31,8 +31,14 @@ export type UiModals = {
     passwordSuccess: ModalConfig;
     sessionRevoke: ModalConfig<{ sessionId: string; label?: string }>;
     sessionRevokeAll: ModalConfig;
-    orderDetail: ModalConfig<{ orderData: any }>;
-    wishlistDelete: ModalConfig<{ cid: string; itemName?: string }>;
+    orderDetail: ModalConfig<{
+        orderId: number;
+        scope: "customer" | "admin";
+        orderData?: Record<string, unknown>;
+    }>;
+    paymentDetail: ModalConfig<{ attemptId: number }>;
+    analyticsEventDetail: ModalConfig<{ eventId: number }>;
+    wishlistDelete: ModalConfig<{ cid: number; itemName?: string }>;
     reviewDelete: ModalConfig<{ reviewId: number; reviewTitle?: string }>;
     userDetail: ModalConfig<{ userData: any }>;
     mediaDelete: ModalConfig<{ mediaId: number; label?: string }>;
@@ -48,6 +54,8 @@ const initialModals: UiModals = {
     sessionRevoke: { isOpen: false },
     sessionRevokeAll: { isOpen: false },
     orderDetail: { isOpen: false },
+    paymentDetail: { isOpen: false },
+    analyticsEventDetail: { isOpen: false },
     wishlistDelete: { isOpen: false },
     reviewDelete: { isOpen: false },
     userDetail: { isOpen: false },

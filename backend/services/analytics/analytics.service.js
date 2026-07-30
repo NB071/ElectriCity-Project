@@ -5,6 +5,8 @@ import {
   eventTypeBreakdown,
   topCatalogItems,
   trend,
+  listEvents,
+  listEventTypes,
   eventDetail,
 } from "./_track/trackQuery.js";
 import {
@@ -15,6 +17,7 @@ import {
   EVENT_IDS,
   EVENT_DEFINITIONS,
   REPORT_DEFAULTS,
+  EVENT_LIST,
   REDIS,
 } from "./constants.js";
 
@@ -27,6 +30,8 @@ const analyticsService = {
   eventTypeBreakdown,
   topCatalogItems,
   trend,
+  listEvents,
+  listEventTypes,
   eventDetail,
 
   // Dashboard - Queries
@@ -37,6 +42,7 @@ const analyticsService = {
   EVENT_IDS,
   EVENT_DEFINITIONS,
   REPORT_DEFAULTS,
+  EVENT_LIST,
   REDIS,
 };
 
@@ -51,6 +57,8 @@ export {
   eventTypeBreakdown,
   topCatalogItems,
   trend,
+  listEvents,
+  listEventTypes,
   eventDetail,
 
   // Dashboard - Queries
@@ -61,5 +69,6 @@ export {
   EVENT_IDS,
   EVENT_DEFINITIONS,
   REPORT_DEFAULTS,
+  EVENT_LIST,
   REDIS,
 };

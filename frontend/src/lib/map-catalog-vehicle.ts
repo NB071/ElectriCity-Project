@@ -1,8 +1,8 @@
 import type { BrowseCatalogFilters } from "@/zod/browse-catalog";
-import type { CatalogVehicle } from "@/hooks/api/catalog/use-vehicles";
+import type { CatalogVehicle, CatalogVehicleDetails } from "@/hooks/api/catalog/use-vehicles";
 import type { CatalogListItem } from "@/components/shop/VehicleCard";
 
-export type PromoCategory = CatalogListItem["category"];
+export type PromoCategory = NonNullable<CatalogListItem["category"]>;
 
 // this function maps the partial browse catalog filters to the browse catalog filters
 export function toBrowseFilters(filters: Partial<BrowseCatalogFilters>): BrowseCatalogFilters {
@@ -22,25 +22,29 @@ export function toBrowseFilters(filters: Partial<BrowseCatalogFilters>): BrowseC
     if (filters.drivetrain?.trim()) next.drivetrain = filters.drivetrain.trim();
     if (filters.exterior_color?.trim()) next.exterior_color = filters.exterior_color.trim();
     if (filters.interior_color?.trim()) next.interior_color = filters.interior_color.trim();
-    if (filters.promo) next.promo = filters.promo;
+    if (filters.promo && filters.promo.length > 0) next.promo = filters.promo;
 
     return next;
 }
 
 // this function infers the promo category from the vehicle promotions
-export function inferPromoCategory(vehicle: CatalogVehicle, promoFilter?: PromoCategory): PromoCategory {
-    if (promoFilter) return promoFilter;
+export function inferPromoCategory(vehicle: CatalogVehicle, promoFilter?: PromoCategory | PromoCategory[]): PromoCategory | null {
+    if (Array.isArray(promoFilter)) {
+        if (promoFilter.length === 1) return promoFilter[0];
+    } else if (promoFilter) {
+        return promoFilter;
+    }
 
     const names = vehicle.promotions.map((p) => p.name.toLowerCase()).join(" ");
     if (names.includes("hot_deal") || names.includes("hot deal")) return "hot_deal";
     if (names.includes("seasonal")) return "seasonal";
     if (names.includes("clearance")) return "clearance";
     if (names.includes("featured")) return "featured";
-    return "featured";
+    return null;
 }
 
 // this function maps the vehicle to the catalog list item
-export function toCatalogListItem(vehicle: CatalogVehicle, promoFilter?: PromoCategory): CatalogListItem | null {
+export function toCatalogListItem(vehicle: CatalogVehicle, promoFilter?: PromoCategory | PromoCategory[]): CatalogListItem | null {
     if (!vehicle.vehicle) return null;
 
     return {
@@ -58,5 +62,46 @@ export function toCatalogListItem(vehicle: CatalogVehicle, promoFilter?: PromoCa
         promotions: vehicle.promotions,
         vehicle: vehicle.vehicle,
         category: inferPromoCategory(vehicle, promoFilter),
+    };
+}
+
+// Maps a detail response into the shared card shape used by recently viewed items.
+export function vehicleDetailsToCatalogListItem(vehicle: CatalogVehicleDetails): CatalogListItem {
+    const imageUrls = vehicle.images.map((image) => image.url);
+    const primaryImage = vehicle.images.find((image) => image.is_primary)?.url ?? imageUrls[0] ?? null;
+    const promoNames = vehicle.promotions.map((promotion) => promotion.name.toLowerCase()).join(" ");
+    const category: PromoCategory | null = promoNames.includes("hot_deal") || promoNames.includes("hot deal")
+        ? "hot_deal"
+        : promoNames.includes("seasonal")
+          ? "seasonal"
+          : promoNames.includes("clearance")
+            ? "clearance"
+            : promoNames.includes("featured")
+              ? "featured"
+              : null;
+
+    return {
+        id: vehicle.id,
+        item_type: "vehicle",
+        name: vehicle.name,
+        brand: { id: vehicle.brand.id, name: vehicle.brand.name },
+        model: { id: vehicle.model.id, name: vehicle.model.name },
+        base_price: vehicle.base_price,
+        stock: vehicle.stock,
+        is_active: vehicle.is_active,
+        primary_image_url: primaryImage,
+        image_urls: imageUrls,
+        promotions: vehicle.promotions,
+        vehicle: {
+            year: vehicle.vehicle.year ?? vehicle.model.release_year ?? 0,
+            condition: vehicle.vehicle.condition,
+            mileage: vehicle.vehicle.mileage ?? 0,
+            exterior_color: vehicle.vehicle.exterior_color ?? "Not specified",
+            interior_color: vehicle.vehicle.interior_color ?? "Not specified",
+            body_shape: vehicle.vehicle.body_shape ?? "Not specified",
+            door_count: vehicle.vehicle.door_count ?? 0,
+            drivetrain: vehicle.vehicle.drivetrain ?? "Not specified",
+        },
+        category,
     };
 }

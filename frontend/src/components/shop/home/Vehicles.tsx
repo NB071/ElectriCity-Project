@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Car, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { UnderlineLinkButton } from "@/components/common/underline-link-button";
 import { QueryError } from "@/components/common/QueryError";
+import { EmptyState } from "@/components/common/EmptyState";
 import { VehicleCard, type CatalogListItem } from "@/components/shop/VehicleCard";
 import { useBrowseVehicles } from "@/hooks/api/catalog/use-vehicles";
 import { toCatalogListItem, type PromoCategory } from "@/lib/map-catalog-vehicle";
@@ -22,22 +22,12 @@ const LANDING_PAGE_SIZE = 8;
 
 function Vehicles() {
     const [tab, setTab] = useState<PromoTab>("hot_deal");
-    const [saved, setSaved] = useState<Set<number>>(new Set());
 
-    const { data, isLoading, isError, error, refetch, isFetching } = useBrowseVehicles({ promo: tab, sort: "added_desc" }, 1, LANDING_PAGE_SIZE);
+    const { data, isLoading, isError, error, refetch, isFetching } = useBrowseVehicles({ promo: [tab], sort: "added_desc" }, 1, LANDING_PAGE_SIZE);
 
     const items = (data?.items ?? [])
         .map((vehicle) => toCatalogListItem(vehicle, tab as PromoCategory))
         .filter((item): item is CatalogListItem => item != null);
-
-    function toggleSaved(id: number) {
-        setSaved((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    }
 
     return (
         <section className="bg-background pb-16 md:pb-24">
@@ -85,20 +75,17 @@ function Vehicles() {
                                 <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {items.map((item) => (
                                         <li key={item.id}>
-                                            <VehicleCard item={item} saved={saved.has(item.id)} onToggleSave={() => toggleSaved(item.id)} />
+                                            <VehicleCard item={item} />
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <Empty className="border">
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <Car className="text-muted-foreground" />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No vehicles found</EmptyTitle>
-                                        <EmptyDescription>We currently don't have any vehicles listed for {t.label.toLowerCase()}.</EmptyDescription>
-                                    </EmptyHeader>
-                                </Empty>
+                                <EmptyState
+                                    icon={Car}
+                                    title="No vehicles found"
+                                    description={`We currently don't have any vehicles listed for ${t.label.toLowerCase()}.`}
+                                    className="border"
+                                />
                             )}
                         </TabsContent>
                     ))}

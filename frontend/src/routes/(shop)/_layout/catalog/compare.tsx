@@ -20,7 +20,7 @@ const FIELD_META: Record<string, { label: string; icon: typeof Car }> = {
 };
 
 function formatCellValue(field: string, value: unknown): string {
-    if (value == null || value === "") return "—";
+    if (value == null || value === "") return "-";
 
     if (field === "price" && typeof value === "number") {
         return formatPrice(value);

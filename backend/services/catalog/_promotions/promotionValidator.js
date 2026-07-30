@@ -31,6 +31,20 @@ const promoTypeSchema = z.enum(VALIDATIONS.PROMO_TYPES, {
 
 const optionalPromoTypeSchema = promoTypeSchema.optional();
 
+const optionalPromoValuesSchema = z
+    .union([z.string(), z.array(z.string())])
+    .transform((value) =>
+        (Array.isArray(value) ? value : value.split(","))
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+    )
+    .pipe(
+        z
+            .array(promoTypeSchema)
+            .min(1, "promo must contain at least one value"),
+    )
+    .optional();
+
 /**
  * This function validates the promotion type.
  * @param {string} promoType
@@ -47,4 +61,8 @@ function validatePromoType(promoType) {
     return parsed.data;
 }
 
-export { validatePromoType, optionalPromoTypeSchema };
+export {
+    validatePromoType,
+    optionalPromoTypeSchema,
+    optionalPromoValuesSchema,
+};

@@ -3,28 +3,62 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge";
 import { Package, CreditCard, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { EmptyState } from "@/components/common/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { QueryError } from "@/components/common/QueryError";
+import { useGetCustomerOrderById, type CustomerOrderDetail } from "@/hooks/api/order/use-customer-orders";
+import { useGetAdminOrderById } from "@/hooks/api/order/use-admin-orders";
+import { Loader2 } from "lucide-react";
 
 export function OrderDetailModal() {
     const { modals, closeModal } = useUiStore();
     const { isOpen, data } = modals.orderDetail;
-    const orderData = data?.orderData;
+    const orderId = data?.orderId ?? 0;
+    const isCustomer = data?.scope === "customer";
+    const isAdmin = data?.scope === "admin";
+    const customerOrderQuery = useGetCustomerOrderById(orderId, isOpen && isCustomer);
+    const adminOrderQuery = useGetAdminOrderById(orderId, isOpen && isAdmin);
+    const activeQuery = isCustomer ? customerOrderQuery : adminOrderQuery;
+    const orderData = activeQuery.data as CustomerOrderDetail | undefined;
 
     const handleOpenChange = (open: boolean) => {
         if (!open) closeModal("orderDetail");
     };
 
-    if (!orderData) return null;
-
     let statusVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
-    if (orderData.order_status === "delivered") statusVariant = "default";
-    else if (orderData.order_status === "processing" || orderData.order_status === "shipped") statusVariant = "secondary";
-    else if (orderData.order_status === "cancelled") statusVariant = "destructive";
+    if (orderData?.order_status === "delivered") statusVariant = "default";
+    else if (orderData?.order_status === "confirmed" || orderData?.order_status === "shipped") statusVariant = "secondary";
+    else if (orderData?.order_status === "cancelled") statusVariant = "destructive";
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="flex h-160 flex-col overflow-hidden p-0 sm:max-w-[700px]">
+            <DialogContent className="flex h-160 flex-col overflow-hidden p-0 sm:max-w-175">
+                {activeQuery.isPending ? (
+                    <>
+                        <DialogHeader className="px-6 pt-6">
+                            <DialogTitle>Order Details</DialogTitle>
+                            <DialogDescription>Loading order #{orderId}.</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-1 items-center justify-center">
+                            <Loader2 className="text-muted-foreground size-6 animate-spin" />
+                        </div>
+                    </>
+                ) : activeQuery.isError ? (
+                    <>
+                        <DialogHeader className="px-6 pt-6">
+                            <DialogTitle>Order Details</DialogTitle>
+                            <DialogDescription>Order #{orderId}</DialogDescription>
+                        </DialogHeader>
+                        <QueryError
+                            title="Couldn't load order details"
+                            error={activeQuery.error}
+                            onRetry={() => void activeQuery.refetch()}
+                            isRetrying={activeQuery.isFetching}
+                            className="mx-6"
+                        />
+                    </>
+                ) : orderData ? (
+                    <>
                 <DialogHeader className="border-b px-6 pt-6 pb-2">
                     <DialogTitle className="mr-10 flex items-center justify-between">
                         <span>Order Details</span>
@@ -52,9 +86,19 @@ export function OrderDetailModal() {
                                 <h4 className="flex items-center gap-2 text-sm font-medium">
                                     <Package className="text-muted-foreground h-4 w-4" /> Items
                                 </h4>
-                                <p className="text-sm">{orderData.item_count} items</p>
+                                <p className="text-sm">{orderData.items.length} items</p>
                             </div>
                         </div>
+
+                        {orderData.additional_information ? (
+                            <>
+                                <Separator />
+                                <div className="flex flex-col gap-1">
+                                    <h3 className="text-sm font-medium">Order Notes</h3>
+                                    <p className="text-muted-foreground text-sm">{orderData.additional_information}</p>
+                                </div>
+                            </>
+                        ) : null}
 
                         <Separator />
 
@@ -63,7 +107,7 @@ export function OrderDetailModal() {
                             <h3 className="text-base font-semibold">Payment History</h3>
                             {orderData.payment_attempts && orderData.payment_attempts.length > 0 ? (
                                 <div className="space-y-3">
-                                    {orderData.payment_attempts.map((attempt: any) => (
+                                    {orderData.payment_attempts.map((attempt) => (
                                         <div
                                             key={attempt.attempt_id}
                                             className="bg-muted/10 flex items-center justify-between gap-4 rounded-md border p-3 text-sm"
@@ -96,13 +140,12 @@ export function OrderDetailModal() {
                                     ))}
                                 </div>
                             ) : (
-                                <Empty className="border p-6">
-                                    <EmptyMedia variant="icon">
-                                        <CreditCard />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No payments recorded</EmptyTitle>
-                                    <EmptyDescription>There are no transaction attempts attached to this order.</EmptyDescription>
-                                </Empty>
+                                <EmptyState
+                                    icon={CreditCard}
+                                    title="No payments recorded"
+                                    description="There are no transaction attempts attached to this order."
+                                    className="border p-6"
+                                />
                             )}
                         </div>
 
@@ -113,7 +156,7 @@ export function OrderDetailModal() {
                             <h3 className="text-base font-semibold">Addresses</h3>
                             {orderData.addresses && orderData.addresses.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-4">
-                                    {orderData.addresses.map((address: any, idx: number) => (
+                                    {orderData.addresses.map((address, idx) => (
                                         <div key={idx} className="space-y-1">
                                             <h4 className="flex items-center gap-2 text-sm font-medium capitalize">
                                                 <MapPin className="text-muted-foreground h-4 w-4" /> {address.address_type} Address
@@ -133,13 +176,12 @@ export function OrderDetailModal() {
                                     ))}
                                 </div>
                             ) : (
-                                <Empty className="border p-6">
-                                    <EmptyMedia variant="icon">
-                                        <MapPin />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No addresses saved</EmptyTitle>
-                                    <EmptyDescription>This order has no shipping or billing details recorded.</EmptyDescription>
-                                </Empty>
+                                <EmptyState
+                                    icon={MapPin}
+                                    title="No addresses saved"
+                                    description="This order has no shipping or billing details recorded."
+                                    className="border p-6"
+                                />
                             )}
                         </div>
                         <Separator />
@@ -149,7 +191,7 @@ export function OrderDetailModal() {
                             <h3 className="text-base font-semibold">Ordered Items</h3>
                             {orderData.items && orderData.items.length > 0 ? (
                                 <div className="space-y-3">
-                                    {orderData.items.map((item: any) => (
+                                    {orderData.items.map((item) => (
                                         <div key={item.order_item_id} className="flex flex-col gap-3 rounded-md border p-4 text-sm">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex flex-col gap-1">
@@ -185,7 +227,7 @@ export function OrderDetailModal() {
                                                 </div>
                                             </div>
 
-                                            {(item.configuration?.options?.length > 0 || item.configuration?.config_id) && (
+                                            {((item.configuration?.options?.length ?? 0) > 0 || item.configuration?.config_id) && (
                                                 <div className="bg-muted/40 border-border/50 mt-1 flex flex-col gap-1 rounded border p-3 text-xs">
                                                     <div className="text-muted-foreground border-border/50 mb-1 flex justify-between border-b pb-1 font-medium">
                                                         <span>
@@ -195,7 +237,7 @@ export function OrderDetailModal() {
                                                             <span>${Number(item.configuration.total_price).toFixed(2)} Build Cost</span>
                                                         )}
                                                     </div>
-                                                    {item.configuration?.options?.map((opt: any, idx: number) => (
+                                                    {item.configuration?.options?.map((opt, idx) => (
                                                         <div key={idx} className="text-muted-foreground flex justify-between py-0.5">
                                                             <span className="flex items-center gap-1.5">
                                                                 <span className="text-foreground/70 font-semibold">{opt.category_name}:</span>
@@ -213,13 +255,12 @@ export function OrderDetailModal() {
                                     ))}
                                 </div>
                             ) : (
-                                <Empty className="border p-6">
-                                    <EmptyMedia variant="icon">
-                                        <Package />
-                                    </EmptyMedia>
-                                    <EmptyTitle>No items found</EmptyTitle>
-                                    <EmptyDescription>There are no valid items attached to this order record.</EmptyDescription>
-                                </Empty>
+                                <EmptyState
+                                    icon={Package}
+                                    title="No items found"
+                                    description="There are no valid items attached to this order record."
+                                    className="border p-6"
+                                />
                             )}
                         </div>
                     </div>
@@ -243,6 +284,8 @@ export function OrderDetailModal() {
                         </div>
                     </div>
                 </div>
+                    </>
+                ) : null}
             </DialogContent>
         </Dialog>
     );

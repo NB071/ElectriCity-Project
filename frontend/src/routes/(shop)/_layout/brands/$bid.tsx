@@ -41,11 +41,7 @@ function RouteComponent() {
     );
 }
 
-function BrandDetailView({
-    brand,
-}: {
-    brand: NonNullable<ReturnType<typeof useGetBrandById>["data"]>;
-}) {
+function BrandDetailView({ brand }: { brand: NonNullable<ReturnType<typeof useGetBrandById>["data"]> }) {
     const [failed, setFailed] = useState(false);
     const logoSrc = mediaUrl(brand.logo?.url);
     const showImage = Boolean(logoSrc) && !failed;
@@ -96,8 +92,12 @@ function BrandDetailView({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4">
-                        <Button variant="outline" className="border-blue-600 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white" asChild>
-                            <Link to="/catalog" search={{ brand_id: String(brand.id) }}>
+                        <Button
+                            variant="outline"
+                            className="border-blue-600 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+                            asChild
+                        >
+                            <Link to="/catalog" search={{ brand_id: brand.id }}>
                                 View All Cars
                                 <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>

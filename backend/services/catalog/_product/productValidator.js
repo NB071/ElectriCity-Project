@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ValidationError } from "../../../utils/errors.js";
 import { DEFAULTS, VALIDATIONS } from "../constants.js";
-import { optionalPromoTypeSchema } from "../_promotions/promotionValidator.js";
+import { optionalPromoValuesSchema } from "../_promotions/promotionValidator.js";
 
 /**
  * This function throws a validation error.
@@ -37,6 +37,26 @@ const multiValueStringSchema = z
         message: "must contain at least one value",
     });
 
+const bodyShapeValuesSchema = multiValueStringSchema.pipe(
+    z.array(
+        z.enum(VALIDATIONS.BODY_SHAPES, {
+            error: () => ({
+                message: `body_shape must be one of: ${VALIDATIONS.BODY_SHAPES.join(", ")}`,
+            }),
+        }),
+    ),
+);
+
+const facetFieldsSchema = multiValueStringSchema.pipe(
+    z.array(
+        z.enum(VALIDATIONS.FACET_FIELDS, {
+            error: () => ({
+                message: `fields must be one of: ${VALIDATIONS.FACET_FIELDS.join(", ")}`,
+            }),
+        }),
+    ),
+);
+
 const browseFiltersSchema = z
     .looseObject({
         brand_id: positiveInt.optional(),
@@ -47,11 +67,17 @@ const browseFiltersSchema = z
         price_min: z.coerce.number().min(0).optional(),
         price_max: z.coerce.number().min(0).optional(),
         mileage_max: z.coerce.number().int().min(0).optional(),
-        body_shape: multiValueStringSchema.optional(),
-        drivetrain: z.string().min(1).optional(),
+        body_shape: bodyShapeValuesSchema.optional(),
+        drivetrain: z
+            .enum(VALIDATIONS.DRIVETRAINS, {
+                error: () => ({
+                    message: `drivetrain must be one of: ${VALIDATIONS.DRIVETRAINS.join(", ")}`,
+                }),
+            })
+            .optional(),
         exterior_color: z.string().min(1).optional(),
         interior_color: z.string().min(1).optional(),
-        promo: optionalPromoTypeSchema,
+        promo: optionalPromoValuesSchema,
     })
     .refine(
         (data) =>
@@ -113,6 +139,35 @@ function validateBrowseFilters(queryParams = {}) {
     }
 
     return parsed.data;
+}
+
+/**
+ * This function validates vehicle facet query parameters.
+ * Accepts the same browse filters, plus optional `fields` to select facet groups.
+ * @param {object} queryParams Query parameters
+ * @returns {{ filters: object, fields: string[] }}
+ * @throws {ValidationError} If the facet query is invalid
+ */
+function validateFacetsQuery(queryParams = {}) {
+    const filters = validateBrowseFilters(queryParams);
+
+    if (queryParams.fields == null || queryParams.fields === "") {
+        return {
+            filters,
+            fields: [...VALIDATIONS.FACET_FIELDS],
+        };
+    }
+
+    const parsedFields = facetFieldsSchema.safeParse(queryParams.fields);
+
+    if (!parsedFields.success) {
+        throwValidationError(parsedFields.error);
+    }
+
+    // Preserve declaration order while deduping
+    const fields = [...new Set(parsedFields.data)];
+
+    return { filters, fields };
 }
 
 /**
@@ -213,6 +268,7 @@ function validateCatalogItemId(cid) {
 
 export {
     validateBrowseFilters,
+    validateFacetsQuery,
     validateSortParams,
     validateSearchQuery,
     validateCompareQuery,

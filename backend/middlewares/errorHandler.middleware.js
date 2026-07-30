@@ -13,20 +13,33 @@ import log from "../utils/logger.js";
  * @param {import('express').NextFunction} _next The next function.
  */
 function errorHandlerMiddleware(err, _req, res, _next) {
-    log.error("Middleware", "errorHandler", "Error handler middleware called", err);
+    log.error(
+        "Middleware",
+        "errorHandler",
+        "Error handler middleware called",
+        err,
+    );
 
     const errStatus =
         err instanceof AppError
             ? err.status
             : err.status || err.statusCode || 500;
-    const errMsg = err.message || "Something went wrong";
+    const isServerError = errStatus >= 500;
+    const isDevelopment = process.env.NODE_ENV === "development";
+    const errMsg =
+        isServerError && !isDevelopment
+            ? "Internal server error"
+            : err.message || "Something went wrong";
     const errCode = err instanceof AppError ? err.code : "INTERNAL_ERROR";
 
     const errorDetails = {
         message: errMsg,
         code: errCode,
-        details: err instanceof AppError ? err.details : null,
-        stack: process.env.NODE_ENV === "development" ? err.stack : null,
+        details:
+            (!isServerError || isDevelopment) && err instanceof AppError
+                ? err.details
+                : null,
+        stack: isDevelopment ? err.stack : null,
         // Set by Sentry.setupExpressErrorHandler when the error was reported
         sentry_event_id: res.sentry || null,
     };

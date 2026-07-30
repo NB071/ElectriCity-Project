@@ -8,11 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useGetBrandsLite } from "@/hooks/api/catalog/use-brands";
+import { useGetVehicleFacets } from "@/hooks/api/catalog/use-vehicles";
 
-const BODY_SHAPES = ["SUV", "Sedan", "Hatchback", "Coupe", "Convertible"];
+const BODY_SHAPES = ["SUV", "Sedan", "Hatchback", "Coupe", "Convertible", "Truck"];
+const DRIVETRAINS = ["AWD", "FWD", "RWD", "4WD"] as const;
+const PROMOTIONS = [
+    { value: "hot_deal", label: "Hot Deal" },
+    { value: "seasonal", label: "Seasonal" },
+    { value: "clearance", label: "Clearance" },
+    { value: "featured", label: "Featured" },
+] as const;
 const ANY = "any";
 
 type CatalogFiltersProps = {
@@ -25,7 +34,13 @@ export function CatalogFilters({ preserveOnClear }: CatalogFiltersProps = {}) {
     const updateFilter = useCatalogStore((state) => state.updateFilter);
     const clearFilters = useCatalogStore((state) => state.clearFilters);
     const { data: brandsData } = useGetBrandsLite();
+    const { data: facetsData } = useGetVehicleFacets({
+        ...filters,
+        fields: ["body_shape", "promo"],
+    });
     const brands = brandsData?.items ?? [];
+    const bodyShapeCounts = new Map(facetsData?.body_shape?.map((facet) => [facet.value, facet.count]) ?? []);
+    const promotionCounts = new Map(facetsData?.promo?.map((facet) => [facet.value, facet.count]) ?? []);
 
     const storeQ = filters.q ?? "";
     const [searchInput, setSearchInput] = useState(storeQ);
@@ -63,7 +78,10 @@ export function CatalogFilters({ preserveOnClear }: CatalogFiltersProps = {}) {
     return (
         <div className="border-muted sticky top-24 w-full rounded-xl border bg-white p-5">
             <div className="mb-6 flex items-center justify-between border-b pb-4">
-                <h2 className="text-lg font-semibold">Filters</h2>
+                <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">Filters</h2>
+                    {facetsData ? <Badge variant="secondary">{facetsData.total} matches</Badge> : null}
+                </div>
                 <Button type="button" variant="ghost" size="sm" onClick={handleClearAll} className="text-muted-foreground h-8 text-xs">
                     Clear All
                 </Button>
@@ -119,25 +137,56 @@ export function CatalogFilters({ preserveOnClear }: CatalogFiltersProps = {}) {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <Label>Promotion</Label>
-                    <Select
-                        value={filters.promo ?? ANY}
-                        onValueChange={(val) => updateFilter("promo", val === ANY ? undefined : (val as NonNullable<BrowseCatalogFilters["promo"]>))}
-                    >
+                    <Label>Drivetrain</Label>
+                    <Select value={filters.drivetrain ?? ANY} onValueChange={(val) => updateFilter("drivetrain", val === ANY ? undefined : val)}>
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Any Deal" />
+                            <SelectValue placeholder="Any Drivetrain" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value={ANY}>Any Promotion</SelectItem>
-                            <SelectItem value="hot_deal">Hot Deal</SelectItem>
-                            <SelectItem value="seasonal">Seasonal</SelectItem>
-                            <SelectItem value="clearance">Clearance</SelectItem>
-                            <SelectItem value="featured">Featured</SelectItem>
+                            <SelectItem value={ANY}>Any Drivetrain</SelectItem>
+                            {DRIVETRAINS.map((drivetrain) => (
+                                <SelectItem key={drivetrain} value={drivetrain}>
+                                    {drivetrain}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
 
-                <Accordion type="multiple" defaultValue={["type", "price"]}>
+                <Accordion type="multiple" defaultValue={["promotion", "type", "price"]}>
+                    <AccordionItem value="promotion" className="border-b-0">
+                        <AccordionTrigger className="text-sm font-semibold hover:no-underline">Promotion</AccordionTrigger>
+                        <AccordionContent>
+                            <div className="flex flex-col gap-3 pt-2">
+                                {PROMOTIONS.map((promotion) => {
+                                    const checked = (filters.promo ?? []).includes(promotion.value);
+                                    return (
+                                        <div key={promotion.value} className="flex items-center gap-2">
+                                            <Checkbox
+                                                id={`promotion-${promotion.value}`}
+                                                checked={checked}
+                                                onCheckedChange={(isChecked) => {
+                                                    const current = filters.promo ?? [];
+                                                    const next = isChecked
+                                                        ? [...current, promotion.value]
+                                                        : current.filter((value) => value !== promotion.value);
+                                                    updateFilter("promo", next.length > 0 ? next : undefined);
+                                                }}
+                                            />
+                                            <label
+                                                htmlFor={`promotion-${promotion.value}`}
+                                                className="text-muted-foreground flex flex-1 items-center justify-between text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                <span>{promotion.label}</span>
+                                                <Badge variant="secondary">{promotionCounts.get(promotion.value) ?? 0}</Badge>
+                                            </label>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
                     <AccordionItem value="type" className="border-b-0">
                         <AccordionTrigger className="text-sm font-semibold hover:no-underline">Type</AccordionTrigger>
                         <AccordionContent>
@@ -157,9 +206,10 @@ export function CatalogFilters({ preserveOnClear }: CatalogFiltersProps = {}) {
                                             />
                                             <label
                                                 htmlFor={`shape-${shape}`}
-                                                className="text-muted-foreground text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                className="text-muted-foreground flex flex-1 items-center justify-between text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                             >
-                                                {shape}
+                                                <span>{shape}</span>
+                                                <Badge variant="secondary">{bodyShapeCounts.get(shape) ?? 0}</Badge>
                                             </label>
                                         </div>
                                     );

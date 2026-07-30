@@ -38,28 +38,29 @@ INSERT INTO users (user_id, role_id, first_name, last_name, email, password_hash
 
 
 INSERT INTO addresses (address_id, user_id, street, city, province, country, postal_code, is_default) VALUES
-  (1, 2, '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', TRUE),
-  (2, 3, '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', TRUE),
-  (3, 3, '250 Yonge St', 'Toronto', 'ON', 'Canada', 'M5B2L7', FALSE),
-  (4, 5, '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', TRUE),
-  (5, 6, '100 Rideau St', 'Ottawa', 'ON', 'Canada', 'K1N5W8', TRUE),
-  (6, 6, '77 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P5L6', FALSE),
-  (7, 8, '500 Burrard St', 'Vancouver', 'BC', 'Canada', 'V6C3R8', TRUE),
-  (8, 9, '200 Granville St', 'Vancouver', 'BC', 'Canada', 'V6C1S4', TRUE),
-  (9, 9, '350 Robson St', 'Vancouver', 'BC', 'Canada', 'V6B2B2', FALSE),
-  (10, 11, '1 Place Ville Marie', 'Montreal', 'QC', 'Canada', 'H3B2B6', TRUE),
-  (11, 12, '1250 Rene-Levesque Blvd W', 'Montreal', 'QC', 'Canada', 'H3B4W8', TRUE),
-  (12, 12, '2200 Rue Sainte-Catherine O', 'Montreal', 'QC', 'Canada', 'H3H1M1', FALSE),
-  (13, 14, '10180 101 St NW', 'Edmonton', 'AB', 'Canada', 'T5J3S4', TRUE),
-  (14, 15, '888 3 St SE', 'Calgary', 'AB', 'Canada', 'T2G5C3', TRUE),
-  (15, 15, '1969 Upper Water St', 'Halifax', 'NS', 'Canada', 'B3J3R7', FALSE),
-  (16, 17, '330 St Mary Ave', 'Winnipeg', 'MB', 'Canada', 'R3C3Z5', TRUE),
-  (17, 18, '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', TRUE),
-  (18, 18, '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', FALSE),
-  (19, 20, '250 Yonge St', 'Toronto', 'ON', 'Canada', 'M5B2L7', TRUE),
-  (20, 21, '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', TRUE),
-  (21, 21, '100 Rideau St', 'Ottawa', 'ON', 'Canada', 'K1N5W8', FALSE),
-  (22, 23, '77 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P5L6', TRUE);
+  (1, 1, '100 Queen St W', 'Toronto', 'ON', 'Canada', 'M5H2N2', TRUE),
+  (2, 2, '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', TRUE),
+  (3, 3, '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', TRUE),
+  (4, 3, '250 Yonge St', 'Toronto', 'ON', 'Canada', 'M5B2L7', FALSE),
+  (5, 5, '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', TRUE),
+  (6, 6, '100 Rideau St', 'Ottawa', 'ON', 'Canada', 'K1N5W8', TRUE),
+  (7, 6, '77 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P5L6', FALSE),
+  (8, 8, '500 Burrard St', 'Vancouver', 'BC', 'Canada', 'V6C3R8', TRUE),
+  (9, 9, '200 Granville St', 'Vancouver', 'BC', 'Canada', 'V6C1S4', TRUE),
+  (10, 9, '350 Robson St', 'Vancouver', 'BC', 'Canada', 'V6B2B2', FALSE),
+  (11, 11, '1 Place Ville Marie', 'Montreal', 'QC', 'Canada', 'H3B2B6', TRUE),
+  (12, 12, '1250 Rene-Levesque Blvd W', 'Montreal', 'QC', 'Canada', 'H3B4W8', TRUE),
+  (13, 12, '2200 Rue Sainte-Catherine O', 'Montreal', 'QC', 'Canada', 'H3H1M1', FALSE),
+  (14, 14, '10180 101 St NW', 'Edmonton', 'AB', 'Canada', 'T5J3S4', TRUE),
+  (15, 15, '888 3 St SE', 'Calgary', 'AB', 'Canada', 'T2G5C3', TRUE),
+  (16, 15, '1969 Upper Water St', 'Halifax', 'NS', 'Canada', 'B3J3R7', FALSE),
+  (17, 17, '330 St Mary Ave', 'Winnipeg', 'MB', 'Canada', 'R3C3Z5', TRUE),
+  (18, 18, '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', TRUE),
+  (19, 18, '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', FALSE),
+  (20, 20, '250 Yonge St', 'Toronto', 'ON', 'Canada', 'M5B2L7', TRUE),
+  (21, 21, '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', TRUE),
+  (22, 21, '100 Rideau St', 'Ottawa', 'ON', 'Canada', 'K1N5W8', FALSE),
+  (23, 23, '77 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P5L6', TRUE);
 
 INSERT INTO sessions (session_id, user_id, current_access_jti, device_label, ip_address, user_agent) VALUES
   ('11111111-1111-4111-8111-111111111101', 1, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1', 'Chrome on Windows', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0) Seed/1.0'),
@@ -429,33 +430,33 @@ INSERT INTO vehicles (cid, year, `condition`, mileage, exterior_color, interior_
   (24, 2026, 'new', 2, 'Wind Chill Pearl', 'Gray'),
   (25, 2022, 'used', 33800, 'Crystal White', 'Charcoal');
 
--- history recorded for every vehicle (owners_count intentionally dropped: no matching schema column)
-INSERT INTO vehicle_history (history_id, cid, has_accidents, media_id) VALUES
-  (1, 1, FALSE, 4),
-  (2, 2, FALSE, 7),
-  (3, 3, FALSE, 10),
-  (4, 4, TRUE, 14),
-  (5, 5, FALSE, 17),
-  (6, 6, FALSE, 21),
-  (7, 7, FALSE, 24),
-  (8, 8, FALSE, 28),
-  (9, 9, FALSE, 32),
-  (10, 10, TRUE, 35),
-  (11, 11, FALSE, 39),
-  (12, 12, FALSE, 42),
-  (13, 13, FALSE, 45),
-  (14, 14, FALSE, 49),
-  (15, 15, FALSE, 52),
-  (16, 16, FALSE, 55),
-  (17, 17, FALSE, 58),
-  (18, 18, TRUE, 62),
-  (19, 19, FALSE, 65),
-  (20, 20, FALSE, 68),
-  (21, 21, FALSE, 72),
-  (22, 22, FALSE, 76),
-  (23, 23, FALSE, 80),
-  (24, 24, FALSE, 84),
-  (25, 25, FALSE, 88);
+-- history recorded for every vehicle (owners_count: 0 for new inventory, 1+ for used)
+INSERT INTO vehicle_history (history_id, cid, has_accidents, owners_count, media_id) VALUES
+  (1, 1, FALSE, 0, 4),
+  (2, 2, FALSE, 1, 7),
+  (3, 3, FALSE, 0, 10),
+  (4, 4, TRUE, 2, 14),
+  (5, 5, FALSE, 0, 17),
+  (6, 6, FALSE, 1, 21),
+  (7, 7, FALSE, 0, 24),
+  (8, 8, FALSE, 1, 28),
+  (9, 9, FALSE, 0, 32),
+  (10, 10, TRUE, 3, 35),
+  (11, 11, FALSE, 0, 39),
+  (12, 12, FALSE, 1, 42),
+  (13, 13, FALSE, 0, 45),
+  (14, 14, FALSE, 2, 49),
+  (15, 15, FALSE, 0, 52),
+  (16, 16, FALSE, 0, 55),
+  (17, 17, FALSE, 2, 58),
+  (18, 18, TRUE, 3, 62),
+  (19, 19, FALSE, 0, 65),
+  (20, 20, FALSE, 0, 68),
+  (21, 21, FALSE, 1, 72),
+  (22, 22, FALSE, 0, 76),
+  (23, 23, FALSE, 1, 80),
+  (24, 24, FALSE, 0, 84),
+  (25, 25, FALSE, 2, 88);
 
 -- customizable options offered per NEW vehicle (used vehicles use equipped_options instead)
 INSERT INTO catalog_options (cid, option_id) VALUES
@@ -585,11 +586,6 @@ INSERT INTO equipped_options (cid, option_id) VALUES
   (25, 96),
   (25, 97);
 
--- STALE: configurations/config_options below still reference the OLD 3-vehicle catalog
--- (cid 1 = Tesla Model 3, cid 3 = old Ford Mustang Mach-E, which is now cid 7).
--- Whoever owns configurations/config_options needs to redo these against the new 25-vehicle
--- catalog above -- models.json has no configurations/config_options data at all, so this
--- is a gap in the source data, not something this seed can fix on its own.
 -- saved configurations (total = base_price + chosen price_deltas)
 INSERT INTO configurations (config_id, cid, total_price, created_at) VALUES
   (1, 1, 79090.00, '2026-05-10 15:30:00'),
@@ -639,10 +635,14 @@ INSERT INTO cart_items (cart_item_id, cart_id, cid, config_id, quantity, added_a
   (4, 3, 5, NULL, 1, '2026-07-10 08:30:00');
 
 -- ============== Order ==============
-INSERT INTO orders (order_id, user_id, guest_email, order_status, payment_status, subtotal, tax, total, created_at) VALUES
-  (1, 1, NULL, 'confirmed', 'paid', 79090.00, 10281.70, 89371.70, '2026-05-12 16:00:00'),
-  (2, 1, NULL, 'pending', 'failed', 65699.00, 8540.87, 74239.87, '2026-06-03 11:20:00'),
-  (3, 1, NULL, 'cancelled', 'failed', 67595.00, 8787.35, 76382.35, '2026-06-18 09:10:00');
+INSERT INTO orders (order_id, user_id, guest_email, order_status, payment_status, subtotal, tax, total, additional_information, created_at) VALUES
+  (1, 1, NULL, 'confirmed', 'paid', 79090.00, 10281.70, 89371.70, 'Please leave the keys with the front desk.', '2026-05-12 16:00:00'),
+  (2, 1, NULL, 'pending', 'failed', 65699.00, 8540.87, 74239.87, NULL, '2026-06-03 11:20:00'),
+  (3, 1, NULL, 'cancelled', 'failed', 67595.00, 8787.35, 76382.35, 'Customer cancelled after payment failed twice.', '2026-06-18 09:10:00'),
+  (4, 14, NULL, 'shipped', 'paid', 59000.00, 2950.00, 61950.00, 'Call before delivery.', '2026-06-20 13:00:00'),
+  (5, 7, NULL, 'delivered', 'paid', 62000.00, 8060.00, 70060.00, NULL, '2026-04-08 10:00:00'),
+  (6, NULL, 'guest.buyer@example.com', 'pending', 'unpaid', 47000.00, 6110.00, 53110.00, 'Guest checkout - evening delivery preferred.', '2026-07-05 09:30:00'),
+  (7, 2, NULL, 'confirmed', 'unpaid', 54999.00, 7149.87, 62148.87, NULL, '2026-07-08 15:45:00');
 
 INSERT INTO order_addresses (order_address_id, order_id, address_type, full_name, phone_number, street, city, province, country, postal_code, created_at) VALUES
   (1, 1, 'shipping', 'Maya Singh', '4165551001', '100 Queen St W', 'Toronto', 'ON', 'Canada', 'M5H2N2', '2026-05-12 16:00:00'),
@@ -650,18 +650,33 @@ INSERT INTO order_addresses (order_address_id, order_id, address_type, full_name
   (3, 2, 'shipping', 'Maya Singh', '4165551001', '55 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P6L5', '2026-06-03 11:20:00'),
   (4, 2, 'billing', 'Maya Singh', '4165551001', '55 Metcalfe St', 'Ottawa', 'ON', 'Canada', 'K1P6L5', '2026-06-03 11:20:00'),
   (5, 3, 'shipping', 'Maya Singh', '4165551001', '200 Granville St', 'Vancouver', 'BC', 'Canada', 'V6C1S4', '2026-06-18 09:10:00'),
-  (6, 3, 'billing', 'Maya Singh', '4165551001', '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', '2026-06-18 09:10:00');
+  (6, 3, 'billing', 'Maya Singh', '4165551001', '88 King St W', 'Toronto', 'ON', 'Canada', 'M5H1J9', '2026-06-18 09:10:00'),
+  (7, 4, 'shipping', 'Olivia Martinez', '4165551014', '10180 101 St NW', 'Edmonton', 'AB', 'Canada', 'T5J3S4', '2026-06-20 13:00:00'),
+  (8, 4, 'billing', 'Olivia Martinez', '4165551014', '10180 101 St NW', 'Edmonton', 'AB', 'Canada', 'T5J3S4', '2026-06-20 13:00:00'),
+  (9, 5, 'shipping', 'Tara Ahmadi', '4165551007', '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', '2026-04-08 10:00:00'),
+  (10, 5, 'billing', 'Tara Ahmadi', '4165551007', '45 Queen St', 'Ottawa', 'ON', 'Canada', 'K1P1A0', '2026-04-08 10:00:00'),
+  (11, 6, 'shipping', 'Guest Buyer', '4165559999', '1 Harbour Square', 'Toronto', 'ON', 'Canada', 'M5J1A6', '2026-07-05 09:30:00'),
+  (12, 6, 'billing', 'Guest Buyer', '4165559999', '1 Harbour Square', 'Toronto', 'ON', 'Canada', 'M5J1A6', '2026-07-05 09:30:00'),
+  (13, 7, 'shipping', 'Daniel Osei', '4165551002', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', '2026-07-08 15:45:00'),
+  (14, 7, 'billing', 'Daniel Osei', '4165551002', '12 Maple Ave', 'Toronto', 'ON', 'Canada', 'M4B1B3', '2026-07-08 15:45:00');
 
 INSERT INTO order_items (order_item_id, order_id, cid, config_id, quantity, unit_price) VALUES
   (1, 1, 1, 1, 1, 79090.00),
   (2, 2, 3, 2, 1, 65699.00),
-  (3, 3, 5, 3, 1, 67595.00);
+  (3, 3, 5, 3, 1, 67595.00),
+  (4, 4, 7, NULL, 1, 59000.00),
+  (5, 5, 8, NULL, 1, 62000.00),
+  (6, 6, 9, NULL, 1, 47000.00),
+  (7, 7, 3, NULL, 1, 54999.00);
 
 -- ============== Payment ==============
 INSERT INTO payment_attempts (attempt_id, order_id, user_id, amount, payment_method, status, attempted_at) VALUES
   (1, 1, 1, 89371.70, 'credit_card', 'success', '2026-05-12 16:05:00'),
   (2, 2, 1, 74239.87, 'credit_card', 'failed', '2026-06-03 11:22:00'),
-  (3, 2, 1, 74239.87, 'debit_card', 'failed', '2026-06-03 11:25:00');
+  (3, 2, 1, 74239.87, 'debit_card', 'failed', '2026-06-03 11:25:00'),
+  (4, 3, 1, 76382.35, 'credit_card', 'failed', '2026-06-18 09:12:00'),
+  (5, 4, 14, 61950.00, 'apple_pay', 'success', '2026-06-20 13:05:00'),
+  (6, 5, 7, 70060.00, 'debit_card', 'success', '2026-04-08 10:05:00');
 
 -- ============== Review ==============
 INSERT INTO reviews (review_id, cid, user_id, title, body, rating) VALUES
@@ -743,7 +758,10 @@ INSERT INTO event_logs (event_id, event_type_id, user_id, cid, meta, ip_address,
   (4, 10, 14, 7, '{"source": "web"}', '203.0.113.44', '2026-06-01 12:00:00'),
   (5, 1, 7, NULL, '{"source": "web"}', '203.0.113.55', '2026-06-15 18:00:00'),
   (6, 8, 1, 2, '{"rating": 4}', '203.0.113.10', '2026-06-20 12:00:00'),
-  (7, 4, 14, 22, '{"source": "web"}', '203.0.113.44', '2026-07-02 10:00:00');
+  (7, 4, 14, 22, '{"source": "web"}', '203.0.113.44', '2026-07-02 10:00:00'),
+  (8, 5, 14, 7, '{"order_id": 4}', '203.0.113.44', '2026-06-20 13:05:00'),
+  (9, 5, 7, 8, '{"order_id": 5}', '203.0.113.55', '2026-04-08 10:05:00'),
+  (10, 3, NULL, 9, '{"qty": 1, "source": "web", "guest": true}', '203.0.113.90', '2026-07-05 09:25:00');
 
 -- ============== Media: catalog_images ==============
 -- Primary image is always the exterior (ext.*) for a consistent catalog browse grid.

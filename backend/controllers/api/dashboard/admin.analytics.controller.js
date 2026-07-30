@@ -2,6 +2,7 @@ import tryCatch from "../../../utils/tryCatch.js";
 import apiResponse from "../../../utils/apiResponse.js";
 import analyticsService from "../../../services/analytics/analytics.service.js";
 import { parsePaginationQuery } from "../../../utils/pagination.js";
+import { ValidationError } from "../../../utils/errors.js";
 
 /**
  * This controller fetches the overview KPIs for the admin dashboard.
@@ -59,6 +60,17 @@ export const getTopCatalogItems = tryCatch(async (req, res, _) => {
 });
 
 /**
+ * This controller fetches a paginated list of event logs.
+ * @route GET /api/dashboard/admin/analytics/events
+ * @required_role admin
+ * @services_used Analytics
+ */
+export const listEvents = tryCatch(async (req, res, _) => {
+  const responseData = await analyticsService.listEvents(req.query);
+  return apiResponse(res, responseData, 200);
+});
+
+/**
  * This controller fetches the detail of an event.
  * @route GET /api/dashboard/admin/analytics/events/:eventId
  * @required_role admin
@@ -66,6 +78,17 @@ export const getTopCatalogItems = tryCatch(async (req, res, _) => {
  */
 export const getEventDetail = tryCatch(async (req, res, _) => {
   const responseData = await analyticsService.eventDetail(req.params.eventId);
+  return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller lists all event types with tracking status.
+ * @route GET /api/dashboard/admin/analytics/event-types
+ * @required_role admin
+ * @services_used Analytics
+ */
+export const listEventTypes = tryCatch(async (req, res, _) => {
+  const responseData = await analyticsService.listEventTypes();
   return apiResponse(res, responseData, 200);
 });
 

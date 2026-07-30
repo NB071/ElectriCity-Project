@@ -103,6 +103,25 @@ class WishlistDAO extends BaseDAO {
   }
 
   /**
+   * This method returns all catalog item ids in a user's wishlist.
+   * Empty wishlists return an empty array (no NotFoundError).
+   * @param {number} user_id
+   * @returns {Promise<{ cid: number }[]>}
+   * @throws {DatabaseError} On database failures
+   */
+  async findCidsByUserId(user_id) {
+    const [rows] = await this._query(
+      `SELECT cid
+             FROM wishlist
+             WHERE user_id = ?
+             ORDER BY added_at DESC`,
+      [user_id],
+      { suppressNotFound: true },
+    );
+    return rows;
+  }
+
+  /**
    * This method finds one wishlist entry for a user and catalog item.
    * @param {number} user_id
    * @param {number} cid

@@ -30,6 +30,19 @@ export const getBrandById = tryCatch(async (req, res, _) => {
 });
 
 /**
+ * This controller lists models for a brand (unpaginated, A-Z).
+ * @route GET /api/shop/catalog/brands/:brandId/models
+ * @requiredRole N/A
+ * @services_used Catalog
+ */
+export const listBrandModels = tryCatch(async (req, res, _) => {
+    const responseData = await catalogService.listBrandModels(
+        req.params.brandId,
+    );
+    return apiResponse(res, responseData, 200);
+});
+
+/**
  * This controller browses catalog vehicles with filters, sort, and pagination.
  * @route GET /api/shop/catalog/vehicles
  * @requiredRole N/A
@@ -48,6 +61,18 @@ export const browseVehicles = tryCatch(async (req, res, _) => {
  */
 export const searchVehicles = tryCatch(async (req, res, _) => {
     const responseData = await catalogService.searchVehicles(req.query);
+    return apiResponse(res, responseData, 200);
+});
+
+/**
+ * This controller returns facet counts for the vehicle catalog.
+ * Same browse filters as /vehicles; optional `fields` selects facet groups.
+ * @route GET /api/shop/catalog/vehicles/facets
+ * @requiredRole N/A
+ * @services_used Catalog
+ */
+export const getVehicleFacets = tryCatch(async (req, res, _) => {
+    const responseData = await catalogService.getVehicleFacets(req.query);
     return apiResponse(res, responseData, 200);
 });
 

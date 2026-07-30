@@ -129,7 +129,7 @@ function CatalogResults({ items, total, pagination, onPaginationChange, isFetchi
         <div className={cn("flex flex-col gap-10", isFetching && "opacity-60")}>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {items.map((vehicle) => (
-                    <VehicleCard key={vehicle.id} item={vehicle} saved={false} onToggleSave={() => {}} />
+                    <VehicleCard key={vehicle.id} item={vehicle} />
                 ))}
             </div>
 

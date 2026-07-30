@@ -30,12 +30,19 @@ export type BrandLite = {
     name: string;
 };
 
+export type BrandModelListItem = {
+    id: number;
+    name: string;
+    release_year: number | null;
+};
+
 const brandKeys = {
     all: ["brands"] as const,
     paginated: (page: number, limit: number) => [...brandKeys.all, "paginated", page, limit] as const,
     featured: () => [...brandKeys.all, "featured"] as const,
     lite: () => [...brandKeys.all, "lite"] as const,
     detail: (brandId: number) => [...brandKeys.all, brandId] as const,
+    models: (brandId: number) => [...brandKeys.all, brandId, "models"] as const,
 };
 
 // Full paginated brand list, ordered by display_order then name
@@ -77,5 +84,18 @@ export const useGetBrandById = (brandId: number) => {
         url: `/api/shop/catalog/brands/${brandId}`,
         method: "get",
         enabled: Number.isFinite(brandId) && brandId > 0,
+    });
+};
+
+// Models belonging to one brand, for dependent catalog selectors
+export const useGetBrandModels = (brandId?: number) => {
+    const validBrandId = brandId ?? 0;
+
+    return useApiQuery<{ items: BrandModelListItem[] }>({
+        queryKey: brandKeys.models(validBrandId),
+        url: `/api/shop/catalog/brands/${validBrandId}/models`,
+        method: "get",
+        enabled: Number.isFinite(validBrandId) && validBrandId > 0,
+        staleTime: 1000 * 60 * 30,
     });
 };

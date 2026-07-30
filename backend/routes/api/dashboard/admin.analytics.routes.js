@@ -33,10 +33,22 @@ router.get(
   adminAnalyticsController.getTopCatalogItems,
 );
 router.get(
+  "/analytics/events",
+  authnMiddleware(),
+  authzMiddleware("admin"),
+  adminAnalyticsController.listEvents,
+);
+router.get(
   "/analytics/events/:eventId",
   authnMiddleware(),
   authzMiddleware("admin"),
   adminAnalyticsController.getEventDetail,
+);
+router.get(
+  "/analytics/event-types",
+  authnMiddleware(),
+  authzMiddleware("admin"),
+  adminAnalyticsController.listEventTypes,
 );
 router.patch(
   "/analytics/event-types/:eventTypeId/active",

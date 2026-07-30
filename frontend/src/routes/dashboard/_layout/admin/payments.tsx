@@ -1,126 +1,65 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, type PaginationState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState } from "@tanstack/react-table";
 import { ContentSection } from "@/components/dashboard/ContentSection";
+import { QueryError } from "@/components/common/QueryError";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataTablePagination, DataTableColumnHeader } from "@/components/data-table";
+import { DataTablePagination } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useGetAdminPayments } from "@/hooks/api/payment/use-payments";
+import { Copy, Eye, MoreHorizontal, ShoppingBag } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useGetAdminPayments, type AdminPaymentAttempt } from "@/hooks/api/payment/use-payments";
+import { useUiStore } from "@/stores/ui-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/_layout/admin/payments")({
     component: RouteComponent,
 });
 
-type AdminPaymentAttemptDTO = {
-    attempt_id: string;
-    order_id: number;
-    amount: number;
-    payment_method: string;
-    status: string;
-    attempted_at: string;
-    user_id: number | null;
-    user?: {
-        user_id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
-};
-
-/*const MOCK_ADMIN_PAYMENTS: AdminPaymentAttemptDTO[] = [
-    {
-        attempt_id: "pay_xyz98s7df6g5h4",
-        order_id: 8492,
-        amount: 58839.3,
-        payment_method: "credit_card",
-        status: "success",
-        attempted_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-        user_id: 1,
-        user: {
-            user_id: 1,
-            first_name: "Admin",
-            last_name: "User",
-            email: "admin@electricity.com",
-        },
-    },
-    {
-        attempt_id: "pay_qwe12r3t4y5u",
-        order_id: 8493,
-        amount: 128.4,
-        payment_method: "paypal",
-        status: "success",
-        attempted_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-        user_id: null,
-    },
-    {
-        attempt_id: "pay_asd98f7g6h5j",
-        order_id: 8494,
-        amount: 481.5,
-        payment_method: "credit_card",
-        status: "failed",
-        attempted_at: new Date(Date.now() - 86400000 * 10).toISOString(),
-        user_id: 44,
-        user: {
-            user_id: 44,
-            first_name: "Sarah",
-            last_name: "Connor",
-            email: "sarahc@example.com",
-        },
-    },
-    {
-        attempt_id: "pay_zxc56v7b8n9m",
-        order_id: 8494,
-        amount: 481.5,
-        payment_method: "bank_transfer",
-        status: "pending",
-        attempted_at: new Date(Date.now() - 86400000 * 9).toISOString(),
-        user_id: 44,
-        user: {
-            user_id: 44,
-            first_name: "Sarah",
-            last_name: "Connor",
-            email: "sarahc@example.com",
-        },
-    },
-];*/
-
 function RouteComponent() {
-     const [pagination, setPagination] = useState<PaginationState>({
-            pageIndex: 0,
-            pageSize: 10,
-    });
-    
-    const { data: queryData, isLoading, refetch } = useGetAdminPayments(pagination.pageIndex + 1, pagination.pageSize);
-    const data = (queryData?.items as AdminPaymentAttemptDTO[]) || [];
+    "use no memo";
 
-    const columns = useMemo(
+    const { openModal } = useUiStore();
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+
+    const paymentsQuery = useGetAdminPayments(pagination.pageIndex + 1, pagination.pageSize);
+    const data = paymentsQuery.data?.items ?? [];
+
+    const columns = useMemo<ColumnDef<AdminPaymentAttempt>[]>(
         () => [
             {
                 accessorKey: "attempt_id",
                 header: "Attempt ID",
-                cell: (info: any) => <span className="font-mono text-xs opacity-80">{info.getValue()}</span>,
+                cell: ({ getValue }) => <span className="font-mono text-xs">{String(getValue<number>())}</span>,
             },
             {
                 accessorKey: "order_id",
                 header: "Order",
-                cell: (info: any) => <span className="font-mono font-medium">#{info.getValue()}</span>,
+                cell: ({ getValue }) => <span className="font-mono font-medium">#{getValue<number>()}</span>,
             },
             {
                 id: "buyer",
                 header: "Buyer",
-                cell: ({ row }: any) => {
-                    const original = row.original;
-                    if (original.user) {
+                cell: ({ row }) => {
+                    const payment = row.original;
+                    if (payment.user) {
                         return (
                             <div className="flex flex-col">
                                 <span className="text-sm font-medium">
-                                    {original.user.first_name} {original.user.last_name}
+                                    {payment.user.first_name} {payment.user.last_name}
                                 </span>
-                                <span className="text-muted-foreground text-xs">{original.user.email}</span>
+                                <span className="text-muted-foreground text-xs">{payment.user.email}</span>
                             </div>
                         );
                     }
@@ -135,27 +74,27 @@ function RouteComponent() {
             {
                 accessorKey: "payment_method",
                 header: "Method",
-                cell: (info: any) => <span className="text-xs font-semibold tracking-wider capitalize">{info.getValue().replace("_", " ")}</span>,
+                cell: ({ getValue }) => (
+                    <span className="text-xs font-semibold tracking-wider capitalize">{getValue<string>().replaceAll("_", " ")}</span>
+                ),
             },
             {
                 accessorKey: "amount",
                 header: "Amount",
-                cell: (info: any) => `$${info.getValue().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                cell: ({ getValue }) =>
+                    getValue<number>().toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "CAD",
+                    }),
             },
             {
                 accessorKey: "status",
                 header: "Status",
-                cell: (info: any) => {
-                    const status = info.getValue() as string;
+                cell: ({ getValue }) => {
+                    const status = getValue<AdminPaymentAttempt["status"]>();
+
                     return (
-                        <Badge
-                            variant="outline"
-                            className={cn("capitalize shadow-none", {
-                                "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400": status === "success",
-                                "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400": status === "pending",
-                                "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400": status === "failed",
-                            })}
-                        >
+                        <Badge variant={status === "success" ? "default" : "destructive"} className="capitalize">
                             {status}
                         </Badge>
                     );
@@ -163,46 +102,87 @@ function RouteComponent() {
             },
             {
                 accessorKey: "attempted_at",
-                header: ({ column }: any) => <DataTableColumnHeader column={column} title="Date" />,
-                cell: (info: any) => new Date(info.getValue()).toLocaleString(),
+                header: "Date",
+                cell: ({ getValue }) => new Date(getValue<string>()).toLocaleString(),
             },
-            /*{
+            {
                 id: "actions",
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const payment = row.original;
                     return (
                         <div className="flex justify-end pr-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" size="icon-sm">
                                         <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
+                                        <MoreHorizontal />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleCopyId(payment.attempt_id)}>
-                                        <Copy className="mr-2 h-4 w-4" />
-                                        Copy Attempt ID
-                                    </DropdownMenuItem>
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                openModal("paymentDetail", {
+                                                    attemptId: payment.attempt_id,
+                                                })
+                                            }
+                                        >
+                                            <Eye />
+                                            View Payment Details
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                openModal("orderDetail", {
+                                                    orderId: payment.order_id,
+                                                    scope: "admin",
+                                                })
+                                            }
+                                        >
+                                            <ShoppingBag />
+                                            View Order Details
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                void navigator.clipboard
+                                                    .writeText(String(payment.attempt_id))
+                                                    .then(() => toast.success("Attempt ID copied"))
+                                                    .catch(() => toast.error("Could not copy attempt ID"));
+                                            }}
+                                        >
+                                            <Copy />
+                                            Copy Attempt ID
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                void navigator.clipboard
+                                                    .writeText(String(payment.order_id))
+                                                    .then(() => toast.success("Order ID copied"))
+                                                    .catch(() => toast.error("Could not copy order ID"));
+                                            }}
+                                        >
+                                            <Copy />
+                                            Copy Order ID
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     );
                 },
-            },*/
+            },
         ],
-        []
+        [openModal]
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table opted out via "use no memo"
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         manualPagination: true,
-        rowCount: queryData?.pagination?.total || -1, 
-        
+        rowCount: paymentsQuery.data?.pagination.total ?? 0,
+
         state: {
             pagination,
         },
@@ -214,9 +194,17 @@ function RouteComponent() {
             title="Payment Logs"
             desc="Global ledger of every transaction attempt cross-linked to user profiles and orders."
             withRefresh
-            RefreshFunction={() => refetch()}
+            RefreshFunction={() => void paymentsQuery.refetch()}
         >
-            <div className="mt-4 space-y-4">
+            <div className="mt-4 flex flex-col gap-4">
+                {paymentsQuery.isError ? (
+                    <QueryError
+                        title="Couldn't load payment logs"
+                        error={paymentsQuery.error}
+                        onRetry={() => void paymentsQuery.refetch()}
+                        isRetrying={paymentsQuery.isFetching}
+                    />
+                ) : null}
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader className="bg-muted/50">
@@ -231,7 +219,7 @@ function RouteComponent() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {isLoading ? (
+                            {paymentsQuery.isPending ? (
                                 <TableRow>
                                     <TableCell colSpan={columns.length} className="h-24 text-center">
                                         Loading transactions...
@@ -239,7 +227,7 @@ function RouteComponent() {
                                 </TableRow>
                             ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} className={paymentsQuery.isFetching ? "opacity-60" : undefined}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                         ))}
