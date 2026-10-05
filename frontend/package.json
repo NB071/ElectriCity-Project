@@ -3,7 +3,7 @@
     "private": true,
     "version": "1.0.0",
     "type": "module",
-    "author": "EECS 4413 Group G",
+    "author": "G",
     "license": "ISC",
     "description": "Frontend for Electricity E-Commerce Platform",
     "scripts": {

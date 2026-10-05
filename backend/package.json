@@ -16,7 +16,7 @@
         "docker:npm-ci": "docker exec electricity-backend npm ci"
     },
     "keywords": [],
-    "author": "EECS 4413 Group G",
+    "author": "G",
     "license": "ISC",
     "type": "module",
     "description": "Backend for Electricity E-Commerce Platform",

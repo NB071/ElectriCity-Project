@@ -243,11 +243,11 @@ function RouteComponent() {
                         <CardFooter className="flex flex-col items-start border-t">
                             <p className="text-sm font-medium">Have questions?</p>
                             <a
-                                href="mailto:eecs4413.group.g@gmail.com"
+                                href=""
                                 className="text-muted-foreground hover:text-foreground mt-1 flex items-center text-sm"
                             >
                                 <MailIcon className="mr-2 h-4 w-4" />
-                                eecs4413.group.g@gmail.com
+                                
                             </a>
                         </CardFooter>
                     </Card>

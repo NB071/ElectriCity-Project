@@ -191,7 +191,7 @@ function ContactRoute() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-semibold">Email</p>
-                                        <p className="text-muted-foreground text-sm text-wrap">eecs4413.group.g@gmail.com</p>
+                                        <p className="text-muted-foreground text-sm text-wrap"></p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
@@ -226,21 +226,21 @@ function ContactRoute() {
                             City="Toronto"
                             address="290 Bremner Blvd, Toronto, ON M5V 3L9"
                             mapURL="#"
-                            email="eecs4413.group.g@gmail.com"
+                            email="electricity@gmail.com"
                             phone="+1 (123) 456-7890"
                         />
                         <OfficeInfo
                             City="Markham"
                             address="1 University Blvd., Markham, ON L6G 0H2"
                             mapURL="#"
-                            email="eecs4413.group.g@gmail.com"
+                            email="electricity@gmail.com"
                             phone="+1 (123) 456-7890"
                         />
                         <OfficeInfo
                             City="North York"
                             address="2275 Bayview Ave, North York, ON M4N 3M6"
                             mapURL="#"
-                            email="eecs4413.group.g@gmail.com"
+                            email="electricity@gmail.com"
                             phone="+1 (123) 456-7890"
                         />
                     </div>

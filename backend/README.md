@@ -1,6 +1,6 @@
 # Electricity
 
-#### EECS 4413 Project (Group G)
+
 
 ---
 
