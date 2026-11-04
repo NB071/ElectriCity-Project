@@ -1,6 +1,6 @@
 # ElectriCity
 
-**EECS 4413 · Group G · v1.0.0**
+**v1.0.0**
 
 ElectriCity is a full-stack **electric-vehicle e-commerce** platform. Customers can browse and compare EVs, customize options, use a guest or account cart, check out, leave reviews, manage a wishlist, and chat with a Gemini-powered shop assistant. Admins get dashboards for users, orders, payments, reviews, media, and analytics.
 
@@ -457,7 +457,7 @@ Be aware when marking / demoing:
 
 - Design / report materials: `docs/`
 - API reference HTML (when generated): `docs/api/api-docs.html`
-- Author: **EECS 4413 Group G**
+
 - License: **ISC** (see `package.json` files)
 
 ---
