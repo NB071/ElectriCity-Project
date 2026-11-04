@@ -1,6 +1,6 @@
 # ElectriCity - Frontend
 
-React + TypeScript storefront and dashboards for ElectriCity (EECS 4413, Group G).  
+React + TypeScript storefront and dashboards for ElectriCity.  
 This package talks to the Express API (`/api/auth`, `/api/shop`, `/api/dashboard`) and ships the public shop, auth screens, customer dashboard, and admin dashboard.
 
 For the full project (Docker, seed accounts, backend services), see the **root** [`README.md`](../README.md).
@@ -168,4 +168,4 @@ Links below are **unique** (no duplicates). They include docs we used while buil
 
 ## License
 
-ISC · EECS 4413 Group G
+ISC
