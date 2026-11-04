@@ -1,6 +1,6 @@
 # ElectriCity — Backend
 
-**EECS 4413 · Group G · v1.0.0**
+**v1.0.0**
 
 Express API for the ElectriCity EV storefront. This package owns authentication, catalog, cart, checkout, payments, reviews, wishlist, media, analytics, email jobs, queues, and the Gemini chatbot tools.
 
@@ -326,4 +326,4 @@ Seed data may include third-party brand websites (Tesla, Ford, …) as sample `w
 
 ## License
 
-ISC · EECS 4413 Group G
+ISC
